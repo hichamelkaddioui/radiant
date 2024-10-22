@@ -23,6 +23,7 @@ public:
     void setup(KeyframeList *hueKeyframesList, KeyframeList *valueKeyframesList, KeyframeList *saturationKeyframesList);
     void loop();
     void setColor(CHSV color) { _color = color; }
+    CHSV getColor() { return _color; }
 
 private:
     CHSV _color;

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Keyframe.h>
 #include <LightLoop.h>
+#include <Utils.h>
 
 LightLoop lightLoop;
 
@@ -35,10 +36,19 @@ void setup()
 
     // Create the keyframe list
     KeyframeList *keyframesList = new KeyframeList(numberOfKeyframes, keyframes);
-    lightLoop.setup(keyframesList, keyframesList, keyframesList);
+    lightLoop.setup(keyframesList, new KeyframeList(), new KeyframeList());
+
+    debug(1, "Keyframes list created with %d keyframes", keyframesList->_count);
 }
 
 void loop()
 {
     lightLoop.loop();
+
+    debug(100, "Hue: %d, Saturation: %d, Value: %d", lightLoop.getColor().hue, lightLoop.getColor().sat, lightLoop.getColor().val);
+
+    if (millis() == 5000)
+    {
+        lightLoop.setColor({255, 255, 255});
+    }
 }

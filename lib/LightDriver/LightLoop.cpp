@@ -36,18 +36,4 @@ void LightLoop::updateStateValue(LightLoopState *state, uint8_t *value)
     unsigned long elapsed = state->chrono.elapsed();
 
     *value = static_cast<uint8_t>(state->keyframesList->update(elapsed));
-
-    // Log to the serial every 500 ms
-    if (millis() % 500 == 0)
-    {
-        Serial.print("(");
-        Serial.print(millis());
-        Serial.print(") ");
-        Serial.print("Elapsed: ");
-        Serial.print(elapsed);
-        Serial.print("; ");
-        Serial.print("value: ");
-        Serial.print(*value);
-        Serial.println();
-    }
 }
