@@ -33,8 +33,9 @@ struct Keyframe
 class KeyframeList
 {
 public:
-    Keyframe *_keyframes;
-    int _count = 0;
+    std::vector<Keyframe> _keyframes;
+
+    KeyframeList(std::vector<Keyframe> keyframes = {}) : _keyframes(keyframes) {};
 
     /**
      * Creates an InterpolationMethodPair with the given method, powerValue, and cutoffTime.
@@ -71,7 +72,20 @@ public:
         return keyframe;
     }
 
-    KeyframeList(int count = 0, Keyframe *keyframes = nullptr) : _count(count), _keyframes(keyframes) {};
+    static std::vector<Keyframe> dummyKeyframes(int numKeyframes, InterpolationMethod method = IM::LINEAR, float powerValue = 1.0f, unsigned long cutoffTime = 0)
+    {
+        std::vector<Keyframe> keyframes;
+        Keyframe k;
+        InterpolationMethodPair imp = KeyframeList::IMP(method, powerValue, cutoffTime);
+        for (int i = 0; i < numKeyframes; i++)
+        {
+            k = KeyframeList::K(i * 1418, i % 2 == 0 ? 255 : 0, {imp});
+            keyframes.push_back(k);
+        }
+
+        return keyframes;
+    }
+
     /**
      * Updates the current value of the keyframe list based on the given current time.
      *
@@ -86,13 +100,6 @@ public:
      * \return The interpolated value.
      */
     float update(unsigned long currentTime);
-    /**
-     * Destroys the keyframe list and frees the memory allocated for the keyframes.
-     *
-     * The caller of this method is responsible for ensuring that the keyframe list
-     * is not in use by any other parts of the program before calling this method.
-     */
-    void destroy();
 
 private:
     /**

@@ -1,16 +1,18 @@
 #include <Keyframe.h>
+#include <vector>
 
 float KeyframeList::update(unsigned long currentTime)
 {
     Keyframe *startKey = nullptr;
     Keyframe *endKey = nullptr;
 
-    for (size_t i = 0; i < _count - 1; ++i)
+    for (auto it = _keyframes.begin(); it != _keyframes.end() - 1; ++it)
     {
-        if (currentTime >= _keyframes[i].time && currentTime < _keyframes[i + 1].time)
+        bool isKeyframeInterval = currentTime >= it->time && currentTime < (it + 1)->time;
+        if (isKeyframeInterval)
         {
-            startKey = &_keyframes[i];
-            endKey = &_keyframes[i + 1];
+            startKey = &(*it);
+            endKey = &(it[1]);
             break;
         }
     }
@@ -24,11 +26,6 @@ float KeyframeList::update(unsigned long currentTime)
     }
 
     return 0.0f;
-};
-
-void KeyframeList::destroy()
-{
-    delete[] _keyframes;
 }
 
 float KeyframeList::interpolate(float start, float end, float t, const std::vector<InterpolationMethodPair> &methodsAndParams)

@@ -21,12 +21,12 @@ void LightLoop::updateStateValue(LightLoopState *state, uint8_t *value)
     if (state == nullptr)
         return;
 
-    int keyframeCount = state->keyframesList->_count;
+    std::vector<Keyframe> &keyframes = state->keyframesList->_keyframes;
 
-    if (keyframeCount == 0)
+    if (state->keyframesList->_keyframes.size() == 0)
         return;
 
-    Keyframe lastKeyframe = state->keyframesList->_keyframes[keyframeCount - 1];
+    Keyframe lastKeyframe = keyframes[keyframes.size() - 1];
 
     bool isLastKeyframeOver = state->chrono.hasPassed(lastKeyframe.time, true);
 

@@ -27,25 +27,15 @@ void setup()
 
     flashThreeTimes();
 
-    int numberOfKeyframes = 2;
-
-    // Create the keyframes
-    Keyframe *keyframes = new Keyframe[numberOfKeyframes];
-    keyframes[0] = KeyframeList::K(0, 0, {KeyframeList::IMP(POWER, 2.0f)});
-    keyframes[1] = KeyframeList::K(2000, 255);
-
     // Create the keyframe list
-    KeyframeList *keyframesList = new KeyframeList(numberOfKeyframes, keyframes);
-    lightLoop.setup(keyframesList, new KeyframeList(), new KeyframeList());
-
-    debug(1, "Keyframes list created with %d keyframes", keyframesList->_count);
+    lightLoop.setup(new KeyframeList(KeyframeList::dummyKeyframes(10)), new KeyframeList(), new KeyframeList());
 }
 
 void loop()
 {
     lightLoop.loop();
 
-    debug(100, "Hue: %d, Saturation: %d, Value: %d", lightLoop.getColor().hue, lightLoop.getColor().sat, lightLoop.getColor().val);
+    debug(100, "(%lu) Hue: %d, Saturation: %d, Value: %d", millis(), lightLoop.getColor().hue, lightLoop.getColor().sat, lightLoop.getColor().val);
 
     if (millis() == 5000)
     {
