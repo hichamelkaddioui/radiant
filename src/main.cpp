@@ -1,9 +1,6 @@
 #include <Arduino.h>
-#include <Keyframe.h>
-#include <LightLoop.h>
+#include <Scene.h>
 #include <Utils.h>
-
-LightLoop lightLoop;
 
 void flashThreeTimes(int delayTime = 100)
 {
@@ -18,6 +15,8 @@ void flashThreeTimes(int delayTime = 100)
     }
 }
 
+Scene scene;
+
 void setup()
 {
     Serial.begin(9600);
@@ -27,18 +26,21 @@ void setup()
 
     flashThreeTimes();
 
-    // Create the keyframe list
-    lightLoop.setup(new KeyframeList(KeyframeList::dummyKeyframes(10)), new KeyframeList(), new KeyframeList());
+    // Create the scene
+    std::vector<Keyframe> keyframes;
+
+    keyframes.push_back(Keyframe(0, 0, Curve(CurveType::EASE, CurveCoefficients(2.0f, 1000))));
+    keyframes.push_back(Keyframe(1000, 500, Curve(CurveType::EASE, CurveCoefficients(1 / 2.0f, 1000))));
+    keyframes.push_back(Keyframe(2000, 0, Curve(CurveType::GATE, CurveCoefficients(2.0f, 12))));
+    keyframes.push_back(Keyframe(4000, 1000, Curve(CurveType::GATE, CurveCoefficients(2.0f, 12))));
+
+    scene = Scene(keyframes, SceneMode::LOOP);
+
+    debug(1, "x,y");
 }
 
 void loop()
 {
-    lightLoop.loop();
-
-    debug(100, "(%lu) Hue: %d, Saturation: %d, Value: %d", millis(), lightLoop.getColor().hue, lightLoop.getColor().sat, lightLoop.getColor().val);
-
-    if (millis() == 5000)
-    {
-        lightLoop.setColor({255, 255, 255});
-    }
+    float value = scene.update();
+    debug(20, "%f,%f", float(millis()) / 1000, value);
 }

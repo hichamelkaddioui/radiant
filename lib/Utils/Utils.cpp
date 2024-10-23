@@ -22,3 +22,28 @@ void debug(int printEveryMs, const char *format, ...)
     va_end(args);
 #endif
 }
+
+/**
+ * Eases a value between two bounds over a given duration.
+ *
+ * The given value is eased from startValue to endValue over the
+ * duration of totalTime milliseconds. The time at which the easing
+ * happens is given by currentTime.
+ *
+ * The easing function is a simple power function where the power is
+ * given by the power parameter.
+ *
+ * \param currentTime The current time, in milliseconds.
+ * \param totalTime The total duration of the easing, in milliseconds.
+ * \param startValue The starting value of the easing.
+ * \param endValue The ending value of the easing.
+ * \param power The power of the easing function.
+ *
+ * \returns The eased value.
+ */
+float ease(float currentTime, float totalTime, float startValue, float endValue, float power)
+{
+    float coefficient = pow(currentTime / totalTime, power);
+
+    return startValue + (endValue - startValue) * coefficient;
+}
