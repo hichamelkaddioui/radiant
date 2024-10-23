@@ -93,18 +93,8 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
     {
     case EASE:
         return ease(currentTime, duration, startValue, endValue, coefficients.powerValue);
-        break;
     case GATE:
-        if (static_cast<int>(currentTime / coefficients.cutoffTime) % 2 == 0)
-        {
-            return startValue;
-            break;
-        }
-        else
-        {
-            return endValue;
-            break;
-        }
+        return gate(currentTime, startValue, endValue, coefficients.cutoffTime);
     case LINEAR:
     default:
         return ease(currentTime, duration, startValue, endValue, 1.0f);

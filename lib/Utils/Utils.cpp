@@ -41,9 +41,37 @@ void debug(int printEveryMs, const char *format, ...)
  *
  * \returns The eased value.
  */
-float ease(float currentTime, float totalTime, float startValue, float endValue, float power)
+float ease(unsigned long currentTime, unsigned long totalTime, float startValue, float endValue, float power)
 {
-    float coefficient = pow(currentTime / totalTime, power);
+    float coefficient = pow(currentTime / (float)totalTime, power);
 
     return startValue + (endValue - startValue) * coefficient;
+}
+
+/**
+ * Gates a value between topValue and bottomValue based on the current time.
+ *
+ * This function simulates a gate behavior by alternating the output value between topValue and bottomValue
+ * based on the current time and the duration of halfPeriod.
+ *
+ * \param currentTime The current time, in milliseconds.
+ * \param topValue The value to return when the gate is high.
+ * \param bottomValue The value to return when the gate is low.
+ * \param halfPeriod Half of the period for the gate behavior.
+ *
+ * \returns The gated value based on the current time and gate behavior.
+ */
+float gate(unsigned long currentTime, float topValue, float bottomValue, unsigned long halfPeriod)
+{
+    unsigned long period = halfPeriod * 2;
+    if ((currentTime % period) < halfPeriod)
+    {
+        // The gate is high, return topValue
+        return topValue;
+    }
+    else
+    {
+        // The gate is low, return bottomValue
+        return bottomValue;
+    }
 }
