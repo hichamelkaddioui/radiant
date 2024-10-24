@@ -37,6 +37,14 @@ String interpolationName(CurveType curveType)
  */
 float Scene::update()
 {
+    if (_keyframes.size() < 2)
+    {
+        if (_keyframes.size() == 1)
+            return _keyframes[0].value;
+
+        return 0.0f;
+    }
+
     Keyframe *startKey = nullptr;
     Keyframe *endKey = nullptr;
 
