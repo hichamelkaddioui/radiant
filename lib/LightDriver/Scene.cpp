@@ -120,3 +120,13 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
         return ease(currentTime, duration, startValue, endValue, 1.0f);
     }
 }
+
+/**
+ * Triggers the scene, starting the animation from the beginning.
+ *
+ * The scene will be restarted from the first keyframe.
+ */
+void Scene::trigger()
+{
+    _chrono.restart();
+}

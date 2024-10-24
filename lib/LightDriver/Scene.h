@@ -61,7 +61,12 @@ public:
     {
         if (keyframes.size() < 2)
         {
-            // TODO: pad with dummy keyframes
+            _keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
+
+            if (keyframes.size() < 2)
+            {
+                _keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
+            }
         }
 
         for (auto it = _keyframes.begin(); it != _keyframes.end(); ++it)
@@ -70,6 +75,7 @@ public:
         }
     };
     float update();
+    void trigger();
 
 private:
     std::vector<Keyframe> _keyframes;
