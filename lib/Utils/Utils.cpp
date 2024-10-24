@@ -27,25 +27,26 @@ void debug(int printEveryMs, const char *format, ...)
  * Eases a value between two bounds over a given duration.
  *
  * The given value is eased from startValue to endValue over the
- * duration of totalTime milliseconds. The time at which the easing
+ * duration of duration milliseconds. The time at which the easing
  * happens is given by currentTime.
  *
  * The easing function is a simple power function where the power is
  * given by the power parameter.
  *
  * \param currentTime The current time, in milliseconds.
- * \param totalTime The total duration of the easing, in milliseconds.
+ * \param duration The total duration of the easing, in milliseconds.
  * \param startValue The starting value of the easing.
  * \param endValue The ending value of the easing.
  * \param power The power of the easing function.
  *
  * \returns The eased value.
  */
-float ease(unsigned long currentTime, unsigned long totalTime, float startValue, float endValue, float power)
+float ease(unsigned long currentTime, unsigned long duration, float startValue, float endValue, float power)
 {
-    float coefficient = pow(currentTime / (float)totalTime, power);
+    float normalizedTime = (float)currentTime / (float)duration;
+    float coefficient = pow(normalizedTime, power);
 
-    return startValue + (endValue - startValue) * coefficient;
+    return startValue * (1 - coefficient) + endValue * coefficient;
 }
 
 /**
@@ -74,4 +75,64 @@ float gate(unsigned long currentTime, float topValue, float bottomValue, unsigne
         // The gate is low, return bottomValue
         return bottomValue;
     }
+}
+
+/**
+ * Waves a value between startValue and endValue over the duration of period milliseconds.
+ *
+ * This function simulates a wave behavior by oscillating the output value between startValue and endValue
+ * based on the current time and the duration of period.
+ *
+ * \param currentTime The current time, in milliseconds.
+ * \param startValue The starting value of the wave.
+ * \param endValue The ending value of the wave.
+ * \param period The duration of the wave, in milliseconds.
+ *
+ * \returns The waved value based on the current time and wave behavior.
+ */
+float wave(unsigned long currentTime, float startValue, float endValue, unsigned long period)
+{
+    double amplitude = (endValue - startValue) / 2.0;
+    double offset = (endValue + startValue) / 2.0;
+
+    return amplitude * sin((TWO_PI / period) * currentTime) + offset;
+}
+
+int unsigned long closestDivisor(int a, int b)
+{
+    if (a == 0 || b == 0)
+    {
+        return 0; // Handle edge cases
+    }
+
+    int N = a / b; // Integer division
+
+    if (N == 0)
+    {
+        return 1; // If a < b, return 1 as the smallest possible divisor
+    }
+
+    int lowerDivisor = 1;
+    int upperDivisor = a;
+
+    // Find the lower and upper divisors
+    for (int i = 1; i <= sqrt(a); i++)
+    {
+        if (a % i == 0)
+        {
+            if (i <= N)
+            {
+                lowerDivisor = max(lowerDivisor, i);
+            }
+            if (a / i <= N)
+            {
+                upperDivisor = min(upperDivisor, a / i);
+            }
+        }
+    }
+
+    // Return the divisor closest to b
+    unsigned long result = (abs(b - lowerDivisor) <= abs(b - upperDivisor)) ? lowerDivisor : upperDivisor;
+
+    return result;
 }

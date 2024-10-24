@@ -29,10 +29,10 @@ void setup()
     // Create the scene
     std::vector<Keyframe> keyframes;
 
-    keyframes.push_back(Keyframe(0, 0, Curve(CurveType::EASE, CurveCoefficients(2.0f, 1000))));
-    keyframes.push_back(Keyframe(100, 500, Curve(CurveType::EASE, CurveCoefficients(1 / 2.0f, 1000))));
-    keyframes.push_back(Keyframe(200, 0, Curve(CurveType::GATE, CurveCoefficients(2.0f, 5))));
-    keyframes.push_back(Keyframe(500, 1000, Curve(CurveType::GATE, CurveCoefficients(2.0f, 12))));
+    keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
+    keyframes.push_back(Keyframe(100, 10.0f, Curve(CurveType::WAVE, CurveCoefficient(120))));
+    keyframes.push_back(Keyframe(1000, -10.0f, Curve(CurveType::LINEAR, CurveCoefficient(-1))));
+    keyframes.push_back(Keyframe(1200, 0.0f, Curve(CurveType::EASE, CurveCoefficient(1 / 2.0f))));
 
     scene = Scene(keyframes, SceneMode::LOOP);
 
@@ -42,5 +42,5 @@ void setup()
 void loop()
 {
     float value = scene.update();
-    debug(3, "%f,%f", float(millis()) / 1000, value);
+    debug(7, "%f,%f", float(millis()) / 1000, value);
 }

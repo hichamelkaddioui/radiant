@@ -3,6 +3,24 @@
 #include <vector>
 #include <Utils.h>
 
+String interpolationName(CurveType curveType)
+{
+    String interpolationType;
+    switch (curveType)
+    {
+    case EASE:
+        return "ease";
+    case WAVE:
+        return "sine";
+    case GATE:
+        return "gate";
+    case LINEAR:
+        return "linear";
+    default:
+        return "unknown";
+    }
+}
+
 /**
  * Updates the scene by determining the current keyframe interval and interpolating
  * the value based on the current time and the specified curve.
@@ -67,7 +85,7 @@ float Scene::update()
     Curve curve = startKey->curve;
     float interpolatedValue = interpolate(currentTime, duration, startValue, endValue, curve);
 
-    // debug(20, "[%f -> %f]\t%lu/%lu\t\t%f", startValue, endValue, currentTime, duration, interpolatedValue);
+    // debug(20, "[%f -> %f]\t%f\t(%s)\t%lu/%lu", startValue, endValue, interpolatedValue, interpolationName(curve.type).c_str(), currentTime, duration);
 
     return interpolatedValue;
 };
@@ -87,14 +105,16 @@ float Scene::update()
 float Scene::interpolate(unsigned long currentTime, unsigned long duration, float startValue, float endValue, Curve curve)
 {
     CurveType type = curve.type;
-    CurveCoefficients coefficients = curve.coefficients;
+    CurveCoefficient coefficient = curve.coefficient;
 
     switch (type)
     {
     case EASE:
-        return ease(currentTime, duration, startValue, endValue, coefficients.powerValue);
+        return ease(currentTime, duration, startValue, endValue, coefficient.powerValue);
+    case WAVE:
+        return wave(currentTime, startValue, endValue, duration / closestDivisor(duration, coefficient.period));
     case GATE:
-        return gate(currentTime, startValue, endValue, coefficients.cutoffTime);
+        return gate(currentTime, startValue, endValue, coefficient.period);
     case LINEAR:
     default:
         return ease(currentTime, duration, startValue, endValue, 1.0f);

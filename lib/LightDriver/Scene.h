@@ -9,31 +9,33 @@
 #define DEFAULT_POWER_VALUE 1.0f
 #endif
 
-#ifndef DEFAULT_CUTOFF_TIME
-#define DEFAULT_CUTOFF_TIME 100
+#ifndef DEFAULT_PERIOD
+#define DEFAULT_PERIOD 100
 #endif
 
 typedef enum
 {
     LINEAR,
     EASE,
+    WAVE,
     GATE,
 } CurveType;
 
-struct CurveCoefficients
+union CurveCoefficient
 {
     float powerValue;
-    unsigned long cutoffTime;
+    unsigned long period;
 
-    CurveCoefficients(float powerValue = DEFAULT_POWER_VALUE, unsigned long cutoffTime = DEFAULT_CUTOFF_TIME) : powerValue(powerValue), cutoffTime(cutoffTime) {}
+    CurveCoefficient(float powerValue = DEFAULT_POWER_VALUE) : powerValue(powerValue) {}
+    CurveCoefficient(int period = DEFAULT_PERIOD) : period(period) {}
 };
 
 struct Curve
 {
     CurveType type;
-    CurveCoefficients coefficients;
+    CurveCoefficient coefficient;
 
-    Curve(CurveType type = CurveType::LINEAR, CurveCoefficients coefficients = CurveCoefficients()) : type(type), coefficients(coefficients) {}
+    Curve(CurveType type = CurveType::LINEAR, CurveCoefficient coefficient = CurveCoefficient(DEFAULT_POWER_VALUE)) : type(type), coefficient(coefficient) {}
 };
 
 struct Keyframe
@@ -64,7 +66,7 @@ public:
 
         for (auto it = _keyframes.begin(); it != _keyframes.end(); ++it)
         {
-            debug(1, "[scene] Keyframe: (%lu, %f), curve: {pw: %f, ct: %lu, type: %d}", it->time, it->value, it->curve.coefficients.powerValue, it->curve.coefficients.cutoffTime, it->curve.type);
+            debug(1, "[scene] Keyframe: (%lu, %f), curve: {pw: %f, ct: %lu, type: %d}", it->time, it->value, it->curve.coefficient.powerValue, it->curve.coefficient.period, it->curve.type);
         }
     };
     float update();
