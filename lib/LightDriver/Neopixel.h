@@ -1,9 +1,9 @@
+#ifndef NEOPIXEL_H
+#define NEOPIXEL_H
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <Scene.h>
-
-#ifndef NEOPIXEL_H
-#define NEOPIXEL_H
 
 typedef struct
 {

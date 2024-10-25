@@ -1,9 +1,9 @@
+#ifndef SCENE_H
+#define SCENE_H
+
 #include <vector>
 #include <LightChrono.h>
 #include <Utils.h>
-
-#ifndef SCENE_H
-#define SCENE_H
 
 #ifndef DEFAULT_POWER_VALUE
 #define DEFAULT_POWER_VALUE 1.0f
