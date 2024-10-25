@@ -130,6 +130,19 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
 }
 
 /**
+ * Adds the given keyframes to the scene.
+ *
+ * The given keyframes are inserted at the end of the current keyframes. The
+ * keyframes are sorted by time.
+ *
+ * \param keyframes The keyframes to add to the scene.
+ */
+void Scene::addKeyframes(std::vector<Keyframe> keyframes)
+{
+    _keyframes.insert(_keyframes.end(), keyframes.begin(), keyframes.end());
+}
+
+/**
  * Triggers the scene, starting the animation from the beginning.
  *
  * The scene will be restarted from the first keyframe.
