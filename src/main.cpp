@@ -3,6 +3,7 @@
 #include <Neopixel.h>
 #include <Utils.h>
 #include <Flash.h>
+#include <Serialize.h>
 
 void blinkThreeTimes(int delayTime = 100)
 {
@@ -62,7 +63,7 @@ void setup()
     pixel = NeoPixel(hue, sat, val);
 
     // Serialize the Scene to a buffer
-    size_t serializedSize = hue.serialize(buffer);
+    size_t serializedSize = serializeScene(hue, buffer);
     Serial.print("Serialized size: ");
     Serial.print(serializedSize);
     Serial.println(" bytes.");
@@ -77,7 +78,10 @@ void setup()
 
     // Create a new Scene object for deserialization
     Scene newScene;
-    newScene.deserialize(readBuffer, serializedSize);
+    serializedSize = deserializeScene(newScene, readBuffer);
+    Serial.print("Deserialized size: ");
+    Serial.print(serializedSize);
+    Serial.println(" bytes.");
 
     newScene.dump();
 

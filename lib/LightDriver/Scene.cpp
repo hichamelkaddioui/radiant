@@ -1,39 +1,24 @@
 #include <Arduino.h>
 #include <Scene.h>
-#include <vector>
 #include <Utils.h>
 
-String interpolationName(CurveType curveType)
+/**
+ * Appends the given keyframes to the internal keyframe list.
+ *
+ * This can be used to extend an existing scene with new keyframes, or to
+ * concatenate multiple scenes.
+ *
+ * @param keyframes The keyframes to be added to the scene.
+ */
+void Scene::addKeyframes(std::vector<Keyframe> keyframes)
 {
-    String interpolationType;
-    switch (curveType)
-    {
-    case EASE:
-        return "ease";
-    case WAVE:
-        return "sine";
-    case GATE:
-        return "gate";
-    case LINEAR:
-        return "linear";
-    default:
-        return "unknown";
-    }
+    _keyframes.insert(_keyframes.end(), keyframes.begin(), keyframes.end());
 }
 
 /**
- * Updates the scene by determining the current keyframe interval and interpolating
- * the value based on the current time and the specified curve.
+ * Updates the scene and returns the interpolated value at the current time.
  *
- * This function iterates through the keyframes to find the current interval between
- * two keyframes. If the current time is after the last keyframe, it behaves 
- * differently based on the scene mode. In TRIGGER mode, it returns the last
- * keyframe's value. In LOOP mode, it restarts the scene and returns the first
- * keyframe's value. Otherwise, it interpolates the value between the start and
- * end keyframes of the current interval.
- *
- * \returns The interpolated or final keyframe value based on the scene's mode and
- * current time.
+ * @return The current value of the scene.
  */
 float Scene::update()
 {
@@ -93,22 +78,22 @@ float Scene::update()
     Curve curve = startKey->curve;
     float interpolatedValue = interpolate(currentTime, duration, startValue, endValue, curve);
 
-    // debug(20, "[%f -> %f]\t%f\t(%s)\t%lu/%lu", startValue, endValue, interpolatedValue, interpolationName(curve.type).c_str(), currentTime, duration);
-
     return interpolatedValue;
 };
 
 /**
- * Interpolates a value between startValue and endValue over the duration of
- * totalTime milliseconds based on the given curve.
+ * Interpolates a value between two keyframes based on the specified curve type.
  *
- * \param currentTime The current time, in milliseconds.
- * \param totalTime The total duration of the easing, in milliseconds.
- * \param startValue The starting value of the easing.
- * \param endValue The ending value of the easing.
- * \param curve The curve to use for the easing.
+ * Depending on the curve type, this function applies the appropriate interpolation
+ * method (ease, wave, gate, or linear) to calculate the intermediate value between
+ * the start and end keyframes at a given time.
  *
- * \returns The eased value.
+ * @param currentTime The current time, relative to the start of the keyframe interval, in milliseconds.
+ * @param duration The duration of the keyframe interval, in milliseconds.
+ * @param startValue The starting value of the interpolation.
+ * @param endValue The ending value of the interpolation.
+ * @param curve The curve defining the interpolation type and its coefficients.
+ * @return The interpolated value at the specified current time.
  */
 float Scene::interpolate(unsigned long currentTime, unsigned long duration, float startValue, float endValue, Curve curve)
 {
@@ -120,7 +105,7 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
     case EASE:
         return ease(currentTime, duration, startValue, endValue, coefficient.powerValue);
     case WAVE:
-        return wave(currentTime, coefficient.rangeAndPeriod.min, coefficient.rangeAndPeriod.max, findNearestPeriod(duration, coefficient.rangeAndPeriod.period));
+        return wave(currentTime, coefficient.rangeAndPeriod.min, coefficient.rangeAndPeriod.max, coefficient.rangeAndPeriod.period /* findNearestPeriod(duration, coefficient.rangeAndPeriod.period) */);
     case GATE:
         return gate(currentTime, coefficient.rangeAndPeriod.min, coefficient.rangeAndPeriod.max, coefficient.rangeAndPeriod.period /* findNearestPeriod(duration, coefficient.rangeAndPeriod.period) */);
     case LINEAR:
@@ -130,22 +115,11 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
 }
 
 /**
- * Adds the given keyframes to the scene.
+ * Triggers a scene to start or restart from the beginning.
  *
- * The given keyframes are inserted at the end of the current keyframes. The
- * keyframes are sorted by time.
+ * Only applicable when the scene mode is set to SceneMode::TRIGGER.
  *
- * \param keyframes The keyframes to add to the scene.
- */
-void Scene::addKeyframes(std::vector<Keyframe> keyframes)
-{
-    _keyframes.insert(_keyframes.end(), keyframes.begin(), keyframes.end());
-}
-
-/**
- * Triggers the scene, starting the animation from the beginning.
- *
- * The scene will be restarted from the first keyframe.
+ * This function has no effect when the scene mode is set to SceneMode::LOOP.
  */
 void Scene::trigger()
 {
