@@ -120,9 +120,9 @@ float Scene::interpolate(unsigned long currentTime, unsigned long duration, floa
     case EASE:
         return ease(currentTime, duration, startValue, endValue, coefficient.powerValue);
     case WAVE:
-        return wave(currentTime, startValue, endValue, duration / closestDivisor(duration, coefficient.period));
+        return wave(currentTime, coefficient.rangeAndPeriod.min, coefficient.rangeAndPeriod.max, findNearestPeriod(duration, coefficient.rangeAndPeriod.period));
     case GATE:
-        return gate(currentTime, startValue, endValue, coefficient.period);
+        return gate(currentTime, coefficient.rangeAndPeriod.min, coefficient.rangeAndPeriod.max, coefficient.rangeAndPeriod.period /* findNearestPeriod(duration, coefficient.rangeAndPeriod.period) */);
     case LINEAR:
     default:
         return ease(currentTime, duration, startValue, endValue, 1.0f);

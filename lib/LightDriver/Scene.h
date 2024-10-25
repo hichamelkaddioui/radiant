@@ -24,10 +24,16 @@ typedef enum
 union CurveCoefficient
 {
     float powerValue;
-    unsigned long period;
+    struct
+    {
+        float min;
+        float max;
+        unsigned long period;
+    } rangeAndPeriod;
 
-    CurveCoefficient(float powerValue = DEFAULT_POWER_VALUE) : powerValue(powerValue) {}
-    CurveCoefficient(int period = DEFAULT_PERIOD) : period(period) {}
+    CurveCoefficient(){};
+    CurveCoefficient(float powerValue) : powerValue(powerValue) {}
+    CurveCoefficient(float min, float max, unsigned long period) : rangeAndPeriod({min, max, period}) {}
 };
 
 struct Curve
@@ -35,7 +41,27 @@ struct Curve
     CurveType type;
     CurveCoefficient coefficient;
 
-    Curve(CurveType type = CurveType::LINEAR, CurveCoefficient coefficient = CurveCoefficient(DEFAULT_POWER_VALUE)) : type(type), coefficient(coefficient) {}
+    Curve(CurveType type = CurveType::LINEAR, CurveCoefficient coefficient = CurveCoefficient()) : type(type), coefficient(coefficient) {}
+
+    static Curve linear()
+    {
+        return Curve{LINEAR};
+    }
+
+    static Curve ease(float powerValue = DEFAULT_POWER_VALUE)
+    {
+        return Curve{EASE, CurveCoefficient(powerValue)};
+    }
+
+    static Curve wave(float min = -10.f, float max = 10.f, unsigned long period = DEFAULT_PERIOD)
+    {
+        return Curve{WAVE, CurveCoefficient(min, max, period)};
+    }
+
+    static Curve gate(float min = 0.f, float max = 1.f, unsigned long period = DEFAULT_PERIOD)
+    {
+        return Curve{GATE, CurveCoefficient(min, max, period)};
+    }
 };
 
 struct Keyframe
@@ -57,22 +83,23 @@ class Scene
 {
 public:
     Scene() = default;
-    Scene(std::vector<Keyframe> keyframes, SceneMode mode = SceneMode::TRIGGER) : _keyframes(keyframes), _mode(mode)
+    Scene(std::vector<Keyframe> keyframes, SceneMode mode = SceneMode::LOOP) : _keyframes(keyframes), _mode(mode)
     {
-        if (keyframes.size() < 2)
-        {
-            _keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
+        _chrono.restart();
 
-            if (keyframes.size() < 2)
-            {
-                _keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
-            }
-        }
-
+#ifdef DEBUG
         for (auto it = _keyframes.begin(); it != _keyframes.end(); ++it)
         {
-            debug(1, "[scene] Keyframe: (%lu, %f), curve: {pw: %f, ct: %lu, type: %d}", it->time, it->value, it->curve.coefficient.powerValue, it->curve.coefficient.period, it->curve.type);
+            if (it->curve.type == CurveType::EASE)
+                debug(1, "[scene] keyframe: %d\t%f\tease\tpw=%f", it->time, it->value, it->curve.coefficient.powerValue);
+            if (it->curve.type == CurveType::WAVE)
+                debug(1, "[scene] keyframe: %d\t%f\twave\tmin=%f\tmax=%f\tperiod=%lu", it->time, it->value, it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
+            if (it->curve.type == CurveType::GATE)
+                debug(1, "[scene] keyframe: %d\t%f\tgate\tmin=%f\tmax=%f\tperiod=%lu", it->time, it->value, it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
+            if (it->curve.type == CurveType::LINEAR)
+                debug(1, "[scene] keyframe: %d\t%f\tlinear", it->time, it->value);
         }
+#endif
     };
     float update();
     void trigger();

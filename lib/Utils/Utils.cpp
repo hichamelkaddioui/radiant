@@ -50,89 +50,97 @@ float ease(unsigned long currentTime, unsigned long duration, float startValue, 
 }
 
 /**
- * Gates a value between topValue and bottomValue based on the current time.
+ * Generates a gate signal with the given minimum and maximum values, with a given half-period.
  *
- * This function simulates a gate behavior by alternating the output value between topValue and bottomValue
- * based on the current time and the duration of halfPeriod.
+ * The given value is the value of the gate signal at the given current time.
+ *
+ * The gate signal is a square wave with a period of 2 * halfPeriod milliseconds. The gate
+ * signal is max for the first halfPeriod milliseconds and min for the second halfPeriod
+ * milliseconds.
  *
  * \param currentTime The current time, in milliseconds.
- * \param topValue The value to return when the gate is high.
- * \param bottomValue The value to return when the gate is low.
- * \param halfPeriod Half of the period for the gate behavior.
+ * \param min The minimum value of the gate signal.
+ * \param max The maximum value of the gate signal.
+ * \param halfPeriod The half-period of the gate signal, in milliseconds.
  *
- * \returns The gated value based on the current time and gate behavior.
+ * \returns The value of the gate signal at the given current time.
  */
-float gate(unsigned long currentTime, float topValue, float bottomValue, unsigned long halfPeriod)
+float gate(unsigned long currentTime, float min, float max, unsigned long halfPeriod)
 {
     unsigned long period = halfPeriod * 2;
     if ((currentTime % period) < halfPeriod)
     {
-        // The gate is high, return topValue
-        return topValue;
+        return max;
     }
     else
     {
-        // The gate is low, return bottomValue
-        return bottomValue;
+        return min;
     }
 }
 
 /**
- * Waves a value between startValue and endValue over the duration of period milliseconds.
+ * Generates a sine wave with the given minimum and maximum values over the given period.
  *
- * This function simulates a wave behavior by oscillating the output value between startValue and endValue
- * based on the current time and the duration of period.
+ * The given value is the value of the sine wave at the given current time.
  *
  * \param currentTime The current time, in milliseconds.
- * \param startValue The starting value of the wave.
- * \param endValue The ending value of the wave.
- * \param period The duration of the wave, in milliseconds.
+ * \param min The minimum value of the sine wave.
+ * \param max The maximum value of the sine wave.
+ * \param period The period of the sine wave.
  *
- * \returns The waved value based on the current time and wave behavior.
+ * \returns The value of the sine wave at the given current time.
  */
-float wave(unsigned long currentTime, float startValue, float endValue, unsigned long period)
+float wave(unsigned long currentTime, float min, float max, unsigned long period)
 {
-    double amplitude = (endValue - startValue) / 2.0;
-    double offset = (endValue + startValue) / 2.0;
+    double amplitude = (max - min) / 2.0;
+    double offset = (max + min) / 2.0;
 
     return amplitude * sin((TWO_PI / period) * currentTime) + offset;
 }
 
-int unsigned long closestDivisor(int a, int b)
+/**
+ * Finds the period that is closest to the given initial period,
+ * given the total duration.
+ *
+ * The function works by finding the two divisors of the total duration
+ * that are closest to the given initial period. It then returns the
+ * period that is associated with the closest divisor.
+ *
+ * \param total The total duration.
+ * \param initialPeriod The initial period.
+ *
+ * \returns The period that is closest to the given initial period.
+ */
+unsigned long findNearestPeriod(unsigned long total, unsigned long initialPeriod)
 {
-    if (a == 0 || b == 0)
+    // Edge cases
+    if (total == 0 || total < initialPeriod || initialPeriod == 0)
     {
-        return 0; // Handle edge cases
+        return initialPeriod;
     }
 
-    int N = a / b; // Integer division
-
-    if (N == 0)
-    {
-        return 1; // If a < b, return 1 as the smallest possible divisor
-    }
-
+    int N = total / initialPeriod;
     int lowerDivisor = 1;
-    int upperDivisor = a;
+    int upperDivisor = total;
 
     // Find the lower and upper divisors
-    for (int i = 1; i <= sqrt(a); i++)
+    for (int i = 1; i <= sqrt(total); i++)
     {
-        if (a % i == 0)
+        if (total % i == 0)
         {
             if (i <= N)
             {
                 lowerDivisor = max(lowerDivisor, i);
             }
-            if (a / i <= N)
+            if (total / i <= N)
             {
-                upperDivisor = min(upperDivisor, a / i);
+                upperDivisor = min(upperDivisor, total / i);
             }
         }
     }
 
-    // Return the divisor closest to b
-    unsigned long result = (abs(b - lowerDivisor) <= abs(b - upperDivisor)) ? lowerDivisor : upperDivisor;
+    unsigned long nearestDivisor = (labs((long)initialPeriod - (long)lowerDivisor) <= labs((long)initialPeriod - (long)upperDivisor)) ? lowerDivisor : upperDivisor;
+    unsigned long nearestPeriod = total / nearestDivisor;
 
-    return result;
+    return nearestPeriod;
 }

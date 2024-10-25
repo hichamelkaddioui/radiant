@@ -3,8 +3,8 @@
 
 void debug(int printEveryMs, const char *format, ...);
 float ease(unsigned long currentTime, unsigned long duration, float startValue, float endValue, float power);
-float gate(unsigned long currentTime, float topValue, float bottomValue, unsigned long halfPeriod);
-float wave(unsigned long currentTime, float startValue, float endValue, unsigned long period);
-int unsigned long closestDivisor(int a, int b);
+float gate(unsigned long currentTime, float min, float max, unsigned long halfPeriod);
+float wave(unsigned long currentTime, float min, float max, unsigned long period);
+unsigned long findNearestPeriod(unsigned long total, unsigned long initialPeriod);
 
 #endif
