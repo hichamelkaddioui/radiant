@@ -14,3 +14,10 @@ void NeoPixel::loop()
     _strip.setPixelColor(0, Adafruit_NeoPixel::ColorHSV(_color.hue, _color.sat, _color.val));
     _strip.show();
 }
+
+void NeoPixel::trigger()
+{
+    _hueState.trigger();
+    _saturationState.trigger();
+    _valueState.trigger();
+}

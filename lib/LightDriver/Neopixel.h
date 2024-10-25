@@ -26,6 +26,7 @@ public:
 
     void setup();
     void loop();
+    void trigger();
     void setColor(CHSV color) { _color = color; }
     CHSV getColor() { return _color; }
 

@@ -149,5 +149,6 @@ void Scene::addKeyframes(std::vector<Keyframe> keyframes)
  */
 void Scene::trigger()
 {
-    _chrono.restart();
+    if (_mode == SceneMode::TRIGGER)
+        _chrono.restart();
 }
