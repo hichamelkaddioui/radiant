@@ -88,16 +88,20 @@ public:
         _chrono.restart();
 
 #ifdef DEBUG
+        debug(1, "[scene] mode: %d", _mode);
+        int i = 0;
         for (auto it = _keyframes.begin(); it != _keyframes.end(); ++it)
         {
             if (it->curve.type == CurveType::EASE)
-                debug(1, "[scene] keyframe: %d\t%f\tease\tpw=%f", it->time, it->value, it->curve.coefficient.powerValue);
+                debug(1, "[scene]\t\tkeyframe[%d]: %5lu\t%12f\t%s\tpw=%f", i, it->time, it->value, "ease", it->curve.coefficient.powerValue);
             if (it->curve.type == CurveType::WAVE)
-                debug(1, "[scene] keyframe: %d\t%f\twave\tmin=%f\tmax=%f\tperiod=%lu", it->time, it->value, it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
+                debug(1, "[scene]\t\tkeyframe[%d]: %5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i, it->time, it->value, "wave", it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
             if (it->curve.type == CurveType::GATE)
-                debug(1, "[scene] keyframe: %d\t%f\tgate\tmin=%f\tmax=%f\tperiod=%lu", it->time, it->value, it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
+                debug(1, "[scene]\t\tkeyframe[%d]: %5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i, it->time, it->value, "gate", it->curve.coefficient.rangeAndPeriod.min, it->curve.coefficient.rangeAndPeriod.max, it->curve.coefficient.rangeAndPeriod.period);
             if (it->curve.type == CurveType::LINEAR)
-                debug(1, "[scene] keyframe: %d\t%f\tlinear", it->time, it->value);
+                debug(1, "[scene]\t\tkeyframe[%d]: %5lu\t%12f\t%s", i, it->time, it->value, "linear");
+
+            i++;
         }
 #endif
     };
