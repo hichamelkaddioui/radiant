@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Scene.h>
+#include <Neopixel.h>
 #include <Utils.h>
 
 void flashThreeTimes(int delayTime = 100)
@@ -15,7 +16,7 @@ void flashThreeTimes(int delayTime = 100)
     }
 }
 
-Scene scene;
+NeoPixel pixel;
 
 void setup()
 {
@@ -26,21 +27,49 @@ void setup()
 
     flashThreeTimes();
 
-    // Create the scene
-    std::vector<Keyframe> keyframes;
+    // Create the scenes
 
-    keyframes.push_back(Keyframe(0, 0.0f, Curve(CurveType::EASE, CurveCoefficient(2.0f))));
-    keyframes.push_back(Keyframe(100, 10.0f, Curve(CurveType::WAVE, CurveCoefficient(120))));
-    keyframes.push_back(Keyframe(1000, -10.0f, Curve(CurveType::LINEAR, CurveCoefficient(-1))));
-    keyframes.push_back(Keyframe(1200, 0.0f, Curve(CurveType::EASE, CurveCoefficient(1 / 2.0f))));
+    Scene hue = Scene({
+        Keyframe(0, 65535, Curve::linear()),
+        Keyframe(5 * 1000, 0, Curve::gate(60521, 10922, 100)),
+        Keyframe(10 * 1000, 0, Curve::gate(60521 / 2, 10922, 100)),
+        Keyframe(15 * 1000, 60521, Curve::ease(3.0f)),
+        Keyframe(20 * 1000, 0, Curve::linear()),
+        Keyframe(201 * 100, 0, Curve::ease(4.0f)),
+        Keyframe(22 * 1000, 21845, Curve::linear()),
+        Keyframe(221 * 100, 0, Curve::ease(4.0f)),
+        Keyframe(24 * 1000, 21845, Curve::linear()),
+        Keyframe(25 * 1000, 0, Curve::linear()),
+    });
 
-    scene = Scene(keyframes, SceneMode::LOOP);
+    Scene sat = Scene({
+        Keyframe(0, 255, Curve::linear()),
+    });
 
-    debug(1, "x,y");
+    Scene val = Scene({
+        Keyframe(0, 100, Curve::linear()),
+        Keyframe(5 * 1000, 0, Curve::ease(3.0f)),
+        Keyframe(55 * 100, 255, Curve::linear()),
+        Keyframe(55.1 * 100, 0, Curve::ease(3.0f)),
+        Keyframe(60 * 100, 255, Curve::linear()),
+        Keyframe(60.1 * 100, 0, Curve::ease(3.0f)),
+        Keyframe(65 * 100, 255, Curve::linear()),
+        Keyframe(65.1 * 100, 0, Curve::ease(3.0f)),
+        Keyframe(70 * 100, 255, Curve::linear()),
+        Keyframe(75.1 * 100, 0, Curve::ease(3.0f)),
+        Keyframe(80 * 100, 255, Curve::gate(0, 100, 30)),
+        Keyframe(10 * 1000, 255, Curve::gate(0, 255, 60)),
+        Keyframe(12 * 1000, 0, Curve::gate(0, 255, 100)),
+        Keyframe(15 * 1000, 255, Curve::gate(0, 255, 60)),
+        Keyframe(18 * 1000, 255, Curve::linear()),
+        Keyframe(25 * 1000, 255, Curve::linear()),
+
+    });
+
+    pixel = NeoPixel(hue, sat, val);
 }
 
 void loop()
 {
-    float value = scene.update();
-    debug(7, "%f,%f", float(millis()) / 1000, value);
+    pixel.loop();
 }
