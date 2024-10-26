@@ -8,16 +8,23 @@ void NeoPixel::setup()
 
 void NeoPixel::loop()
 {
-    _color.hue = _hueState.update();
-    _color.sat = _saturationState.update();
-    _color.val = _valueState.update();
+    _color.hue = _hueScene.update();
+    _color.sat = _saturationScene.update();
+    _color.val = _valueScene.update();
     _strip.setPixelColor(0, Adafruit_NeoPixel::ColorHSV(_color.hue, _color.sat, _color.val));
     _strip.show();
 }
 
 void NeoPixel::trigger()
 {
-    _hueState.trigger();
-    _saturationState.trigger();
-    _valueState.trigger();
+    _hueScene.trigger();
+    _saturationScene.trigger();
+    _valueScene.trigger();
+}
+
+void NeoPixel::dump()
+{
+    _hueScene.dump();
+    _saturationScene.dump();
+    _valueScene.dump();
 }

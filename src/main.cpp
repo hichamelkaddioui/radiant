@@ -5,6 +5,19 @@
 #include <Flash.h>
 #include <Serialize.h>
 
+std::vector<Keyframe> generateImpulses(unsigned long startTime, float power, int numImpulses, int step = 100)
+{
+    std::vector<Keyframe> keyframes;
+
+    for (unsigned long i = 0; i < numImpulses; i++)
+    {
+        keyframes.push_back(Keyframe(startTime + i * step, 0, Curve::ease(power)));
+        keyframes.push_back(Keyframe(startTime + (i + 1) * step - 1, 255, Curve::linear()));
+    }
+
+    return keyframes;
+};
+
 void blinkThreeTimes(int delayTime = 100)
 {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -20,7 +33,7 @@ void blinkThreeTimes(int delayTime = 100)
 
 NeoPixel pixel;
 RP2040Flash flash;
-const size_t BUFFER_SIZE = 1024;
+const size_t BUFFER_SIZE = 1024 * 4;
 uint8_t buffer[BUFFER_SIZE];
 const uint32_t FLASH_ADDRESS = 0x000000;
 
@@ -53,39 +66,35 @@ void setup()
     val.addKeyframes({
         Keyframe(0, 0, Curve::wave(50, 255, 2500)),
     });
-    val.addKeyframes(Scene::impulses(1000, 0.5f, 5));
-    val.addKeyframes(Scene::impulses(2000, 2.0f, 5));
-    val.addKeyframes(Scene::impulses(3000, 6.0f, 10));
+
+    val.addKeyframes(generateImpulses(2000, 2.0f, 30));
+
+    // val.addKeyframes(Scene::generateImpulses(3000, 6.0f, 10));
     val.addKeyframes({
-        Keyframe(4000, 255, Curve::linear()),
+        Keyframe(5000, 128, Curve::ease(0.5f)),
+        Keyframe(6000, 255, Curve::linear()),
+        Keyframe(7000, 0, Curve::wave(50, 255, 2500)),
+        Keyframe(10000, 128, Curve::ease(2.0f)),
     });
+
+    val.addKeyframes(generateImpulses(11000, 2.0f, 10, 500));
 
     pixel = NeoPixel(hue, sat, val);
 
-    // Serialize the Scene to a buffer
-    size_t serializedSize = serializeScene(hue, buffer);
-    Serial.print("Serialized size: ");
-    Serial.print(serializedSize);
-    Serial.println(" bytes.");
+    // Serialize pixel
 
-    // Write the serialized Scene to flash memory
-    flash.write(FLASH_ADDRESS, buffer, serializedSize);
-    Serial.println("Scene written to flash memory.");
+    size_t pixelSize = serializeNeoPixel(pixel, buffer);
+    flash.write(FLASH_ADDRESS, buffer, pixelSize);
 
-    // Prepare to read the data back from flash
-    uint8_t *readBuffer = flash.read(FLASH_ADDRESS, serializedSize);
-    Serial.println("Scene read from flash memory.");
+    debug(1, "[setup] Pixel size: %lu", pixelSize);
 
-    // Create a new Scene object for deserialization
-    Scene newScene;
-    serializedSize = deserializeScene(newScene, readBuffer);
-    Serial.print("Deserialized size: ");
-    Serial.print(serializedSize);
-    Serial.println(" bytes.");
+    // Deserialize pixel
 
-    newScene.dump();
+    NeoPixel pixel2 = NeoPixel();
+    flash.read(FLASH_ADDRESS, buffer, pixelSize);
+    deserializeNeoPixel(pixel2, buffer);
 
-    pixel = NeoPixel(newScene, sat, val);
+    pixel2.dump();
 }
 
 void loop()

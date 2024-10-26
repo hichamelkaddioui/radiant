@@ -89,25 +89,15 @@ public:
     float update();
     void trigger();
     void addKeyframes(std::vector<Keyframe> keyframes);
-    static std::vector<Keyframe> impulses(unsigned long startTime, float power, int numImpulses)
-    {
-        std::vector<Keyframe> keyframes;
-
-        int step = 100;
-
-        for (unsigned long i = 0; i < numImpulses; i++)
-        {
-            keyframes.push_back(Keyframe(startTime + i * step, 0, Curve::ease(power)));
-            keyframes.push_back(Keyframe(startTime + (i + 1) * step - 1, 255, Curve::linear()));
-        }
-
-        return keyframes;
-    };
 
     void dump() const
     {
 #ifdef DEBUG
-        debug(1, "[scene] mode: %s", _mode == SceneMode::LOOP ? "LOOP" : "TRIGGER");
+        debug(1, "[scene] mode: %s, %lu keyframes", _mode == SceneMode::LOOP ? "LOOP" : "TRIGGER", _keyframes.size());
+
+        if (_keyframes.size() == 0)
+            return;
+
         int i = 0;
         for (const Keyframe &keyframe : _keyframes)
         {
@@ -125,9 +115,10 @@ public:
 #endif
     }
 
-private:
     std::vector<Keyframe> _keyframes;
     SceneMode _mode;
+
+private:
     LightChrono _chrono;
     float interpolate(unsigned long currentTime, unsigned long totalTime, float startValue, float endValue, Curve curve);
 };
