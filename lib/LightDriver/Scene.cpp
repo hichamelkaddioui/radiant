@@ -79,7 +79,7 @@ float Scene::update()
     float interpolatedValue = interpolate(currentTime, duration, startValue, endValue, curve);
 
     return interpolatedValue;
-};
+}
 
 /**
  * Interpolates a value between two keyframes based on the specified curve type.

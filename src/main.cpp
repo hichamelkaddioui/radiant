@@ -16,7 +16,7 @@ std::vector<Keyframe> generateImpulses(unsigned long startTime, float power, int
     }
 
     return keyframes;
-};
+}
 
 std::vector<Keyframe> generateIncreasingImpulses(unsigned long startTime, unsigned long period = 20, int minValue = 0, int maxValue = 255)
 {
