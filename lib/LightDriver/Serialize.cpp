@@ -143,6 +143,9 @@ size_t deserializeScene(Scene &scene, const uint8_t *buffer)
 
     debug(1, "[deserialize scene] %lu keyframes", keyframeCount);
 
+    scene._keyframes.clear();
+    scene._keyframes.reserve(keyframeCount);
+
     // Deserialize each keyframe
     for (size_t i = 0; i < keyframeCount; ++i)
     {
