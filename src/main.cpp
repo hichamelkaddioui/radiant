@@ -82,15 +82,8 @@ void setup()
 
     Scene val;
 
-    val.addKeyframes(generateIncreasingImpulses(0));
-    val.addKeyframes({Keyframe(10000, 0, Curve::linear())});
-    // val.addKeyframes({
-    //     Keyframe(5000, 128, Curve::ease(0.5f)),
-    //     Keyframe(6000, 255, Curve::linear()),
-    //     Keyframe(7000, 0, Curve::wave(50, 255, 2500)),
-    //     Keyframe(10000, 128, Curve::ease(2.0f)),
-    // });
-    // val.addKeyframes(generateImpulses(11000, 6.0f, 10, 500));
+    std::vector<Keyframe> impulses = generateIncreasingImpulses(0);
+    val.addKeyframes(impulses);
 
     pixel = NeoPixel(hue, sat, val);
 
