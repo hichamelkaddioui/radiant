@@ -1,4 +1,5 @@
 #include <Neopixel.h>
+#include <FastLED.h>
 
 void NeoPixel::setup()
 {
@@ -11,7 +12,9 @@ void NeoPixel::loop()
     _color.hue = _hueScene.update();
     _color.sat = _saturationScene.update();
     _color.val = _valueScene.update();
-    _strip.setPixelColor(0, Adafruit_NeoPixel::ColorHSV(_color.hue, _color.sat, _color.val));
+    CRGB colorRGB;
+    hsv2rgb_rainbow(_color, colorRGB);
+    _strip.setPixelColor(0, Adafruit_NeoPixel::Color(colorRGB.r, colorRGB.g, colorRGB.b));
     _strip.show();
 }
 

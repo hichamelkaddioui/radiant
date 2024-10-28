@@ -51,10 +51,14 @@ void setup()
     // Create the scenes
 
     Scene hue = Scene({
-        Keyframe(0, 65535, Curve::linear()),
-        Keyframe(2 * 1000, 0, Curve::ease(0.5f)),
-        Keyframe(5 * 1000, 65535, Curve::wave(50, 0, 2500)),
-        Keyframe(9 * 1000, 0, Curve::linear()),
+        Keyframe(0, HUE_YELLOW, Curve::linear()),
+        Keyframe(1000, HUE_YELLOW, Curve::linear()),
+        // Keyframe(0, 0, Curve::wave(HUE_GREEN, HUE_PINK, 1000)),
+        // Keyframe(0, UTILS_HUE_RED, Curve::linear()),
+        // Keyframe(2 * 1000, UTILS_HUE_PINK, Curve::ease(0.5f)),
+        // Keyframe(5 * 1000, UTILS_HUE_RED, Curve::wave(UTILS_HUE_YELLOW, UTILS_HUE_GREEN, 2500)),
+        // Keyframe(8 * 1000, 0, Curve::gate(UTILS_HUE_PINK, UTILS_HUE_BLUE / 2, 100)),
+        // Keyframe(10 * 1000, 0, Curve::linear()),
     });
 
     Scene sat = Scene({
