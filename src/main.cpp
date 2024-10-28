@@ -5,14 +5,29 @@
 #include <Flash.h>
 #include <Serialize.h>
 
-std::vector<Keyframe> generateImpulses(unsigned long startTime, float power, int numImpulses, int step = 100)
+std::vector<Keyframe> generateImpulses(unsigned long startTime, float power, int numImpulses, int step = 100, int minValue = 0, int maxValue = 255)
 {
     std::vector<Keyframe> keyframes;
 
     for (unsigned long i = 0; i < numImpulses; i++)
     {
-        keyframes.push_back(Keyframe(startTime + i * step, 0, Curve::ease(power)));
-        keyframes.push_back(Keyframe(startTime + (i + 1) * step - 1, 255, Curve::linear()));
+        keyframes.push_back(Keyframe(startTime + i * step, minValue, Curve::ease(power)));
+        keyframes.push_back(Keyframe(startTime + (i + 1) * step - 1, maxValue, Curve::linear()));
+    }
+
+    return keyframes;
+};
+
+std::vector<Keyframe> generateIncreasingImpulses(unsigned long startTime, unsigned long period = 20, int minValue = 0, int maxValue = 255)
+{
+    std::vector<Keyframe> keyframes;
+
+    int i = 0;
+    while (period < 1200)
+    {
+        keyframes.push_back(Keyframe(startTime + i * period * 2, minValue, Curve::gate(minValue, maxValue, period)));
+        period *= 1.2;
+        i++;
     }
 
     return keyframes;
@@ -67,21 +82,15 @@ void setup()
 
     Scene val;
 
-    val.addKeyframes({
-        Keyframe(0, 0, Curve::wave(50, 255, 2500)),
-    });
-
-    val.addKeyframes(generateImpulses(2000, 2.0f, 30));
-
-    // val.addKeyframes(Scene::generateImpulses(3000, 6.0f, 10));
-    val.addKeyframes({
-        Keyframe(5000, 128, Curve::ease(0.5f)),
-        Keyframe(6000, 255, Curve::linear()),
-        Keyframe(7000, 0, Curve::wave(50, 255, 2500)),
-        Keyframe(10000, 128, Curve::ease(2.0f)),
-    });
-
-    val.addKeyframes(generateImpulses(11000, 2.0f, 10, 500));
+    val.addKeyframes(generateIncreasingImpulses(0));
+    val.addKeyframes({Keyframe(10000, 0, Curve::linear())});
+    // val.addKeyframes({
+    //     Keyframe(5000, 128, Curve::ease(0.5f)),
+    //     Keyframe(6000, 255, Curve::linear()),
+    //     Keyframe(7000, 0, Curve::wave(50, 255, 2500)),
+    //     Keyframe(10000, 128, Curve::ease(2.0f)),
+    // });
+    // val.addKeyframes(generateImpulses(11000, 6.0f, 10, 500));
 
     pixel = NeoPixel(hue, sat, val);
 
