@@ -93,22 +93,23 @@ public:
     void dump() const
     {
 #ifdef DEBUG
-        debug(1, "[scene] mode: %s, %lu keyframes", _mode == SceneMode::LOOP ? "LOOP" : "TRIGGER", _keyframes.size());
+        size_t keyframeCount = _keyframes.size();
+        debug(1, "[scene] mode: %s, %lu keyframes", _mode == SceneMode::LOOP ? "LOOP" : "TRIGGER", keyframeCount);
 
-        if (_keyframes.size() == 0)
+        if (keyframeCount == 0)
             return;
 
-        int i = 0;
+        size_t i = 0;
         for (const Keyframe &keyframe : _keyframes)
         {
             if (keyframe.curve.type == CurveType::EASE)
-                debug(1, "[scene]\tkeyframe[%d]: %5lu\t%12f\t%s\tpw=%f", i, keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
+                debug(1, "[scene keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tpw=%f", i + 1, keyframeCount, keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
             if (keyframe.curve.type == CurveType::WAVE)
-                debug(1, "[scene]\tkeyframe[%d]: %5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i, keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+                debug(1, "[scene keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
             if (keyframe.curve.type == CurveType::GATE)
-                debug(1, "[scene]\tkeyframe[%d]: %5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i, keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+                debug(1, "[scene keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
             if (keyframe.curve.type == CurveType::LINEAR)
-                debug(1, "[scene]\tkeyframe[%d]: %5lu\t%12f\t%s", i, keyframe.time, keyframe.value, "linear");
+                debug(1, "[scene keyframe] (%2d/%2d)\t%5lu\t%12f\t%s", i + 1, keyframeCount, keyframe.time, keyframe.value, "linear");
 
             i++;
         }

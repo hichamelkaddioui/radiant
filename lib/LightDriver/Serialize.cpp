@@ -33,26 +33,60 @@ size_t serializeKeyframe(Keyframe keyframe, uint8_t *buffer)
         break;
     }
 
-    if (keyframe.curve.type == CurveType::EASE)
-        debug(1, "[serialize keyframe]\t%5lu\t%12f\t%s\tpw=%f", keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
-    if (keyframe.curve.type == CurveType::WAVE)
-        debug(1, "[serialize keyframe]\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
-    if (keyframe.curve.type == CurveType::GATE)
-        debug(1, "[serialize keyframe]\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
-    if (keyframe.curve.type == CurveType::LINEAR)
-        debug(1, "[serialize keyframe]\t%5lu\t%12f\t%s", keyframe.time, keyframe.value, "linear");
-
     return offset;
 }
 
 size_t serializeKeyframes(std::vector<Keyframe> keyframes, uint8_t *buffer)
 {
-    size_t offset = 0;
+    size_t offset, i = 0;
+
+    // Serialize number of keyframes
+    size_t keyframeCount = keyframes.size();
+    memcpy(buffer, &keyframeCount, sizeof(size_t));
+    offset += sizeof(size_t);
+
     for (const Keyframe &keyframe : keyframes)
     {
         offset += serializeKeyframe(keyframe, buffer + offset);
+
+        if (keyframe.curve.type == CurveType::EASE)
+            debug(1, "[serialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tpw=%f", i + 1, keyframeCount, keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
+        if (keyframe.curve.type == CurveType::WAVE)
+            debug(1, "[serialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+        if (keyframe.curve.type == CurveType::GATE)
+            debug(1, "[serialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+        if (keyframe.curve.type == CurveType::LINEAR)
+            debug(1, "[serialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s", i + 1, keyframeCount, keyframe.time, keyframe.value, "linear");
+
+        i++;
     }
 
+    return offset;
+}
+
+size_t serializeScene(Scene scene, uint8_t *buffer)
+{
+    size_t offset = 0;
+    offset += sizeof(size_t); // Reserve space for the scene size
+
+    SceneMode mode = scene.getMode();
+    std::vector<Keyframe> keyframes = scene.getKeyframes();
+
+    debug(1, "[serialize scene] mode: %s, %lu keyframes", mode == SceneMode::LOOP ? "LOOP" : "TRIGGER", keyframes.size());
+
+    // Serialize mode
+    memcpy(buffer + offset, &mode, sizeof(SceneMode));
+    offset += sizeof(SceneMode);
+
+    // Serialize each keyframe
+    offset += serializeKeyframes(keyframes, buffer + offset);
+
+    // Store the total scene size at the beginning of the buffer
+    memcpy(buffer, &offset, sizeof(size_t));
+
+    debug(1, "[serialize scene] scene size: %lu", offset);
+
+    // Return the total size of the serialized data
     return offset;
 }
 
@@ -90,34 +124,35 @@ size_t deserializeKeyframe(Keyframe &keyframe, const uint8_t *buffer)
     return offset;
 }
 
-size_t serializeScene(Scene scene, uint8_t *buffer)
+size_t deserializeKeyframes(std::vector<Keyframe> &keyframes, const uint8_t *buffer)
 {
     size_t offset = 0;
-    offset += sizeof(size_t); // Reserve space for the scene size
-
-    SceneMode mode = scene.getMode();
-    std::vector<Keyframe> keyframes = scene.getKeyframes();
-
-    debug(1, "[serialize scene] mode: %s, %lu keyframes", mode == SceneMode::LOOP ? "LOOP" : "TRIGGER", keyframes.size());
-
-    // Serialize mode
-    memcpy(buffer + offset, &mode, sizeof(SceneMode));
-    offset += sizeof(SceneMode);
-
-    // Serialize number of keyframes
-    size_t keyframeCount = keyframes.size();
-    memcpy(buffer + offset, &keyframeCount, sizeof(size_t));
+    size_t keyframeCount = 0;
+    memcpy(&keyframeCount, buffer + offset, sizeof(size_t));
     offset += sizeof(size_t);
 
-    // Serialize each keyframe
-    offset += serializeKeyframes(keyframes, buffer + offset);
+    debug(1, "[deserialize scene] %lu keyframes", keyframeCount);
 
-    // Store the total scene size at the beginning of the buffer
-    memcpy(buffer, &offset, sizeof(size_t));
+    keyframes.reserve(keyframeCount);
+    keyframes.clear();
 
-    debug(1, "[serialize scene] scene size: %lu", offset);
+    for (size_t i = 0; i < keyframeCount; i++)
+    {
+        Keyframe keyframe;
+        offset += deserializeKeyframe(keyframe, buffer + offset);
 
-    // Return the total size of the serialized data
+        if (keyframe.curve.type == CurveType::EASE)
+            debug(1, "[deserialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tpw=%f", i + 1, keyframeCount, keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
+        if (keyframe.curve.type == CurveType::WAVE)
+            debug(1, "[deserialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+        if (keyframe.curve.type == CurveType::GATE)
+            debug(1, "[deserialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", i + 1, keyframeCount, keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
+        if (keyframe.curve.type == CurveType::LINEAR)
+            debug(1, "[deserialize keyframe] (%2d/%2d)\t%5lu\t%12f\t%s", i + 1, keyframeCount, keyframe.time, keyframe.value, "linear");
+
+        keyframes.push_back(keyframe);
+    }
+
     return offset;
 }
 
@@ -137,32 +172,7 @@ size_t deserializeScene(Scene &scene, const uint8_t *buffer)
     debug(1, "[deserialize scene] mode: %s", scene._mode == SceneMode::LOOP ? "LOOP" : "TRIGGER");
 
     // Deserialize number of keyframes
-    size_t keyframeCount;
-    memcpy(&keyframeCount, buffer + offset, sizeof(size_t));
-    offset += sizeof(size_t);
-
-    debug(1, "[deserialize scene] %lu keyframes", keyframeCount);
-
-    scene._keyframes.clear();
-    scene._keyframes.reserve(keyframeCount);
-
-    // Deserialize each keyframe
-    for (size_t i = 0; i < keyframeCount; ++i)
-    {
-        Keyframe keyframe;
-        offset += deserializeKeyframe(keyframe, buffer + offset);
-
-        scene._keyframes.push_back(keyframe);
-
-        if (keyframe.curve.type == CurveType::EASE)
-            debug(1, "[deserialize keyframe]\t%5lu\t%12f\t%s\tpw=%f", keyframe.time, keyframe.value, "ease", keyframe.curve.coefficient.powerValue);
-        if (keyframe.curve.type == CurveType::WAVE)
-            debug(1, "[deserialize keyframe]\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", keyframe.time, keyframe.value, "wave", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
-        if (keyframe.curve.type == CurveType::GATE)
-            debug(1, "[deserialize keyframe]\t%5lu\t%12f\t%s\tmin=%f\tmax=%f\tperiod=%lu", keyframe.time, keyframe.value, "gate", keyframe.curve.coefficient.rangeAndPeriod.min, keyframe.curve.coefficient.rangeAndPeriod.max, keyframe.curve.coefficient.rangeAndPeriod.period);
-        if (keyframe.curve.type == CurveType::LINEAR)
-            debug(1, "[deserialize keyframe]\t%5lu\t%12f\t%s", keyframe.time, keyframe.value, "linear");
-    }
+    offset += deserializeKeyframes(scene._keyframes, buffer + offset);
 
     return sceneSize;
 }
