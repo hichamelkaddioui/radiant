@@ -2,7 +2,7 @@
 #include <Scene.h>
 #include <Neopixel.h>
 
-size_t serializeKeyframe(Keyframe keyframe, uint8_t *buffer)
+size_t serializeKeyframe(const Keyframe keyframe, uint8_t *buffer)
 {
     size_t offset = 0;
     memcpy(buffer + offset, &keyframe.time, sizeof(unsigned long));
@@ -36,7 +36,7 @@ size_t serializeKeyframe(Keyframe keyframe, uint8_t *buffer)
     return offset;
 }
 
-size_t serializeKeyframes(std::vector<Keyframe> keyframes, uint8_t *buffer)
+size_t serializeKeyframes(const std::vector<Keyframe> keyframes, uint8_t *buffer)
 {
     size_t offset, i = 0;
 
@@ -64,7 +64,7 @@ size_t serializeKeyframes(std::vector<Keyframe> keyframes, uint8_t *buffer)
     return offset;
 }
 
-size_t serializeScene(Scene scene, uint8_t *buffer)
+size_t serializeScene(const Scene &scene, uint8_t *buffer)
 {
     size_t offset = 0;
     offset += sizeof(size_t); // Reserve space for the scene size
@@ -177,7 +177,7 @@ size_t deserializeScene(Scene &scene, const uint8_t *buffer)
     return sceneSize;
 }
 
-size_t serializeNeoPixel(NeoPixel pixel, uint8_t *buffer)
+size_t serializeNeoPixel(const NeoPixel &pixel, uint8_t *buffer)
 {
     // Reserve space for the pixel size
     size_t offset = 0;
@@ -205,7 +205,6 @@ size_t serializeNeoPixel(NeoPixel pixel, uint8_t *buffer)
 
 size_t deserializeNeoPixel(NeoPixel &pixel, const uint8_t *buffer)
 {
-
     size_t offset = 0;
     size_t pixelSize;
     memcpy(&pixelSize, buffer + offset, sizeof(size_t));
