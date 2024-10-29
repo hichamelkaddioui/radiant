@@ -18,7 +18,7 @@ std::vector<Keyframe> generateImpulses(unsigned long startTime, float power, int
     return keyframes;
 }
 
-std::vector<Keyframe> generateIncreasingImpulses(unsigned long startTime, unsigned long period = 20, int minValue = 0, int maxValue = 255)
+std::vector<Keyframe> generateDecreasingImpulses(unsigned long startTime, unsigned long period = 20, int minValue = 0, int maxValue = 255)
 {
     std::vector<Keyframe> keyframes;
 
@@ -31,7 +31,23 @@ std::vector<Keyframe> generateIncreasingImpulses(unsigned long startTime, unsign
     }
 
     return keyframes;
-};
+}
+
+std::vector<Keyframe> generateIncreasingImpulses(unsigned long startTime, unsigned long startPeriod = 1200, int minValue = 0, int maxValue = 255)
+{
+    unsigned long offset = 0;
+    unsigned long period = startPeriod;
+    std::vector<Keyframe> keyframes;
+
+    while (30 < period)
+    {
+        keyframes.push_back(Keyframe(startTime + offset, minValue, Curve::gate(minValue, maxValue, period)));
+        period *= 0.9;
+        offset += period * 2;
+    }
+
+    return keyframes;
+}
 
 void blinkThreeTimes(int delayTime = 100)
 {
@@ -56,34 +72,30 @@ void setup()
 {
     Serial.begin(9600);
 
+#ifdef DEBUG
     while (!Serial)
         ;
+#endif
 
     blinkThreeTimes();
 
     flash.begin();
 
     // Create the scenes
+    Scene hue, sat, val;
 
-    Scene hue = Scene({
-        Keyframe(0, HUE_YELLOW, Curve::linear()),
-        Keyframe(1000, HUE_YELLOW, Curve::linear()),
-        // Keyframe(0, 0, Curve::wave(HUE_GREEN, HUE_PINK, 1000)),
-        // Keyframe(0, UTILS_HUE_RED, Curve::linear()),
-        // Keyframe(2 * 1000, UTILS_HUE_PINK, Curve::ease(0.5f)),
-        // Keyframe(5 * 1000, UTILS_HUE_RED, Curve::wave(UTILS_HUE_YELLOW, UTILS_HUE_GREEN, 2500)),
-        // Keyframe(8 * 1000, 0, Curve::gate(UTILS_HUE_PINK, UTILS_HUE_BLUE / 2, 100)),
-        // Keyframe(10 * 1000, 0, Curve::linear()),
+    std::vector<Keyframe> impulses = generateIncreasingImpulses(0, 1000, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA);
+    hue.addKeyframes(impulses);
+    hue.addKeyframes({
+        Keyframe(19 * 1000, UTILS_HUE_AQUA, Curve::linear()),
     });
-
-    Scene sat = Scene({
+    sat.addKeyframes({Keyframe(0, 255, Curve::linear())});
+    val.addKeyframes({
         Keyframe(0, 255, Curve::linear()),
+        Keyframe(18 * 1000 - 1, 255, Curve::linear()),
+        Keyframe(18 * 1000, 0, Curve::linear()),
+        Keyframe(19 * 1000, 0, Curve::linear()),
     });
-
-    Scene val;
-
-    std::vector<Keyframe> impulses = generateIncreasingImpulses(0);
-    val.addKeyframes(impulses);
 
     pixel = NeoPixel(hue, sat, val);
 
@@ -101,6 +113,8 @@ void setup()
     deserializeNeoPixel(pixel2, buffer);
 
     pixel2.dump();
+
+    debug(1, "[setup] setup done");
 }
 
 void loop()
