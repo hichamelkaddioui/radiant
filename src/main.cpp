@@ -62,7 +62,7 @@ void blinkThreeTimes(int delayTime = 100)
     }
 }
 
-NeoPixel pixel;
+NeoPixel pixel, pixelFromFlash;
 RP2040Flash flash;
 const size_t BUFFER_SIZE = 1024 * 4;
 uint8_t buffer[BUFFER_SIZE];
@@ -84,17 +84,18 @@ void setup()
     // Create the scenes
     Scene hue, sat, val;
 
-    std::vector<Keyframe> impulses = generateIncreasingImpulses(0, 1000, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA);
+    std::vector<Keyframe> impulses = generateIncreasingImpulses(0, 2000, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA);
     hue.addKeyframes(impulses);
     hue.addKeyframes({
-        Keyframe(19 * 1000, UTILS_HUE_AQUA, Curve::linear()),
+        Keyframe(35 * 1000, UTILS_HUE_AQUA, Curve::gate(UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA, 35)),
+        Keyframe(45 * 1000, UTILS_HUE_AQUA, Curve::linear()),
     });
     sat.addKeyframes({Keyframe(0, 255, Curve::linear())});
     val.addKeyframes({
         Keyframe(0, 255, Curve::linear()),
-        Keyframe(18 * 1000 - 1, 255, Curve::linear()),
-        Keyframe(18 * 1000, 0, Curve::linear()),
-        Keyframe(19 * 1000, 0, Curve::linear()),
+        Keyframe(38 * 1000 - 1, 255, Curve::linear()),
+        Keyframe(38 * 1000, 0, Curve::linear()),
+        Keyframe(45 * 1000, 0, Curve::linear()),
     });
 
     pixel = NeoPixel(hue, sat, val);
@@ -108,16 +109,15 @@ void setup()
 
     // Deserialize pixel
 
-    NeoPixel pixel2 = NeoPixel();
     flash.read(FLASH_ADDRESS, buffer, pixelSize);
-    deserializeNeoPixel(pixel2, buffer);
+    deserializeNeoPixel(pixelFromFlash, buffer);
 
-    pixel2.dump();
+    pixelFromFlash.dump();
 
     debug(1, "[setup] setup done");
 }
 
 void loop()
 {
-    pixel.loop();
+    pixelFromFlash.loop();
 }
