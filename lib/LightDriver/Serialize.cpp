@@ -229,3 +229,46 @@ size_t deserializeNeoPixel(NeoPixel &pixel, const uint8_t *buffer)
 
     return pixelSize;
 }
+
+size_t serializeSceneMap(const SceneMap &scenesMap, uint8_t *buffer)
+{
+    size_t offset = 0;
+
+    // Reserve space for the number of scenes
+    size_t sceneCount = scenesMap.size();
+    memcpy(buffer + offset, &sceneCount, sizeof(size_t));
+    offset += sizeof(size_t);
+    debug(1, "[serialize scene map] %lu scenes", sceneCount);
+
+    // Serialize each scene
+    for (const auto &it : scenesMap)
+    {
+        debug(1, "[serialize scene map item] %d", it.first);
+        memcpy(buffer + offset, &it.first, sizeof(int));
+        offset += sizeof(int);
+        offset += serializeScene(it.second, buffer + offset);
+    }
+
+    return offset;
+}
+
+size_t deserializeSceneMap(SceneMap &scenesMap, const uint8_t *buffer)
+{
+    size_t offset = 0;
+    size_t sceneCount;
+    memcpy(&sceneCount, buffer + offset, sizeof(size_t));
+    offset += sizeof(size_t);
+    debug(1, "[deserialize scene map] %lu scenes", sceneCount);
+
+    for (size_t i = 0; i < sceneCount; i++)
+    {
+        int id;
+        memcpy(&id, buffer + offset, sizeof(int));
+        offset += sizeof(int);
+
+        debug(1, "[deserialize scene item] %d", id);
+        offset += deserializeScene(scenesMap[id], buffer + offset);
+    }
+
+    return offset;
+}

@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <vector>
+#include <map>
 #include <LightChrono.h>
 #include <Utils.h>
 
@@ -123,5 +124,7 @@ private:
     LightChrono _chrono;
     float interpolate(unsigned long currentTime, unsigned long totalTime, float startValue, float endValue, Curve curve);
 };
+
+typedef std::map<int, Scene> SceneMap;
 
 #endif

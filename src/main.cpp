@@ -63,10 +63,6 @@ void blinkThreeTimes(int delayTime = 100)
 }
 
 NeoPixel pixel, pixelFromFlash;
-RP2040Flash flash;
-const size_t BUFFER_SIZE = 1024 * 4;
-uint8_t buffer[BUFFER_SIZE];
-const uint32_t FLASH_ADDRESS = 0x000000;
 
 void setup()
 {
@@ -79,13 +75,20 @@ void setup()
 
     blinkThreeTimes();
 
-    flash.begin();
+    SceneMap scenes;
+
+    std::vector<Keyframe> hueImpulses = generateIncreasingImpulses(0, 2000, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA);
+    scenes[1312] = Scene();
+    scenes[1312].addKeyframes(hueImpulses);
+    scenes[1312].addKeyframes({
+        Keyframe(35 * 1000, UTILS_HUE_AQUA, Curve::gate(UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA, 35)),
+        Keyframe(45 * 1000, UTILS_HUE_AQUA, Curve::linear()),
+    });
 
     // Create the scenes
     Scene hue, sat, val;
 
-    std::vector<Keyframe> impulses = generateIncreasingImpulses(0, 2000, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA);
-    hue.addKeyframes(impulses);
+    hue.addKeyframes(hueImpulses);
     hue.addKeyframes({
         Keyframe(35 * 1000, UTILS_HUE_AQUA, Curve::gate(UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_AQUA, 35)),
         Keyframe(45 * 1000, UTILS_HUE_AQUA, Curve::linear()),
@@ -98,26 +101,43 @@ void setup()
         Keyframe(45 * 1000, 0, Curve::linear()),
     });
 
-    pixel = NeoPixel(hue, sat, val);
+    pixel = NeoPixel(scenes[1312], sat, val);
 
     // Serialize pixel
 
-    size_t pixelSize = serializeNeoPixel(pixel, buffer);
-    flash.write(FLASH_ADDRESS, buffer, pixelSize);
+    RP2040Flash flash;
+    const uint32_t FLASH_ADDRESS = 0x000000;
+    flash.begin();
 
-    debug(1, "[setup] Pixel size: %lu", pixelSize);
+    const size_t BUFFER_SIZE = 1024 * 4;
+    uint8_t buffer[BUFFER_SIZE];
+
+    // size_t pixelSize = serializeNeoPixel(pixel, buffer);
+    // flash.write(FLASH_ADDRESS, buffer, pixelSize);
+    // debug(1, "[setup] Pixel size: %lu", pixelSize);
+
+    // Serialize scenes
+
+    size_t sceneMapSize = serializeSceneMap(scenes, buffer);
+    flash.write(FLASH_ADDRESS, buffer, sceneMapSize);
+    debug(1, "[setup] Scene map size: %lu", sceneMapSize);
+
+    // Deserialize scenes
+
+    SceneMap newScenes;
+    flash.read(FLASH_ADDRESS, buffer, sceneMapSize);
+    deserializeSceneMap(newScenes, buffer);
 
     // Deserialize pixel
 
-    flash.read(FLASH_ADDRESS, buffer, pixelSize);
-    deserializeNeoPixel(pixelFromFlash, buffer);
-
-    pixelFromFlash.dump();
+    // flash.read(FLASH_ADDRESS, buffer, pixelSize);
+    // deserializeNeoPixel(pixelFromFlash, buffer);
+    // pixelFromFlash.dump();
 
     debug(1, "[setup] setup done");
 }
 
 void loop()
 {
-    pixelFromFlash.loop();
+    pixel.loop();
 }
