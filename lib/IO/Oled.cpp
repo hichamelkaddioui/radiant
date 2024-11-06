@@ -10,8 +10,6 @@ Oled::Oled()
     _display = display;
 
     _buttonA = new ButtonState(SCREEN_BUTTON_A_PIN);
-    _buttonB = new ButtonState(SCREEN_BUTTON_B_PIN);
-    _buttonC = new ButtonState(SCREEN_BUTTON_C_PIN);
 }
 
 void Oled::showGreetings()
@@ -50,9 +48,6 @@ void Oled::setup()
     }
 
     pinMode(_buttonA->pin, INPUT_PULLUP);
-    // OLED button B as a 100k pullup on it on 128x32 FW
-    pinMode(_buttonB->pin, INPUT);
-    pinMode(_buttonC->pin, INPUT_PULLUP);
 
     showGreetings();
 }
@@ -62,35 +57,26 @@ void Oled::setup()
  */
 void Oled::handleButtonPress()
 {
-    ButtonState *buttonStates[] = {_buttonA, _buttonB, _buttonC};
+    int reading = digitalRead(_buttonA->pin);
 
-    for (ButtonState *buttonState : buttonStates)
+    if (reading != _buttonA->lastState)
     {
-        int reading = digitalRead(buttonState->pin);
+        _buttonA->lastDebounceTime = millis();
+    }
 
-        if (reading != buttonState->lastState)
+    if ((millis() - _buttonA->lastDebounceTime) > debounceDelay)
+    {
+        if (reading != _buttonA->state)
         {
-            buttonState->lastDebounceTime = millis();
-
-            debug(1, "Button %d changed from %d to %d", buttonState->pin, buttonState->lastState, reading);
-        }
-
-        if ((millis() - buttonState->lastDebounceTime) > debounceDelay)
-        {
-            if (reading != buttonState->state)
+            _buttonA->state = reading;
+            if (_buttonA->state == LOW)
             {
-                buttonState->state = reading;
-                if (buttonState->state == LOW)
-                {
-                    Serial.print(F("Button "));
-                    Serial.print(buttonState->pin);
-                    Serial.println(F(" pressed"));
-                }
+                Serial.println(F("Button A pressed"));
             }
         }
-
-        buttonState->lastState = reading;
     }
+
+    _buttonA->lastState = reading;
 }
 
 void Oled::loop()

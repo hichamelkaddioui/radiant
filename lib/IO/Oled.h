@@ -16,8 +16,6 @@
 // https://learn.adafruit.com/usb-midi-host-messenger/code-the-messenger
 
 #define SCREEN_BUTTON_A_PIN 9 // Button A pin
-#define SCREEN_BUTTON_B_PIN 6 // Button B pin
-#define SCREEN_BUTTON_C_PIN 5 // Button C pin
 
 const static int splashWidth = 120;
 const static int splashHeight = 32;
@@ -78,8 +76,6 @@ public:
 
 private:
     ButtonState *_buttonA;
-    ButtonState *_buttonB;
-    ButtonState *_buttonC;
 
     void showGreetings();
     void handleButtonPress();
