@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Send MIDI Message to External Interface</title>
+  </head>
+  <body>
+    <h1>Send MIDI Message to External Interface</h1>
+    <div id="connection-info">
+      <button id="connectMIDI">Connect MIDI Device</button>
+    </div>
+
+    <br />
+
+    <form action="#" onsubmit="sendMidi(); return false;">
+      <input type="number" id="noteNumber" value="60" />
+      <label for="velocity">Velocity:</label>
+      <input
+        type="range"
+        id="velocity"
+        min="1"
+        max="127"
+        value="127"
+        oninput="document.getElementById('velocityValue').innerText = this.value"
+      />
+      <span id="velocityValue">127</span>
+      <button id="sendNote" type="submit">Send Note On</button>
+    </form>
+
+    <br />
+
+    <button id="sendSysex" onclick="sendSysex()">Send Sysex</button>
+    <button id="sendControlChange" onclick="sendControlChange()">
+      Send Control Change
+    </button>
+    <script>
+      let midiAccess;
+      let outputDevice;
+
+      const requestMidiDevice = () => {
+        navigator
+          .requestMIDIAccess({ sysex: true })
+          .then((access) => {
+            midiAccess = access;
+
+            // List available output devices
+            const outputs = Array.from(midiAccess.outputs.values());
+
+            console.log(outputs);
+
+            if (outputs.length > 0) {
+              outputDevice = outputs[0];
+
+              document.getElementById(
+                "connection-info"
+              ).innerHTML = `Connected to: ${outputDevice.name}`;
+            } else {
+              alert("No MIDI output devices found.");
+            }
+          })
+          .catch((err) => {
+            console.error("MIDI Access failed: ", err);
+          });
+      };
+
+      // Check for Web MIDI API support
+      if (navigator.requestMIDIAccess) {
+        console.log("Web MIDI API is supported!");
+
+        // Request MIDI access
+        document
+          .getElementById("connectMIDI")
+          .addEventListener("click", requestMidiDevice());
+        requestMidiDevice();
+      } else {
+        alert("Web MIDI API is not supported in this browser.");
+      }
+
+      const sendSysex = () => {
+        if (outputDevice) {
+          let sysexMessage = [
+            0xf0, 0x7e, 0x7f, 0x00, 0x00, 0x00, 0x13, 0x12, 0x13, 0x12, 0x13,
+            0x12, 0xf7,
+          ];
+          outputDevice.send(sysexMessage);
+          console.log("Sent Sysex Message");
+        } else {
+          alert("No MIDI device connected.");
+        }
+      };
+
+      const sendControlChange = () => {
+        if (outputDevice) {
+          let controlChangeMessage = [0xb0, 0x01, 0x7f];
+          outputDevice.send(controlChangeMessage);
+          console.log("Sent Control Change Message");
+        } else {
+          alert("No MIDI device connected.");
+        }
+      };
+
+      const sendMidi = () => {
+        if (outputDevice) {
+          const noteNumber = parseInt(
+            document.getElementById("noteNumber").value
+          );
+          const velocity = parseInt(document.getElementById("velocity").value);
+
+          // MIDI message format: [statusByte, dataByte1, dataByte2]
+          // Note On for the specified note number with maximum velocity (127)
+          let noteOnMessage = [0x90, noteNumber, velocity];
+          outputDevice.send(noteOnMessage);
+          console.log(
+            `Sent Note On (note ${noteNumber}, velocity ${velocity})`
+          );
+
+          // Optionally, send a Note Off after 1 second (to stop the note)
+          setTimeout(() => {
+            let noteOffMessage = [0x80, noteNumber, 0];
+            outputDevice.send(noteOffMessage);
+            console.log(`Sent Note Off (note ${noteNumber})`);
+          }, 1000);
+        } else {
+          alert("No MIDI device connected.");
+        }
+      };
+
+      // Send a MIDI Note On message
+      document.getElementById("sendNote").addEventListener("click", sendMidi);
+    </script>
+  </body>
+</html>
