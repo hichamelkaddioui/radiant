@@ -4,7 +4,10 @@
     "CHSV",
     "keyframes",
     "NEOPIXEL",
+    "Oled",
+    "OLED",
     "Pico",
-    "platformio"
+    "platformio",
+    "SWITCHCAPVCC"
   ]
 }
