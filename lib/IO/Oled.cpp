@@ -21,18 +21,6 @@ void Oled::showGreetings()
     _display.clearDisplay();
     _display.drawBitmap(xCenter, yCenter, splashScreenData, splashWidth, splashHeight, 1);
     _display.display();
-
-    delay(3000);
-
-    // Show greeting
-    _display.clearDisplay();
-    _display.setTextColor(SSD1306_WHITE);
-    _display.setTextSize(1);
-    _display.setCursor(0, 0);
-    _display.printf("MOC MIDI LED driver");
-    _display.setCursor(0, 16);
-    _display.printf("Waiting for MIDI\r\ndata...");
-    _display.display();
 }
 
 void Oled::setup()
@@ -49,7 +37,11 @@ void Oled::setup()
 
     pinMode(_buttonA->pin, INPUT_PULLUP);
 
+    _display.setTextSize(1);
+    _display.setTextColor(SSD1306_WHITE);
+
     showGreetings();
+    delay(2000);
 }
 
 /**
@@ -82,4 +74,24 @@ void Oled::handleButtonPress()
 void Oled::loop()
 {
     handleButtonPress();
+}
+
+void Oled::displayPixelData(const Pixel &pixel)
+{
+    if (millis() % 10 != 0)
+        return;
+
+    int x2, elapsed;
+    int xMax = SCREEN_WIDTH / 2 - 5;
+    _display.clearDisplay();
+    _display.setCursor(0, 0);
+    _display.print("Hue");
+    x2 = min(xMax, xMax * pixel._hue.elapsed() / pixel._hue._duration);
+    _display.drawLine(0, 18, x2, 18, SSD1306_WHITE);
+    int xOffset = SCREEN_WIDTH / 2;
+    _display.setCursor(xOffset, 0);
+    _display.print("Brightness");
+    x2 = min(xOffset + xMax, xOffset + (xMax * pixel._brightness.elapsed() / pixel._brightness._duration));
+    _display.drawLine(xOffset, 18, x2, 18, SSD1306_WHITE);
+    _display.display();
 }

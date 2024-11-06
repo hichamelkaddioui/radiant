@@ -1,3 +1,4 @@
+#include <Utils.h>
 #include <FastLED.h>
 #include <Pixel.h>
 
@@ -21,6 +22,7 @@ void Pixel::loop(const GraphBank &graphBank)
 
 void Pixel::onNotePlayed(uint8_t note, uint8_t velocity)
 {
+    debug(1, "[pixel] Note played %d, velocity %d", note, velocity);
     _hue.onNotePlayed(note, velocity);
     _brightness.onNotePlayed(note, velocity);
 }

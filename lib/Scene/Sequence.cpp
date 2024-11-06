@@ -10,7 +10,9 @@ void Sequence::onNotePlayed(uint8_t note, uint8_t velocity)
 
     if (note == _controlNote)
     {
-        _value = map(velocity, 0, 127, _min, _max);
+        _value = map(velocity, 1, 127, _min, _max);
+
+        debug(1, "[sequence] Control note played %d, velocity %d, value %d", note, velocity, _value);
     }
 }
 
@@ -75,3 +77,7 @@ void Sequence::dump()
 
     debug(1, "[sequence] graph %d, min %d, max %d, duration %d, mode %s, triggerOn %d, triggerNote %d, controlNote %d", _graphId, _min, _max, _duration, mode.c_str(), _triggerOn, _triggerNote, _controlNote);
 }
+
+void Sequence::restart() { _chrono.restart(); }
+
+unsigned long Sequence::elapsed() const { return _chrono.elapsed(); }

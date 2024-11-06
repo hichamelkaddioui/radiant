@@ -1,4 +1,4 @@
-#include <Oled.h>
+#include <vector>
 #include <MidiSerial.h>
 #include <Pixel.h>
 #include <Graph.h>
@@ -7,6 +7,7 @@ MidiSerial midiSerial;
 Oled screen;
 Pixel pixel;
 GraphBank gb = defaultGraphBank();
+std::vector<Pixel *> pixels = {&pixel};
 
 void setup()
 {
@@ -22,18 +23,34 @@ void setup1()
     // OLED screen
     screen.setup();
 
-    pixel._hue = Sequence(0, 255, 10000, 1, PlaybackMode::REPEAT);
-    pixel._brightness = Sequence(0, 200, 3000, 3, PlaybackMode::ONCE);
+    // Cycle once through all hues, re-trigger on note 60
+    pixel._hue = Sequence(0, 255, 10000, 1, PlaybackMode::ONCE, true, 0x3C);
+    //  Log brightness decay from max to min, re-trigger on note 61
+    pixel._brightness = Sequence(0, 255, 1000, 6, PlaybackMode::ONCE, true, 0x3D);
     pixel.setup();
+
+    for (int i = 0; i < pixels.size(); i++)
+    {
+        pixels[i]->_hue.restart();
+        pixels[i]->_brightness.restart();
+    }
+
+    Serial.println("Setup done");
 }
 
 void loop()
 {
-    midiSerial.loop();
+    midiSerial.loop(pixels);
 }
 
 void loop1()
 {
-    pixel.loop(gb);
+    for (int i = 0; i < pixels.size(); i++)
+    {
+        pixels[i]->loop(gb);
+
+        screen.displayPixelData(*pixels[i]);
+    }
+
     screen.loop();
 }

@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Pixel.h>
 
 // https://learn.adafruit.com/adafruit-oled-featherwing/pinouts
 
@@ -72,6 +73,8 @@ public:
     Oled();
     void setup();
     void loop();
+    void displayPixelData(const Pixel &pixel);
+
     Adafruit_SSD1306 _display;
 
 private:

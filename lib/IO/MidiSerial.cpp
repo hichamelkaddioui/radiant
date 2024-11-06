@@ -10,7 +10,7 @@ void MidiSerial::setup()
     MidiUART.begin(MIDI_CHANNEL_OMNI);
 }
 
-void MidiSerial::loop()
+void MidiSerial::loop(std::vector<Pixel *> pixels)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -20,6 +20,14 @@ void MidiSerial::loop()
         byte channel = MidiUART.getChannel();
         byte note = MidiUART.getData1();
         byte velocity = MidiUART.getData2();
+
+        if (type == 0x90)
+        {
+            for (int i = 0; i < pixels.size(); i++)
+            {
+                pixels[i]->onNotePlayed(note, velocity);
+            }
+        }
 
         Serial.print("Received: ");
         Serial.print(type, HEX);
