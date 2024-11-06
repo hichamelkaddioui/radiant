@@ -5,6 +5,7 @@ void Sequence::onNotePlayed(uint8_t note, uint8_t velocity)
 {
     if (_triggerOn && note == _triggerNote)
     {
+        _triggered = true;
         _chrono.restart();
     }
 
@@ -25,6 +26,12 @@ int Sequence::update(const GraphBank &graphBank)
     }
 
     unsigned long elapsed = _chrono.elapsed();
+
+    // Wait for a first trigger to play the sequence, return the end value
+    if (_mode == PlaybackMode::ONCE && !_triggered)
+    {
+        elapsed = _duration;
+    }
 
     // Sequence duration is over
     if (elapsed >= _duration)

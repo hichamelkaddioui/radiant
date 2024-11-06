@@ -21,9 +21,10 @@ public:
     int _graphId;
     PlaybackMode _mode;
 
-    bool _triggerOn = false;
-    uint8_t _triggerNote = 0;
-    uint8_t _controlNote = 0;
+    bool _triggerOn;
+    bool _triggered = false;
+    uint8_t _triggerNote;
+    uint8_t _controlNote;
 
     Sequence() = default;
     Sequence(int min, int max, unsigned long duration, int graphId, PlaybackMode mode = PlaybackMode::REPEAT, bool triggerOn = false, uint8_t triggerNote = 0, uint8_t controlNote = 0)
