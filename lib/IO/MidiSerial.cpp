@@ -1,3 +1,4 @@
+#include <Utils.h>
 #include <MidiSerial.h>
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MidiUART);
@@ -29,15 +30,6 @@ void MidiSerial::loop(std::vector<Pixel *> pixels)
             }
         }
 
-        Serial.print("Received: ");
-        Serial.print(type, HEX);
-        Serial.print(" ");
-        Serial.print(channel, HEX);
-        Serial.print(" ");
-        Serial.print(note, HEX);
-        Serial.print(" ");
-        Serial.print(velocity);
-        Serial.print(" ");
-        Serial.println();
+        debug(1, "[midi] Received MIDI message: %02X %02X %02X %02X", type, channel, note, velocity);
     }
 }
