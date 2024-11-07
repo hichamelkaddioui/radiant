@@ -16,7 +16,10 @@ public:
     void setup();
     void loop(const GraphBank &graphBank);
     void onNotePlayed(uint8_t note, uint8_t velocity);
+
+#ifdef DEBUG
     void dump();
+#endif
 
 private:
     Adafruit_NeoPixel _strip;

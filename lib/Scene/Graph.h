@@ -43,19 +43,23 @@ private:
     std::vector<Keyframe> _keyframes;
 };
 
-class GraphSine : public Graph
+class PeriodicGraph : public Graph
+{
+public:
+    float _period;
+    virtual float valueAt(float t) = 0;
+};
+
+class GraphSine : public PeriodicGraph
 {
 public:
     float valueAt(float t) override;
 };
 
-class GraphGate : public Graph
+class GraphGate : public PeriodicGraph
 {
 public:
     float valueAt(float t) override;
-
-private:
-    float _cutoff = 0.5f;
 };
 
 typedef std::map<int, Graph *> GraphBank;

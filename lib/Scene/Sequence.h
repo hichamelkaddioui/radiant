@@ -12,29 +12,38 @@ enum PlaybackMode
     EXTERNAL_CONTROL,
 };
 
+struct GraphOptions
+{
+    int id;
+    int min;
+    int max;
+    unsigned long duration;
+    PlaybackMode mode;
+    float period = 1.0f;
+};
+
 class Sequence
 {
 public:
-    int _min;
-    int _max;
-    unsigned long _duration;
-    int _graphId;
-    PlaybackMode _mode;
+    Sequence() = default;
+    Sequence(int graphId, int min, int max, unsigned long duration, PlaybackMode mode, float period = 1.0f, uint8_t triggerNote = 0, uint8_t controlNote = 0);
 
-    bool _triggerOn;
-    bool _triggered = false;
+    // Graph options
+    GraphOptions _graphOptions;
+
+    // Chrono options
+    unsigned long elapsed() const;
+    void restart();
+
+    // MIDI control
     uint8_t _triggerNote;
     uint8_t _controlNote;
-
-    Sequence() = default;
-    Sequence(int min, int max, unsigned long duration, int graphId, PlaybackMode mode = PlaybackMode::REPEAT, bool triggerOn = false, uint8_t triggerNote = 0, uint8_t controlNote = 0)
-        : _min(min), _max(max), _duration(duration), _graphId(graphId), _mode(mode), _triggerOn(triggerOn), _triggerNote(triggerNote), _controlNote(controlNote) {}
-
+    bool _triggerOn;
+    bool _triggered = false;
     void onNotePlayed(uint8_t note, uint8_t velocity);
-    int update(const GraphBank &graphBank);
 
-    void restart();
-    unsigned long elapsed() const;
+    // Get the value of the sequence
+    int update(const GraphBank &graphBank);
 
 #ifdef DEBUG
     void dump();

@@ -2,6 +2,7 @@
 #include <MidiSerial.h>
 #include <Pixel.h>
 #include <Graph.h>
+#include <Utils.h>
 
 MidiSerial midiSerial;
 Oled screen;
@@ -24,18 +25,19 @@ void setup1()
     screen.setup();
 
     // Cycle through all hues, re-trigger on note 60
-    pixel._hue = Sequence(0, 255, 10000, DefaultGraph::UP, PlaybackMode::REPEAT, true, 0x3C);
+    pixel._hue = Sequence(DefaultGraph::GATE, UTILS_HUE_BLUE, UTILS_HUE_GOLDEN_YELLOW, 10000, PlaybackMode::REPEAT, 1 / 2.0f, 0x3C);
     //  Log brightness decay from max to min, re-trigger on note 61
-    pixel._brightness = Sequence(0, 255, 300, DefaultGraph::DOWN, PlaybackMode::ONCE, true, 0x3D);
+    pixel._brightness = Sequence(DefaultGraph::GATE, 100, 255, 500, PlaybackMode::ONCE, 1 / 5.0f, 0x3D);
     pixel.setup();
 
     for (int i = 0; i < pixels.size(); i++)
     {
         pixels[i]->_hue.restart();
         pixels[i]->_brightness.restart();
+        pixels[i]->dump();
     }
 
-    Serial.println("Setup done");
+    debug(1, "[setup] Setup complete");
 }
 
 void loop()

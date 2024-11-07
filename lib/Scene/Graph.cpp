@@ -52,19 +52,24 @@ float GraphKeyframe::valueAt(float t)
 
 float GraphSine::valueAt(float t)
 {
-    float result = (1 + sin(TWO_PI * t)) / 2.0f;
+    float result = (1 + sin(TWO_PI * t / _period)) / 2.0f;
 
     return result;
 }
 
 float GraphGate::valueAt(float t)
 {
-    if (t < _cutoff)
-    {
-        return 1.0f;
-    }
+    float halfPeriodCount = t / (_period / 2.0f);
 
-    return 0.0f;
+    // If scaled time is in the first half of the period, return 1, else return 0
+    if (static_cast<int>(halfPeriodCount) % 2 == 0)
+    {
+        return 1.0f; // First half-period: return 1
+    }
+    else
+    {
+        return 0.0f; // Second half-period: return 0
+    }
 }
 
 GraphBank defaultGraphBank()
