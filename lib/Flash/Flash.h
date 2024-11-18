@@ -12,7 +12,7 @@ public:
                             Adafruit_FlashTransport_RP2040::CPY_SIZE))) {}
     void begin();
     void read(uint32_t address, uint8_t *data, uint32_t length);
-    void write(uint32_t address, uint8_t *data, uint32_t length);
+    void write(uint32_t address, const uint8_t *data, uint32_t length);
 
 private:
     Adafruit_SPIFlash _flash;
