@@ -1,8 +1,8 @@
 #include <Utils.h>
 #include <Sequence.h>
 
-Sequence::Sequence(int graphId, int min, int max, unsigned long duration, PlaybackMode mode, float period, uint8_t triggerNote, uint8_t controlNote)
-    : _graphOptions({graphId, min, max, duration, mode, period}),
+Sequence::Sequence(Graph *graph, int min, int max, unsigned long duration, PlaybackMode mode, float period, uint8_t triggerNote, uint8_t controlNote)
+    : _graphOptions({graph, min, max, duration, mode, period}),
       _triggerNote(triggerNote),
       _controlNote(controlNote)
 {
@@ -28,7 +28,7 @@ void Sequence::onNotePlayed(uint8_t note, uint8_t velocity)
     }
 }
 
-int Sequence::update(const GraphBank &graphBank)
+int Sequence::update()
 {
     PlaybackMode mode = _graphOptions.mode;
 
@@ -45,7 +45,7 @@ int Sequence::update(const GraphBank &graphBank)
     float period = _graphOptions.period;
 
     // Wait for a first trigger to play the sequence
-    if (mode == PlaybackMode::ONCE && !_triggered)
+    if (mode == PlaybackMode::ONCE && _triggerOn && !_triggered)
     {
         // Return the end value before the first trigger
         elapsed = duration;
@@ -59,7 +59,7 @@ int Sequence::update(const GraphBank &graphBank)
         {
             _chrono.restart();
 
-            return update(graphBank);
+            return update();
         }
 
         // In once mode return the end value
@@ -67,10 +67,13 @@ int Sequence::update(const GraphBank &graphBank)
     }
 
     float t = (float)elapsed / (float)duration;
-    Graph *graph = graphBank.at(_graphOptions.id);
+    Graph *graph = _graphOptions.graph;
 
     if (graph == nullptr)
+    {
+        debug(1, "[sequence] No graph");
         return _value;
+    }
 
     PeriodicGraph *periodicGraph = dynamic_cast<PeriodicGraph *>(graph);
     if (periodicGraph != nullptr && 0 < period)
@@ -89,7 +92,7 @@ int Sequence::update(const GraphBank &graphBank)
 
 void Sequence::dump()
 {
-    int graphId = _graphOptions.id;
+    Graph *graph = _graphOptions.graph;
     int min = _graphOptions.min;
     int max = _graphOptions.max;
     unsigned long duration = _graphOptions.duration;
@@ -114,7 +117,7 @@ void Sequence::dump()
         break;
     }
 
-    debug(1, "[sequence] graph id %d, min %d, max %d, duration %lu, period %f, mode %s, trigger on %d", graphId, min, max, duration, period, modeString.c_str(), _triggerOn);
+    debug(1, "[sequence] graph %p\tmin %d\t\tmax %d\t\tduration %d\tperiod %f\tmode %s", graph, min, max, duration, period, modeString.c_str());
 }
 
 void Sequence::restart() { _chrono.restart(); }

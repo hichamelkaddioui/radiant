@@ -8,10 +8,10 @@ void Pixel::setup()
     _strip.show();
 }
 
-void Pixel::loop(const GraphBank &graphBank)
+void Pixel::loop()
 {
-    uint8_t hue = _hue.update(graphBank);
-    uint8_t brightness = _brightness.update(graphBank);
+    uint8_t hue = _hue.update();
+    uint8_t brightness = _brightness.update();
 
     CRGB colorRGB;
     hsv2rgb_rainbow(CHSV(hue, 255, brightness), colorRGB);

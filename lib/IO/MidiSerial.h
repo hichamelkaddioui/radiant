@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <MIDI.h>
 #include <Oled.h>
-#include <Pixel.h>
+#include <Scene.h>
 
 USING_NAMESPACE_MIDI
 
@@ -13,7 +13,7 @@ class MidiSerial
 {
 public:
     void setup();
-    void loop(std::vector<Pixel *> pixels);
+    void loop(Scene &scene);
 };
 
 #endif

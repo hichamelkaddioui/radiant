@@ -14,7 +14,7 @@ public:
     Sequence _brightness;
 
     void setup();
-    void loop(const GraphBank &graphBank);
+    void loop();
     void onNotePlayed(uint8_t note, uint8_t velocity);
 
 #ifdef DEBUG

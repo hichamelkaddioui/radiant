@@ -1,14 +1,17 @@
 #include <vector>
 #include <MidiSerial.h>
-#include <Pixel.h>
+#include <Led.h>
+#include <NeoPixel.h>
 #include <Graph.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;
 Oled screen;
-Pixel pixel;
 GraphBank gb = defaultGraphBank();
-std::vector<Pixel *> pixels = {&pixel};
+LedBank lb;
+SceneBank sb;
+
+static const int PIXEL_INDEX = 0;
 
 void setup()
 {
@@ -24,35 +27,54 @@ void setup1()
     // OLED screen
     screen.setup();
 
-    // Cycle through all hues, re-trigger on note 60
-    pixel._hue = Sequence(DefaultGraph::GATE, UTILS_HUE_BLUE, UTILS_HUE_GOLDEN_YELLOW, 10000, PlaybackMode::REPEAT, 1 / 2.0f, 0x3C);
-    //  Log brightness decay from max to min, re-trigger on note 61
-    pixel._brightness = Sequence(DefaultGraph::GATE, 100, 255, 500, PlaybackMode::ONCE, 1 / 5.0f, 0x3D);
-    pixel.setup();
+    // Led setup
+    NeoPixel *pixel = new NeoPixel();
+    pixel->setup();
+    lb[0] = pixel;
 
-    for (int i = 0; i < pixels.size(); i++)
-    {
-        pixels[i]->_hue.restart();
-        pixels[i]->_brightness.restart();
-        pixels[i]->dump();
-    }
+    Sequence *hue = new Sequence(gb[DefaultGraph::UP_EXP], UTILS_HUE_AQUA, UTILS_HUE_GREEN, 1000, PlaybackMode::REPEAT);
+    Sequence *brightness = new Sequence(gb[DefaultGraph::UP], 0, 255, 10 * 1000, PlaybackMode::ONCE);
 
+    LedEffect *pixelEffect = new LedEffect(lb[0], hue, hue, brightness, brightness);
+
+    Scene *firstScene = new Scene();
+    firstScene->_ledEffects.push_back(*pixelEffect);
+    sb._scenes.push_back(firstScene);
+
+    firstScene->dump();
+
+    // Scene setup
     debug(1, "[setup] Setup complete");
 }
 
 void loop()
 {
-    midiSerial.loop(pixels);
+    // Scene currentScene = sb.getCurrentScene();
+    // midiSerial.loop(currentScene);
 }
+
+bool dumped = false;
 
 void loop1()
 {
-    for (int i = 0; i < pixels.size(); i++)
-    {
-        pixels[i]->loop(gb);
+    Scene *currentScene = sb.getCurrentScene();
 
-        screen.displayPixelData(*pixels[i]);
+    if (currentScene == nullptr)
+    {
+        debug(23, "[loop] No scene found");
+        return;
     }
 
+    currentScene->update();
+
+    if (!dumped)
+    {
+        currentScene->dump();
+        dumped = true;
+    }
+
+    screen.displaySceneData((*currentScene));
     screen.loop();
+
+    debug(23, "[loop] Current scene elapsed: %d", currentScene->_ledEffects[0].brightnessA->elapsed());
 }
