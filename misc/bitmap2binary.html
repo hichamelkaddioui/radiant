@@ -32,9 +32,21 @@
       #toolSection {
         margin-top: 20px;
       }
+
+      #uploadSection {
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body>
+    <h1>File uploader</h1>
+
+    <!-- Image Upload Section -->
+    <div id="uploadSection">
+      <input type="file" id="fileInput" accept="image/png" />
+      <button onclick="handleImageUpload()">Upload PNG</button>
+    </div>
+
     <h1>Drawable Canvas</h1>
 
     <canvas id="canvas" width="1200" height="320"></canvas>
@@ -149,6 +161,68 @@
 
       drawCanvas();
       outputCanvasState();
+
+      // Function to decode and convert the base64 image to a bitmap
+      function decodeAndConvert(base64Data, width, height) {
+        const img = new Image();
+        return new Promise((resolve, reject) => {
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = 120;
+            canvas.height = 32;
+            ctx.drawImage(img, 0, 0, 120, 32);
+
+            const imageData = ctx.getImageData(0, 0, 120, 32);
+            const pixelMap = [];
+            for (let y = 0; y < 32; y++) {
+              const row = [];
+              for (let x = 0; x < 120; x++) {
+                const idx = (y * 120 + x) * 4;
+                const r = imageData.data[idx];
+                const g = imageData.data[idx + 1];
+                const b = imageData.data[idx + 2];
+
+                const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+                row.push(gray === 0 ? 0 : 1);
+              }
+              pixelMap.push(row);
+            }
+
+            resolve(pixelMap);
+          };
+
+          img.onerror = () => {
+            reject(new Error("Failed to load image"));
+          };
+
+          img.src = base64Data;
+        });
+      }
+
+      // Handle file upload, convert PNG to bitmap, and display it
+      async function handleImageUpload() {
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Please select an image.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
+          try {
+            canvasState = await decodeAndConvert(base64Data, width, height);
+            drawCanvas();
+            outputCanvasState();
+          } catch (error) {
+            console.error("Error decoding and converting the image:", error);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     </script>
   </body>
 </html>

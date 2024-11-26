@@ -21,6 +21,19 @@ void Oled::showGreetings()
     _display.clearDisplay();
     _display.drawBitmap(xCenter, yCenter, splashScreenData, splashWidth, splashHeight, 1);
     _display.display();
+    delay(1000);
+
+    for (size_t i = 0; i < 15; i++)
+    {
+        _display.invertDisplay(true);
+        _display.display();
+        delay(50);
+        _display.invertDisplay(false);
+        _display.display();
+        delay(50);
+    }
+
+    delay(950);
 }
 
 void Oled::setup()
@@ -41,7 +54,6 @@ void Oled::setup()
     _display.setTextColor(SSD1306_WHITE);
 
     showGreetings();
-    delay(2000);
 }
 
 /**
