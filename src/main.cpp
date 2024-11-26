@@ -49,8 +49,8 @@ void setup1()
 
 void loop()
 {
-    // Scene currentScene = sb.getCurrentScene();
-    // midiSerial.loop(currentScene);
+    Scene *currentScene = sb.getCurrentScene();
+    midiSerial.loop(currentScene);
 }
 
 bool dumped = false;

@@ -11,7 +11,7 @@ void MidiSerial::setup()
     MidiUART.begin(MIDI_CHANNEL_OMNI);
 }
 
-void MidiSerial::loop(Scene &scene)
+void MidiSerial::loop(Scene *scene)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -24,7 +24,7 @@ void MidiSerial::loop(Scene &scene)
 
         if (type == 0x90)
         {
-            scene.onNotePlayed(note, velocity);
+            scene->onNotePlayed(note, velocity);
         }
 
         debug(1, "[midi] Received MIDI message: %02X %02X %02X %02X", type, channel, note, velocity);

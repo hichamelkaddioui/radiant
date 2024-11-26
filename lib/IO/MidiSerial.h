@@ -13,7 +13,7 @@ class MidiSerial
 {
 public:
     void setup();
-    void loop(Scene &scene);
+    void loop(Scene *scene);
 };
 
 #endif
