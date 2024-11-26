@@ -18,7 +18,6 @@ struct GraphOptions
     int min;
     int max;
     unsigned long duration;
-    PlaybackMode mode;
     float period = 1.0f;
 };
 
@@ -31,7 +30,10 @@ public:
     // Graph options
     GraphOptions _graphOptions;
 
-    // Chrono options
+    // Playback
+    PlaybackMode _mode;
+
+    // Chrono
     unsigned long elapsed() const;
     void restart();
 

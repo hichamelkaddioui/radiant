@@ -2,7 +2,8 @@
 #include <Sequence.h>
 
 Sequence::Sequence(Graph *graph, int min, int max, unsigned long duration, PlaybackMode mode, float period, uint8_t triggerNote, uint8_t controlNote)
-    : _graphOptions({graph, min, max, duration, mode, period}),
+    : _graphOptions({graph, min, max, duration, period}),
+      _mode(mode),
       _triggerNote(triggerNote),
       _controlNote(controlNote)
 {
@@ -30,10 +31,8 @@ void Sequence::onNotePlayed(uint8_t note, uint8_t velocity)
 
 int Sequence::update()
 {
-    PlaybackMode mode = _graphOptions.mode;
-
     // External control sets the value
-    if (mode == PlaybackMode::EXTERNAL_CONTROL)
+    if (_mode == PlaybackMode::EXTERNAL_CONTROL)
     {
         return _value;
     }
@@ -45,7 +44,7 @@ int Sequence::update()
     float period = _graphOptions.period;
 
     // Wait for a first trigger to play the sequence
-    if (mode == PlaybackMode::ONCE && _triggerOn && !_triggered)
+    if (_mode == PlaybackMode::ONCE && _triggerOn && !_triggered)
     {
         // Return the end value before the first trigger
         elapsed = duration;
@@ -55,7 +54,7 @@ int Sequence::update()
     if (elapsed >= duration)
     {
         // In loop mode restart the Sequence
-        if (mode == PlaybackMode::REPEAT)
+        if (_mode == PlaybackMode::REPEAT)
         {
             _chrono.restart();
 
@@ -97,7 +96,7 @@ void Sequence::dump()
     int max = _graphOptions.max;
     unsigned long duration = _graphOptions.duration;
     float period = _graphOptions.period;
-    PlaybackMode mode = _graphOptions.mode;
+    PlaybackMode mode = _mode;
 
     String modeString;
 
