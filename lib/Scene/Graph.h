@@ -26,6 +26,7 @@ public:
 class Keyframe
 {
 public:
+    Keyframe(){};
     Keyframe(float time, float value, float curve);
 
     float _time;
@@ -36,11 +37,10 @@ public:
 class GraphKeyframe : public Graph
 {
 public:
+    GraphKeyframe(){};
     GraphKeyframe(std::vector<Keyframe> keyframes) : _keyframes(keyframes){};
-    float valueAt(float t) override;
-
-private:
     std::vector<Keyframe> _keyframes;
+    float valueAt(float t) override;
 };
 
 class PeriodicGraph : public Graph

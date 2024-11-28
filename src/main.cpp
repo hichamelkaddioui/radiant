@@ -3,6 +3,7 @@
 #include <Led.h>
 #include <NeoPixel.h>
 #include <Graph.h>
+#include <Serialize.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;
@@ -17,6 +18,9 @@ void setup()
 {
     // USB Serial
     Serial.begin(115200);
+
+    while (!Serial)
+        ;
 
     // MIDI Serial
     midiSerial.setup();
@@ -43,6 +47,19 @@ void setup1()
 
     firstScene->dump();
 
+    gb[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
+
+    uint8_t buffer[1024]{};
+    serializeGraphBank(gb, buffer);
+
+    GraphBank gb2{};
+    deserializeGraphBank(gb2, buffer);
+
+    GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(const_cast<Graph *>(gb2[9]));
+
+    if (keyframeGraph != nullptr)
+        debug(1, "[setup] number of keyframes in gb2[9]: %d, value at 0.0f: %f", keyframeGraph->_keyframes.size(), keyframeGraph->valueAt(0.0f));
+
     // Scene setup
     debug(1, "[setup] Setup complete");
 }
@@ -52,8 +69,6 @@ void loop()
     Scene *currentScene = sb.getCurrentScene();
     midiSerial.loop(currentScene);
 }
-
-bool dumped = false;
 
 void loop1()
 {
@@ -67,14 +82,6 @@ void loop1()
 
     currentScene->update();
 
-    if (!dumped)
-    {
-        currentScene->dump();
-        dumped = true;
-    }
-
     screen.displaySceneData((*currentScene));
     screen.loop();
-
-    debug(23, "[loop] Current scene elapsed: %d", currentScene->_ledEffects[0].brightnessA->elapsed());
 }

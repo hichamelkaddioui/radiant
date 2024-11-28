@@ -59,6 +59,19 @@ float GraphSine::valueAt(float t)
 
 float GraphGate::valueAt(float t)
 {
+    // period = 1/3
+    //
+    // y
+    // 1 ┌────────────             ─────────────             ─────────────
+    //   |
+    //   |
+    // 0 |            ─────────────             ─────────────              ──────────────
+    //   ├────────────┬────────────┬────────────┬────────────┬─────────────┬─────────────┬─ t
+    //   0           1/6          1/3          1/2          2/3           5/6            1
+    //    ┌─>   0            1            2           3              4             5
+    //    |
+    //    └─────── halfPeriodCount
+
     float halfPeriodCount = t / (_period / 2.0f);
 
     // If scaled time is in the first half of the period, return 1, else return 0
