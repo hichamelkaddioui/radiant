@@ -34,9 +34,44 @@
     <button id="sendControlChange" onclick="sendControlChange()">
       Send Control Change
     </button>
+
+    <br />
+
+    <!-- ABC Notation Display -->
+    <h3>ABC Notation</h3>
+    <div id="abcNotation">No note sent</div>
+
     <script>
       let midiAccess;
       let outputDevice;
+
+      const midiNoteToABC = (noteNumber) => {
+        // Define the note names in order starting from C
+        const noteNames = [
+          "C",
+          "C#",
+          "D",
+          "D#",
+          "E",
+          "F",
+          "F#",
+          "G",
+          "G#",
+          "A",
+          "A#",
+          "B",
+        ];
+
+        // MIDI note number for middle C is 60, so we calculate the offset
+        const octave = Math.floor((noteNumber - 12) / 12);
+        const noteIndex = noteNumber % 12;
+
+        // Get the note name (C, C#, D, etc.)
+        const noteName = noteNames[noteIndex];
+
+        // Format the ABC notation with note and octave
+        return `${noteName}${octave}`;
+      };
 
       const requestMidiDevice = () => {
         navigator
@@ -81,7 +116,14 @@
         if (outputDevice) {
           let sysexMessage = [
             0xf0, 0x7e, 0x7f, 0x00, 0x00, 0x00, 0x13, 0x12, 0x13, 0x12, 0x13,
-            0x12, 0xf7,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+            0xf7,
           ];
           outputDevice.send(sysexMessage);
           console.log("Sent Sysex Message");
@@ -92,7 +134,7 @@
 
       const sendControlChange = () => {
         if (outputDevice) {
-          let controlChangeMessage = [0xb0, 0x01, 0x7f];
+          let controlChangeMessage = [0xb0, 0x66, 0x7f];
           outputDevice.send(controlChangeMessage);
           console.log("Sent Control Change Message");
         } else {
@@ -115,6 +157,11 @@
             `Sent Note On (note ${noteNumber}, velocity ${velocity})`
           );
 
+          const abcNote = midiNoteToABC(noteNumber);
+          document.getElementById(
+            "abcNotation"
+          ).innerText = `Sent MIDI note: ${abcNote}`;
+
           // Optionally, send a Note Off after 1 second (to stop the note)
           setTimeout(() => {
             let noteOffMessage = [0x80, noteNumber, 0];
@@ -125,9 +172,6 @@
           alert("No MIDI device connected.");
         }
       };
-
-      // Send a MIDI Note On message
-      document.getElementById("sendNote").addEventListener("click", sendMidi);
     </script>
   </body>
 </html>
