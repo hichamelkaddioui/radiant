@@ -32,8 +32,8 @@ void setup1()
     pixel->setup();
     lb[0] = pixel;
 
-    Sequence *hue = new Sequence(gb[DefaultGraph::UP_EXP], UTILS_HUE_AQUA, UTILS_HUE_GREEN, 1000, PlaybackMode::REPEAT);
-    Sequence *brightness = new Sequence(gb[DefaultGraph::UP], 0, 255, 10 * 1000, PlaybackMode::ONCE);
+    Sequence *hue = new Sequence(gb[DefaultGraph::UP_EXP], UTILS_HUE_AQUA, UTILS_HUE_GREEN, 1000, PlaybackMode::REPEAT, 1.0f, 61);
+    Sequence *brightness = new Sequence(gb[DefaultGraph::UP], 0, 255, 10 * 1000, PlaybackMode::ONCE, 1.0f, 60);
 
     LedEffect *pixelEffect = new LedEffect(lb[0], hue, hue, brightness, brightness);
 
