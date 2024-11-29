@@ -3,7 +3,6 @@
 #include <Led.h>
 #include <NeoPixel.h>
 #include <Graph.h>
-#include <Serialize.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;
@@ -55,10 +54,14 @@ void setup1()
     gb._bank[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
 
     uint8_t buffer[1024]{};
-    serializeGraphBank(gb, buffer);
+    size_t bitsInBuffer = gb.serialize(buffer);
+    debug(1, "[setup] serialized %d bits", bitsInBuffer);
 
     GraphBank gb2{};
-    deserializeGraphBank(gb2, buffer);
+    gb2 = defaultGraphBank();
+    debug(1, "[setup] Number of graphs in gb2: %d", gb2._bank.size());
+    size_t bitsInBuffer2 = gb2.deserialize(buffer);
+    debug(1, "[setup] Read %d bits, number of graphs in gb2: %d", bitsInBuffer2, gb2._bank.size());
 
     GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(const_cast<Graph *>(gb2._bank[9]));
 

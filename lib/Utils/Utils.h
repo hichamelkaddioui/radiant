@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <Arduino.h>
+
 #define UTILS_HUE_RED 0
 #define UTILS_HUE_ORANGE 30
 #define UTILS_HUE_PEACH 35
@@ -13,6 +15,10 @@
 #define UTILS_HUE_INDIGO 200
 #define UTILS_HUE_LIGHT_BLUE 215
 #define UTILS_HUE_WARM_PINK 210
+
+const size_t sizeOfSizeT = sizeof(size_t);
+const size_t sizeOfInt = sizeof(int);
+const size_t sizeOfFloat = sizeof(float);
 
 void debug(int printEveryMs, const char *format, ...);
 float interpolate(float t, float startX, float startY, float endX, float endY, float curve);
