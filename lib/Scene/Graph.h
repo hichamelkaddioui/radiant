@@ -62,7 +62,17 @@ public:
     float valueAt(float t) override;
 };
 
-typedef std::map<int, Graph *> GraphBank;
+class GraphBank
+{
+public:
+    GraphBank() : _bank(){};
+
+    std::map<int, Graph *> _bank;
+
+    void clear();
+    size_t serialize(uint8_t *buffer);
+    size_t deserialize(const uint8_t *buffer);
+};
 
 GraphBank defaultGraphBank();
 

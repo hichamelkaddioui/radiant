@@ -114,15 +114,15 @@ GraphBank defaultGraphBank()
     GraphSine *sine = new GraphSine();
     GraphGate *gate = new GraphGate();
 
-    result[DefaultGraph::CONSTANT] = constant;
-    result[DefaultGraph::UP] = up;
-    result[DefaultGraph::UP_EXP] = upExp;
-    result[DefaultGraph::UP_LOG] = upLog;
-    result[DefaultGraph::DOWN] = down;
-    result[DefaultGraph::DOWN_EXP] = downExp;
-    result[DefaultGraph::DOWN_LOG] = downLog;
-    result[DefaultGraph::SINE] = sine;
-    result[DefaultGraph::GATE] = gate;
+    result._bank[DefaultGraph::CONSTANT] = constant;
+    result._bank[DefaultGraph::UP] = up;
+    result._bank[DefaultGraph::UP_EXP] = upExp;
+    result._bank[DefaultGraph::UP_LOG] = upLog;
+    result._bank[DefaultGraph::DOWN] = down;
+    result._bank[DefaultGraph::DOWN_EXP] = downExp;
+    result._bank[DefaultGraph::DOWN_LOG] = downLog;
+    result._bank[DefaultGraph::SINE] = sine;
+    result._bank[DefaultGraph::GATE] = gate;
 
     return result;
 }

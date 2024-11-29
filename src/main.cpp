@@ -19,11 +19,11 @@ void setup()
     // USB Serial
     Serial.begin(115200);
 
-    while (!Serial)
-        ;
-
     // MIDI Serial
     midiSerial.setup();
+
+    while (!Serial && millis() < 5000)
+        ;
 }
 
 void setup1()
@@ -36,18 +36,16 @@ void setup1()
     pixel->setup();
     lb[0] = pixel;
 
-    Sequence *hue = new Sequence(gb[DefaultGraph::UP_EXP], UTILS_HUE_AQUA, UTILS_HUE_GREEN, 1000, PlaybackMode::REPEAT, 1.0f, 61);
-    Sequence *brightness = new Sequence(gb[DefaultGraph::UP], 0, 255, 10 * 1000, PlaybackMode::ONCE, 1.0f, 60);
-
+    Sequence *hue = new Sequence(gb._bank[DefaultGraph::UP_EXP], UTILS_HUE_AQUA, UTILS_HUE_GREEN, 1000, PlaybackMode::REPEAT, 1.0f, 61);
+    Sequence *brightness = new Sequence(gb._bank[DefaultGraph::UP], 255, 0, 10 * 1000, PlaybackMode::REPEAT);
     LedEffect *pixelEffect = new LedEffect(lb[0], hue, hue, brightness, brightness);
-
     Scene *firstScene = new Scene();
     firstScene->_ledEffects.push_back(*pixelEffect);
-    sb._scenes.push_back(firstScene);
-
     firstScene->dump();
 
-    gb[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
+    sb._scenes.push_back(firstScene);
+
+    gb._bank[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
 
     uint8_t buffer[1024]{};
     serializeGraphBank(gb, buffer);
@@ -55,7 +53,7 @@ void setup1()
     GraphBank gb2{};
     deserializeGraphBank(gb2, buffer);
 
-    GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(const_cast<Graph *>(gb2[9]));
+    GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(const_cast<Graph *>(gb2._bank[9]));
 
     if (keyframeGraph != nullptr)
         debug(1, "[setup] number of keyframes in gb2[9]: %d, value at 0.0f: %f", keyframeGraph->_keyframes.size(), keyframeGraph->valueAt(0.0f));

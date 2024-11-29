@@ -105,7 +105,7 @@ size_t serializeGraphBank(const GraphBank &bank, uint8_t *buffer)
 
     debug(1, "[deserialize graph bank] %lu graphs", graphCount);
 
-    for (const auto &it : bank)
+    for (const auto &it : bank._bank)
     {
         if (it.first < 9)
         {
@@ -153,9 +153,7 @@ size_t deserializeGraphBank(GraphBank &bank, const uint8_t *buffer)
         offset += deserializeGraph(*graph, buffer + offset);
         debug(1, "[deserialized graph] id: %d, number of keyframes: %lu", id, graph->_keyframes.size());
 
-        bank[id] = graph;
-
-        debug(1, "[deserialized graph] wazzup?");
+        bank._bank[id] = graph;
     }
 
     return offset;
