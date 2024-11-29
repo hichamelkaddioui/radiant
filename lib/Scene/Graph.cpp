@@ -52,7 +52,7 @@ float GraphKeyframe::valueAt(float t)
 
 float GraphSine::valueAt(float t)
 {
-    float result = (1 + sin(TWO_PI * t / _period)) / 2.0f;
+    float result = (1 + sin(TWO_PI * t / _period - TWO_PI / 4)) / 2.0f;
 
     return result;
 }
@@ -107,8 +107,8 @@ GraphBank defaultGraphBank()
     Keyframe toZero = Keyframe(1.0f, 0.0f, 0.0f);
 
     GraphKeyframe *down = new GraphKeyframe({fromOne, toZero});
-    GraphKeyframe *downExp = new GraphKeyframe({fromOneExp, toZero});
-    GraphKeyframe *downLog = new GraphKeyframe({fromOneLog, toZero});
+    GraphKeyframe *downExp = new GraphKeyframe({fromOneLog, toZero});
+    GraphKeyframe *downLog = new GraphKeyframe({fromOneExp, toZero});
 
     // Oscillate
     GraphSine *sine = new GraphSine();
