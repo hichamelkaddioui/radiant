@@ -1,13 +1,13 @@
 #include <Utils.h>
 #include <Sequence.h>
 
-Sequence::Sequence(Graph *graph, int min, int max, unsigned long duration, PlaybackMode mode, float period, uint8_t triggerNote, uint8_t controlNote)
-    : _graphOptions({graph, min, max, duration, period}),
+Sequence::Sequence(GraphOptions graphOptions, PlaybackMode mode, MidiOptions midiOptions)
+    : _graphOptions(graphOptions),
       _mode(mode),
-      _triggerNote(triggerNote),
-      _controlNote(controlNote)
+      _triggerNote(midiOptions.triggerNote),
+      _controlNote(midiOptions.controlNote)
 {
-    if (triggerNote != 0)
+    if (midiOptions.triggerNote != 0)
     {
         _triggerOn = true;
     }

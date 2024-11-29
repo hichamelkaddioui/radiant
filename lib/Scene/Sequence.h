@@ -21,11 +21,17 @@ struct GraphOptions
     float period = 1.0f;
 };
 
+struct MidiOptions
+{
+    uint8_t triggerNote = 0;
+    uint8_t controlNote = 0;
+};
+
 class Sequence
 {
 public:
     Sequence() = default;
-    Sequence(Graph *graph, int min, int max, unsigned long duration, PlaybackMode mode, float period = 1.0f, uint8_t triggerNote = 0, uint8_t controlNote = 0);
+    Sequence(GraphOptions graphOptions, PlaybackMode mode, MidiOptions midiOptions = MidiOptions());
 
     // Graph options
     GraphOptions _graphOptions;
