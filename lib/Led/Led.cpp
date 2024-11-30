@@ -17,7 +17,7 @@ size_t serializeNeoPixel(Led *led, uint8_t *buffer, int id)
     offset += sizeof(LedType);
 
     // ID
-    memccpy(buffer + offset, &id, sizeOfInt, sizeOfInt);
+    memcpy(buffer + offset, &id, sizeOfInt);
     offset += sizeOfInt;
 
     // Pin

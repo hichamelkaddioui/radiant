@@ -84,6 +84,10 @@ void setup1()
     /**
      * SCENE SETUP
      */
+
+    // Local scene bank
+    SceneBank sbLocal;
+
     Sequence *hue = new Sequence(
         {gb._bank[DefaultGraph::SINE], 0, 255, 9 * 1000},
         PlaybackMode::REPEAT,
@@ -97,14 +101,22 @@ void setup1()
     Scene *firstScene = new Scene();
     firstScene->_ledEffects.push_back(*pixelEffect);
 
-    sb._scenes.push_back(firstScene);
+    sbLocal._scenes.push_back(firstScene);
 
     // Reset buffer
     memset(buffer, 0, 1024);
 
+    sbLocal.getCurrentScene()->dump();
+
     // Scene serialization
-    bitsInBuffer = sb.serialize(buffer, &lb2, &gb);
+    bitsInBuffer = sbLocal.serialize(buffer, &lb2, &gb);
     debug(1, "[setup] [scene bank] serialized %d bits", bitsInBuffer);
+
+    // Scene deserialization
+    bitsInBuffer = sb.deserialize(buffer, &lb2, &gb);
+    debug(1, "[setup] [scene bank] deserialized %d bits", bitsInBuffer);
+
+    sb.getCurrentScene()->dump();
 
     // Scene setup
     debug(1, "[setup] Setup complete");

@@ -2,7 +2,11 @@
 #include <Sequence.h>
 
 Sequence::Sequence(GraphOptions graphOptions, PlaybackMode mode, MidiOptions midiOptions)
-    : _graphOptions(graphOptions),
+    : _graph(graphOptions.graph),
+      _min(graphOptions.min),
+      _max(graphOptions.max),
+      _duration(graphOptions.duration),
+      _period(graphOptions.period),
       _mode(mode),
       _triggerNote(midiOptions.triggerNote),
       _controlNote(midiOptions.controlNote)
@@ -23,7 +27,7 @@ void Sequence::onNotePlayed(uint8_t note, uint8_t velocity)
 
     if (note == _controlNote)
     {
-        _value = map(velocity, 1, 127, _graphOptions.min, _graphOptions.max);
+        _value = map(velocity, 1, 127, _min, _max);
 
         debug(1, "[sequence] Control note played %d, velocity %d, value %d", note, velocity, _value);
     }
@@ -37,11 +41,11 @@ int Sequence::update()
         return _value;
     }
 
-    int min = _graphOptions.min;
-    int max = _graphOptions.max;
-    unsigned long duration = _graphOptions.duration;
+    int min = _min;
+    int max = _max;
+    unsigned long duration = _duration;
     unsigned long elapsed = _chrono.elapsed();
-    float period = _graphOptions.period;
+    float period = _period;
 
     // Wait for a first trigger to play the sequence
     if (_mode == PlaybackMode::ONCE && _triggerOn && !_triggered)
@@ -66,7 +70,7 @@ int Sequence::update()
     }
 
     float t = (float)elapsed / (float)duration;
-    Graph *graph = _graphOptions.graph;
+    Graph *graph = _graph;
 
     if (graph == nullptr)
     {
@@ -89,66 +93,93 @@ int Sequence::update()
     return _value;
 }
 
-size_t serializeGraphOptions(GraphOptions graphOptions, uint8_t *buffer, GraphBank *graphBank)
+void Sequence::restart() { _chrono.restart(); }
+
+unsigned long Sequence::elapsed() const { return _chrono.elapsed(); }
+
+size_t Sequence::serialize(uint8_t *buffer, GraphBank *graphBank)
 {
     size_t offset = 0;
-    Graph *graph = graphOptions.graph;
 
-    int graphId = graphBank->getGraphId(graph);
+    int graphId = graphBank->getGraphId(_graph);
 
     if (graphId == -1)
     {
         return 0;
     }
 
-    memccpy(buffer + offset, &graphId, sizeOfInt, sizeOfInt);
+    memcpy(buffer + offset, &graphId, sizeOfInt);
     offset += sizeOfInt;
 
-    int min = graphOptions.min;
-    int max = graphOptions.max;
-    unsigned long duration = graphOptions.duration;
-    float period = graphOptions.period;
+    memcpy(buffer + offset, &_min, sizeOfInt);
+    offset += sizeOfInt;
+    memcpy(buffer + offset, &_max, sizeOfInt);
+    offset += sizeOfInt;
+    memcpy(buffer + offset, &_duration, sizeOfLong);
+    offset += sizeOfLong;
+    memcpy(buffer + offset, &_period, sizeOfFloat);
+    offset += sizeOfFloat;
+    memcpy(buffer + offset, &_mode, sizeof(PlaybackMode));
+    offset += sizeof(PlaybackMode);
+    memcpy(buffer + offset, &_triggerNote, sizeOfByte);
+    offset += sizeOfByte;
+    memcpy(buffer + offset, &_controlNote, sizeOfByte);
+    offset += sizeOfByte;
 
-    memccpy(buffer + offset, &min, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-    memccpy(buffer + offset, &max, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-    memccpy(buffer + offset, &duration, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-    memccpy(buffer + offset, &period, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-
-    return offset;
-}
-
-size_t Sequence::serialize(uint8_t *buffer, GraphBank *graphBank)
-{
-    size_t offset = 0;
-
-    offset += serializeGraphOptions(_graphOptions, buffer + offset, graphBank);
-    memccpy(buffer + offset, &_mode, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-    memccpy(buffer + offset, &_triggerNote, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
-    memccpy(buffer + offset, &_controlNote, sizeOfInt, sizeOfInt);
-    offset += sizeOfInt;
+    debug(1, "[serialize sequence] trigger note %d, control note %d", _triggerNote, _controlNote);
+    debug(1, "[serialize sequence] mode %d", _mode);
+    debug(1, "[serialize sequence] graph min %d, max %d, duration %d, period %f", _min, _max, _duration, _period);
 
     return offset;
 }
 
 size_t Sequence::deserialize(const uint8_t *buffer, GraphBank *graphBank)
 {
-    return 0;
+    size_t offset = 0;
+
+    int graphId = 0;
+    memcpy(&graphId, buffer + offset, sizeOfInt);
+    offset += sizeOfInt;
+
+    _graph = graphBank->_bank.at(graphId);
+
+    if (_graph == nullptr)
+    {
+        return 0;
+    }
+
+    memcpy(&_min, buffer + offset, sizeOfInt);
+    offset += sizeOfInt;
+    memcpy(&_max, buffer + offset, sizeOfInt);
+    offset += sizeOfInt;
+    memcpy(&_duration, buffer + offset, sizeOfLong);
+    offset += sizeOfLong;
+    memcpy(&_period, buffer + offset, sizeOfFloat);
+    offset += sizeOfFloat;
+    memcpy(&_mode, buffer + offset, sizeof(PlaybackMode));
+    offset += sizeof(PlaybackMode);
+    memcpy(&_triggerNote, buffer + offset, sizeOfByte);
+    offset += sizeOfByte;
+    memcpy(&_controlNote, buffer + offset, sizeOfByte);
+    offset += sizeOfByte;
+
+    debug(1, "[deserialize sequence] trigger note %d, control note %d", _triggerNote, _controlNote);
+    debug(1, "[deserialize sequence] mode %d", _mode);
+    debug(1, "[deserialize sequence] graph min %d, max %d, duration %d, period %f", _min, _max, _duration, _period);
+
+    return offset;
 }
 
 void Sequence::dump()
 {
-    Graph *graph = _graphOptions.graph;
-    int min = _graphOptions.min;
-    int max = _graphOptions.max;
-    unsigned long duration = _graphOptions.duration;
-    float period = _graphOptions.period;
+    Graph *graph = _graph;
+    int min = _min;
+    int max = _max;
+    unsigned long duration = _duration;
+    float period = _period;
     PlaybackMode mode = _mode;
+    uint8_t triggerNote = _triggerNote;
+    uint8_t controlNote = _controlNote;
 
     String modeString;
 
@@ -168,9 +199,5 @@ void Sequence::dump()
         break;
     }
 
-    debug(1, "[sequence] graph %p\tmin %d\t\tmax %d\t\tduration %d\tperiod %f\tmode %s", graph, min, max, duration, period, modeString.c_str());
+    debug(1, "[sequence] trigger note %u, control note %u, mode %s, graph min %d, max %d, duration %d, period %f", triggerNote, controlNote, modeString.c_str(), min, max, duration, period);
 }
-
-void Sequence::restart() { _chrono.restart(); }
-
-unsigned long Sequence::elapsed() const { return _chrono.elapsed(); }

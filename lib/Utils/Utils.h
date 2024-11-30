@@ -18,7 +18,9 @@
 
 const size_t sizeOfSizeT = sizeof(size_t);
 const size_t sizeOfInt = sizeof(int);
+const size_t sizeOfLong = sizeof(unsigned long);
 const size_t sizeOfFloat = sizeof(float);
+const size_t sizeOfByte = sizeof(uint8_t);
 
 void debug(int printEveryMs, const char *format, ...);
 float interpolate(float t, float startX, float startY, float endX, float endY, float curve);

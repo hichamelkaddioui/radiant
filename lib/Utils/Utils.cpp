@@ -14,7 +14,7 @@ void debug(int printEveryMs, const char *format, ...)
     if (millis() % printEveryMs != 0)
         return;
 
-    char buffer[100];
+    char buffer[800];
     va_list args;
     va_start(args, format);
     vsprintf(buffer, format, args);

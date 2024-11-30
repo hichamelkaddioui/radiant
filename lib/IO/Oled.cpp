@@ -102,12 +102,12 @@ void Oled::displaySceneData(const Scene &scene)
     _display.clearDisplay();
     _display.setCursor(0, 0);
     _display.print("Hue");
-    x2 = min(xMax, xMax * hue->elapsed() / hue->_graphOptions.duration);
+    x2 = min(xMax, xMax * hue->elapsed() / hue->_duration);
     _display.drawLine(0, 18, x2, 18, SSD1306_WHITE);
     int xOffset = SCREEN_WIDTH / 2;
     _display.setCursor(xOffset, 0);
     _display.print("Brightness");
-    x2 = min(xOffset + xMax, xOffset + (xMax * brightness->elapsed() / brightness->_graphOptions.duration));
+    x2 = min(xOffset + xMax, xOffset + (xMax * brightness->elapsed() / brightness->_duration));
     _display.drawLine(xOffset, 18, x2, 18, SSD1306_WHITE);
     _display.display();
 }

@@ -34,7 +34,11 @@ public:
     Sequence(GraphOptions graphOptions, PlaybackMode mode, MidiOptions midiOptions = MidiOptions());
 
     // Graph options
-    GraphOptions _graphOptions;
+    Graph *_graph = nullptr;
+    int _min;
+    int _max;
+    unsigned long _duration;
+    float _period = 1.0f;
 
     // Playback
     PlaybackMode _mode;
@@ -53,6 +57,7 @@ public:
     // Get the value of the sequence
     int update();
 
+    // Serialization
     size_t serialize(uint8_t *buffer, GraphBank *graphBank);
     size_t deserialize(const uint8_t *buffer, GraphBank *graphBank);
 
