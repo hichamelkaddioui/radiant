@@ -17,10 +17,6 @@ struct LedEffect
     Sequence *hueB = nullptr;
     Sequence *brightnessA = nullptr;
     Sequence *brightnessB = nullptr;
-
-#ifdef DEBUG
-    void dump();
-#endif
 };
 
 class Scene

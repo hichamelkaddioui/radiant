@@ -2,15 +2,6 @@
 #include <Scene.h>
 #include <Utils.h>
 
-void LedEffect::dump()
-{
-    debug(1, "[led effect] Dumping led effect");
-    hueA->dump();
-    hueB->dump();
-    brightnessA->dump();
-    brightnessB->dump();
-}
-
 void Scene::update()
 {
     for (LedEffect ledEffect : _ledEffects)
@@ -55,10 +46,10 @@ void Scene::onNotePlayed(uint8_t note, uint8_t velocity)
 {
     for (LedEffect ledEffect : _ledEffects)
     {
-        ledEffect.hueA->onNotePlayed(note, velocity);
-        ledEffect.hueB->onNotePlayed(note, velocity);
-        ledEffect.brightnessA->onNotePlayed(note, velocity);
-        ledEffect.brightnessB->onNotePlayed(note, velocity);
+        ledEffect.hueA->onNotePlayed(note, velocity, "hue A");
+        ledEffect.hueB->onNotePlayed(note, velocity, "hue B");
+        ledEffect.brightnessA->onNotePlayed(note, velocity, "brightness A");
+        ledEffect.brightnessB->onNotePlayed(note, velocity, "brightness B");
     }
 }
 
@@ -146,10 +137,10 @@ void Scene::dump()
 
     for (LedEffect ledEffect : _ledEffects)
     {
-        ledEffect.hueA->dump();
-        ledEffect.hueB->dump();
-        ledEffect.brightnessA->dump();
-        ledEffect.brightnessB->dump();
+        ledEffect.hueA->dump("hue A");
+        ledEffect.hueB->dump("hue B");
+        ledEffect.brightnessA->dump("brightness A");
+        ledEffect.brightnessB->dump("brightness B");
     }
 }
 

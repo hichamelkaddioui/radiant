@@ -24,8 +24,8 @@ void MidiSerial::loop(Scene *currentScene)
             byte channel = MidiUART.getChannel();
             byte note = MidiUART.getData1();
             byte velocity = MidiUART.getData2();
-            currentScene->onNotePlayed(note, velocity);
             debug(1, "[midi] Received note on channel %02X: %02X %02X %02X", channel, type, note, velocity);
+            currentScene->onNotePlayed(note, velocity);
         }
         else if (type == MidiType::SystemExclusive)
         {

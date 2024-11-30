@@ -21,17 +21,12 @@ struct GraphOptions
     float period = 1.0f;
 };
 
-struct MidiOptions
-{
-    uint8_t triggerNote = 0;
-    uint8_t controlNote = 0;
-};
-
 class Sequence
 {
 public:
     Sequence() = default;
-    Sequence(GraphOptions graphOptions, PlaybackMode mode, MidiOptions midiOptions = MidiOptions());
+    Sequence(uint8_t controlNote);
+    Sequence(PlaybackMode mode, GraphOptions graphOptions, uint8_t triggerNote = 0);
 
     // Graph options
     Graph *_graph = nullptr;
@@ -50,9 +45,9 @@ public:
     // MIDI control
     uint8_t _triggerNote;
     uint8_t _controlNote;
-    bool _triggerOn = false;
     bool _triggered = false;
-    void onNotePlayed(uint8_t note, uint8_t velocity);
+    void onNotePlayed(uint8_t note, uint8_t velocity, String sequenceName);
+    bool isTriggerOn() const { return _triggerNote != 0; }
 
     // Get the value of the sequence
     int update();
@@ -62,7 +57,7 @@ public:
     size_t deserialize(const uint8_t *buffer, const GraphBank &graphBank);
 
 #ifdef DEBUG
-    void dump();
+    void dump(String sequenceName);
 #endif
 
 private:
