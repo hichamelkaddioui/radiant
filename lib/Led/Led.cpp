@@ -41,6 +41,14 @@ size_t deserializeNeoPixel(NeoPixel &pixel, const uint8_t *buffer)
     return offset;
 }
 
+void LedBank::setup()
+{
+    for (const auto &it : _bank)
+    {
+        it.second->setup();
+    }
+}
+
 void LedBank::clear()
 {
     for (const auto &it : _bank)

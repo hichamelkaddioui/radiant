@@ -22,7 +22,10 @@ public:
 class LedBank
 {
 public:
+    ~LedBank() { clear(); }
+
     std::map<int, Led *> _bank;
+    void setup();
     void clear();
     int getLedId(Led *led);
     size_t serialize(uint8_t *buffer);
