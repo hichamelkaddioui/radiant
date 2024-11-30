@@ -27,8 +27,8 @@ public:
     std::map<int, Led *> _bank;
     void setup();
     void clear();
-    int getLedId(Led *led);
-    size_t serialize(uint8_t *buffer);
+    int getLedId(Led *led) const;
+    size_t serialize(uint8_t *buffer) const;
     size_t deserialize(const uint8_t *buffer);
 };
 

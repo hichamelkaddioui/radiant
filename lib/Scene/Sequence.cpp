@@ -97,14 +97,16 @@ void Sequence::restart() { _chrono.restart(); }
 
 unsigned long Sequence::elapsed() const { return _chrono.elapsed(); }
 
-size_t Sequence::serialize(uint8_t *buffer, GraphBank *graphBank)
+size_t Sequence::serialize(uint8_t *buffer, const GraphBank &graphBank)
 {
     size_t offset = 0;
 
-    int graphId = graphBank->getGraphId(_graph);
+    int graphId = graphBank.getGraphId(_graph);
 
     if (graphId == -1)
     {
+        debug(1, "[serialize sequence] graph not found, graph address %p", _graph);
+
         return 0;
     }
 
@@ -133,7 +135,7 @@ size_t Sequence::serialize(uint8_t *buffer, GraphBank *graphBank)
     return offset;
 }
 
-size_t Sequence::deserialize(const uint8_t *buffer, GraphBank *graphBank)
+size_t Sequence::deserialize(const uint8_t *buffer, const GraphBank &graphBank)
 {
     size_t offset = 0;
 
@@ -141,10 +143,12 @@ size_t Sequence::deserialize(const uint8_t *buffer, GraphBank *graphBank)
     memcpy(&graphId, buffer + offset, sizeOfInt);
     offset += sizeOfInt;
 
-    _graph = graphBank->_bank.at(graphId);
+    _graph = graphBank._bank.at(graphId);
 
     if (_graph == nullptr)
     {
+        debug(1, "[deserialize sequence] graph not found");
+
         return 0;
     }
 

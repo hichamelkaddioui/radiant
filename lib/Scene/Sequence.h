@@ -58,8 +58,8 @@ public:
     int update();
 
     // Serialization
-    size_t serialize(uint8_t *buffer, GraphBank *graphBank);
-    size_t deserialize(const uint8_t *buffer, GraphBank *graphBank);
+    size_t serialize(uint8_t *buffer, const GraphBank &graphBank);
+    size_t deserialize(const uint8_t *buffer, const GraphBank &graphBank);
 
 #ifdef DEBUG
     void dump();

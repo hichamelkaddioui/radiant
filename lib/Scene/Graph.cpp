@@ -85,7 +85,7 @@ float GraphGate::valueAt(float t)
     }
 }
 
-int GraphBank::getGraphId(Graph *graph)
+int GraphBank::getGraphId(Graph *graph) const
 {
     for (const auto &it : _bank)
     {
@@ -188,7 +188,7 @@ size_t deserializeGraph(Graph &graph, const uint8_t *buffer)
     return deserializeKeyframes(keyframeGraph->_keyframes, buffer + offset);
 }
 
-size_t GraphBank::serialize(uint8_t *buffer)
+size_t GraphBank::serialize(uint8_t *buffer) const
 {
     size_t offset = 0, graphCount = 0;
     offset += sizeOfSizeT;

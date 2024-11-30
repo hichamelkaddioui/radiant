@@ -17,6 +17,10 @@ struct LedEffect
     Sequence *hueB = nullptr;
     Sequence *brightnessA = nullptr;
     Sequence *brightnessB = nullptr;
+
+#ifdef DEBUG
+    void dump();
+#endif
 };
 
 class Scene
@@ -29,7 +33,12 @@ public:
     void update();
     void restart();
     void onNotePlayed(uint8_t note, uint8_t velocity);
+    size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
+    size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
+
+#ifdef DEBUG
     void dump();
+#endif
 };
 
 class SceneBank
@@ -45,8 +54,8 @@ public:
     void restart();
     void update();
     Scene *getCurrentScene();
-    size_t serialize(uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank);
-    size_t deserialize(const uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank);
+    size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
+    size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
 };
 
 #endif

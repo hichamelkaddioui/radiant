@@ -64,14 +64,14 @@ void setup1()
 
     // SceneBank serialization
     Sequence *hue = new Sequence(
-        {gb._bank[DefaultGraph::SINE], 0, 255, 9 * 1000},
+        {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 9 * 1000},
         PlaybackMode::REPEAT,
         {61});
     Sequence *brightness = new Sequence(
-        {gb._bank[DefaultGraph::SINE], 50, 100, 10 * 1000, 0.5f},
+        {localGraphBank._bank[DefaultGraph::SINE], 50, 100, 10 * 1000, 0.5f},
         PlaybackMode::REPEAT);
 
-    LedEffect *pixelEffect = new LedEffect(lb._bank[0], hue, hue, brightness, brightness);
+    LedEffect *pixelEffect = new LedEffect(localLedBank._bank[0], hue, hue, brightness, brightness);
 
     Scene *firstScene = new Scene();
     firstScene->_ledEffects.push_back(*pixelEffect);
@@ -79,9 +79,11 @@ void setup1()
     SceneBank localSceneBank;
     localSceneBank._scenes.push_back(firstScene);
 
-    length = localSceneBank.serialize(buffer + offset, &lb, &gb);
+    length = localSceneBank.serialize(buffer + offset, localLedBank, localGraphBank);
     debug(1, "[setup] [scene bank] serialized %d bits", length);
     offset += length;
+
+    localSceneBank.getCurrentScene()->dump();
 
     // Write to flash
     flash.write(0x0, buffer, offset);
@@ -116,7 +118,7 @@ void setup1()
         debug(1, "[setup] number of keyframes in graph #9: %d, value at 0.0f: %f, value at 1.0f: %f", keyframeGraph->_keyframes.size(), keyframeGraph->valueAt(0.0f), keyframeGraph->valueAt(1.0f));
 
     // SceneBank deserialization
-    length = sb.deserialize(buffer + offset, &lb, &gb);
+    length = sb.deserialize(buffer + offset, lb, gb);
     debug(1, "[setup] [scene bank] deserialized %d bits", length);
 
     sb.getCurrentScene()->dump();

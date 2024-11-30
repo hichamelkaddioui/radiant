@@ -2,9 +2,14 @@
 #include <Scene.h>
 #include <Utils.h>
 
-#ifndef SCENE_DEBUG
-#define SCENE_DEBUG 0
-#endif
+void LedEffect::dump()
+{
+    debug(1, "[led effect] Dumping led effect");
+    hueA->dump();
+    hueB->dump();
+    brightnessA->dump();
+    brightnessB->dump();
+}
 
 void Scene::update()
 {
@@ -57,6 +62,84 @@ void Scene::onNotePlayed(uint8_t note, uint8_t velocity)
     }
 }
 
+size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
+{
+    size_t offset = 0;
+
+    size_t ledEffectCount = _ledEffects.size();
+    memcpy(buffer + offset, &ledEffectCount, sizeOfSizeT);
+    offset += sizeOfSizeT;
+    debug(1, "[serialize scene] %lu LED effects", ledEffectCount);
+
+    for (const LedEffect &ledEffect : _ledEffects)
+    {
+        // Find the led
+        int ledId = ledBank.getLedId(ledEffect.led);
+
+        if (ledId == -1)
+        {
+            debug(1, "[serialize scene] led not found");
+            continue;
+        }
+
+        memcpy(buffer + offset, &ledId, sizeOfInt);
+        offset += sizeOfInt;
+
+        offset += ledEffect.hueA->serialize(buffer + offset, graphBank);
+        offset += ledEffect.hueB->serialize(buffer + offset, graphBank);
+        offset += ledEffect.brightnessA->serialize(buffer + offset, graphBank);
+        offset += ledEffect.brightnessB->serialize(buffer + offset, graphBank);
+    }
+
+    return offset;
+}
+
+size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank)
+{
+    size_t offset = 0;
+
+    size_t ledEffectCount = 0;
+    memcpy(&ledEffectCount, buffer + offset, sizeOfSizeT);
+    offset += sizeOfSizeT;
+    debug(1, "[deserialize scene] %lu LED effects", ledEffectCount);
+
+    _ledEffects.clear();
+    _ledEffects.reserve(ledEffectCount);
+
+    for (size_t i = 0; i < ledEffectCount; i++)
+    {
+        LedEffect ledEffect;
+
+        int ledId = 0;
+        memcpy(&ledId, buffer + offset, sizeOfInt);
+        offset += sizeOfInt;
+
+        ledEffect.led = ledBank._bank.at(ledId);
+
+        if (ledEffect.led == nullptr)
+        {
+            debug(1, "[deserialize scene] led not found");
+            continue;
+        }
+
+        ledEffect.hueA = new Sequence();
+        ledEffect.hueB = new Sequence();
+        ledEffect.brightnessA = new Sequence();
+        ledEffect.brightnessB = new Sequence();
+
+        offset += ledEffect.hueA->deserialize(buffer + offset, graphBank);
+        offset += ledEffect.hueB->deserialize(buffer + offset, graphBank);
+        offset += ledEffect.brightnessA->deserialize(buffer + offset, graphBank);
+        offset += ledEffect.brightnessB->deserialize(buffer + offset, graphBank);
+
+        _ledEffects.push_back(ledEffect);
+    }
+
+    debug(1, "[deserialize scene] %lu LED effects", _ledEffects.size());
+
+    return offset;
+}
+
 void Scene::dump()
 {
     debug(1, "[scene] Dumping scene, number of led effects: %d", _ledEffects.size());
@@ -97,83 +180,7 @@ Scene *SceneBank::getCurrentScene()
     return _scenes[currentScene];
 }
 
-size_t serializeScene(Scene *scene, uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank)
-{
-    size_t offset = 0;
-
-    size_t ledEffectCount = scene->_ledEffects.size();
-    memcpy(buffer + offset, &ledEffectCount, sizeOfSizeT);
-    offset += sizeOfSizeT;
-    debug(1, "[serialize scene] %lu LED effects", ledEffectCount);
-
-    for (const LedEffect &ledEffect : scene->_ledEffects)
-    {
-        // Find the led
-        int ledId = ledBank->getLedId(ledEffect.led);
-
-        if (ledId == -1)
-        {
-            debug(1, "[serialize scene] led not found");
-            continue;
-        }
-
-        memcpy(buffer + offset, &ledId, sizeOfInt);
-        offset += sizeOfInt;
-
-        offset += ledEffect.hueA->serialize(buffer + offset, graphBank);
-        offset += ledEffect.hueB->serialize(buffer + offset, graphBank);
-        offset += ledEffect.brightnessA->serialize(buffer + offset, graphBank);
-        offset += ledEffect.brightnessB->serialize(buffer + offset, graphBank);
-    }
-
-    return offset;
-}
-
-size_t deserializeScene(Scene &scene, const uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank)
-{
-    size_t offset = 0;
-
-    size_t ledEffectCount = 0;
-    memcpy(&ledEffectCount, buffer + offset, sizeOfSizeT);
-    offset += sizeOfSizeT;
-    debug(1, "[deserialize scene] %lu LED effects", ledEffectCount);
-
-    scene._ledEffects.reserve(ledEffectCount);
-    scene._ledEffects.clear();
-
-    for (size_t i = 0; i < ledEffectCount; i++)
-    {
-        LedEffect ledEffect;
-
-        int ledId = 0;
-        memcpy(&ledId, buffer + offset, sizeOfInt);
-        offset += sizeOfInt;
-
-        ledEffect.led = ledBank->_bank.at(ledId);
-
-        if (ledEffect.led == nullptr)
-        {
-            debug(1, "[deserialize scene] led not found");
-            continue;
-        }
-
-        ledEffect.hueA = new Sequence();
-        ledEffect.hueB = new Sequence();
-        ledEffect.brightnessA = new Sequence();
-        ledEffect.brightnessB = new Sequence();
-
-        offset += ledEffect.hueA->deserialize(buffer + offset, graphBank);
-        offset += ledEffect.hueB->deserialize(buffer + offset, graphBank);
-        offset += ledEffect.brightnessA->deserialize(buffer + offset, graphBank);
-        offset += ledEffect.brightnessB->deserialize(buffer + offset, graphBank);
-
-        scene._ledEffects.push_back(ledEffect);
-    }
-
-    return offset;
-}
-
-size_t SceneBank::serialize(uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank)
+size_t SceneBank::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
 {
     size_t offset = 0, sceneCount = _scenes.size();
     memcpy(buffer + offset, &sceneCount, sizeOfSizeT);
@@ -182,13 +189,13 @@ size_t SceneBank::serialize(uint8_t *buffer, LedBank *ledBank, GraphBank *graphB
 
     for (Scene *scene : _scenes)
     {
-        offset += serializeScene(scene, buffer + offset, ledBank, graphBank);
+        offset += scene->serialize(buffer + offset, ledBank, graphBank);
     }
 
     return offset;
 }
 
-size_t SceneBank::deserialize(const uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank)
+size_t SceneBank::deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank)
 {
     size_t offset = 0, sceneCount = 0;
     memcpy(&sceneCount, buffer + offset, sizeOfSizeT);
@@ -198,7 +205,7 @@ size_t SceneBank::deserialize(const uint8_t *buffer, LedBank *ledBank, GraphBank
     for (size_t i = 0; i < sceneCount; i++)
     {
         Scene *scene = new Scene();
-        offset += deserializeScene(*scene, buffer + offset, ledBank, graphBank);
+        offset += scene->deserialize(buffer + offset, ledBank, graphBank);
         _scenes.push_back(scene);
     }
 
