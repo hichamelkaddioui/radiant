@@ -4,10 +4,15 @@
 class NeoPixel : public Led
 {
 public:
-    NeoPixel(int pin = 16) : _strip(1, pin) {}
+    NeoPixel(){};
+    NeoPixel(int pin) : _pin(pin){};
+    ~NeoPixel();
+
+    int _pin;
     void setup() override;
     void setRgb(uint8_t r, uint8_t g, uint8_t b) override;
+    LedType getType() override { return LedType::LED_NEOPIXEL; }
 
 private:
-    Adafruit_NeoPixel _strip;
+    Adafruit_NeoPixel *_strip;
 };

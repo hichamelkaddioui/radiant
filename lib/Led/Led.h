@@ -6,13 +6,26 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
+enum LedType
+{
+    LED_NEOPIXEL
+};
+
 class Led
 {
 public:
     virtual void setup() = 0;
+    virtual LedType getType() = 0;
     virtual void setRgb(uint8_t r, uint8_t g, uint8_t b) = 0;
 };
 
-typedef std::map<int, Led *> LedBank;
+class LedBank
+{
+public:
+    std::map<int, Led *> _bank;
+    void clear();
+    size_t serialize(uint8_t *buffer);
+    size_t deserialize(const uint8_t *buffer);
+};
 
 #endif
