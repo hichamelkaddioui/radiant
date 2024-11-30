@@ -179,8 +179,7 @@ size_t deserializeGraph(Graph &graph, const uint8_t *buffer)
 
 size_t GraphBank::serialize(uint8_t *buffer)
 {
-    int graphCount = 0;
-    size_t offset = 0;
+    size_t offset = 0, graphCount = 0;
     offset += sizeOfSizeT;
 
     for (const auto &it : _bank)
