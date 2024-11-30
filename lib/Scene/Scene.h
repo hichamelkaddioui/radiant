@@ -45,6 +45,8 @@ public:
     void restart();
     void update();
     Scene *getCurrentScene();
+    size_t serialize(uint8_t *buffer, LedBank *ledBank, GraphBank *graphBank);
+    size_t deserialize(const uint8_t *buffer);
 };
 
 #endif

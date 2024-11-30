@@ -70,6 +70,7 @@ public:
     std::map<int, Graph *> _bank;
 
     void clear();
+    int getGraphId(Graph *graph);
     size_t serialize(uint8_t *buffer);
     size_t deserialize(const uint8_t *buffer);
 };

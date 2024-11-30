@@ -99,6 +99,13 @@ void setup1()
 
     sb._scenes.push_back(firstScene);
 
+    // Reset buffer
+    memset(buffer, 0, 1024);
+
+    // Scene serialization
+    bitsInBuffer = sb.serialize(buffer, &lb2, &gb);
+    debug(1, "[setup] [scene bank] serialized %d bits", bitsInBuffer);
+
     // Scene setup
     debug(1, "[setup] Setup complete");
 }

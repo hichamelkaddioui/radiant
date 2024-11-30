@@ -89,6 +89,58 @@ int Sequence::update()
     return _value;
 }
 
+size_t serializeGraphOptions(GraphOptions graphOptions, uint8_t *buffer, GraphBank *graphBank)
+{
+    size_t offset = 0;
+    Graph *graph = graphOptions.graph;
+
+    int graphId = graphBank->getGraphId(graph);
+
+    if (graphId == -1)
+    {
+        return 0;
+    }
+
+    memccpy(buffer + offset, &graphId, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+
+    int min = graphOptions.min;
+    int max = graphOptions.max;
+    unsigned long duration = graphOptions.duration;
+    float period = graphOptions.period;
+
+    memccpy(buffer + offset, &min, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+    memccpy(buffer + offset, &max, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+    memccpy(buffer + offset, &duration, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+    memccpy(buffer + offset, &period, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+
+    return offset;
+}
+
+size_t Sequence::serialize(uint8_t *buffer, GraphBank *graphBank)
+{
+    size_t offset = 0;
+
+    offset += serializeGraphOptions(_graphOptions, buffer + offset, graphBank);
+    memccpy(buffer + offset, &_mode, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+    memccpy(buffer + offset, &_triggerNote, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+    memccpy(buffer + offset, &_controlNote, sizeOfInt, sizeOfInt);
+    offset += sizeOfInt;
+
+    return offset;
+}
+
+size_t Sequence::deserialize(const uint8_t *buffer, GraphBank *graphBank)
+{
+    return 0;
+}
+
 void Sequence::dump()
 {
     Graph *graph = _graphOptions.graph;

@@ -24,6 +24,7 @@ class LedBank
 public:
     std::map<int, Led *> _bank;
     void clear();
+    int getLedId(Led *led);
     size_t serialize(uint8_t *buffer);
     size_t deserialize(const uint8_t *buffer);
 };

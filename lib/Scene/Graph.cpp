@@ -85,6 +85,17 @@ float GraphGate::valueAt(float t)
     }
 }
 
+int GraphBank::getGraphId(Graph *graph)
+{
+    for (const auto &it : _bank)
+    {
+        if (it.second == graph)
+            return it.first;
+    }
+
+    return -1;
+}
+
 size_t serializeKeyframe(const Keyframe &keyframe, uint8_t *buffer)
 {
     size_t offset = 0;

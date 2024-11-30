@@ -53,6 +53,9 @@ public:
     // Get the value of the sequence
     int update();
 
+    size_t serialize(uint8_t *buffer, GraphBank *graphBank);
+    size_t deserialize(const uint8_t *buffer, GraphBank *graphBank);
+
 #ifdef DEBUG
     void dump();
 #endif
