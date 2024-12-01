@@ -52,11 +52,23 @@ void setup1()
     localGraphBank._bank[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
 
     // SceneBank
-    Sequence *hue = new Sequence(62);
-    Sequence *brightness = new Sequence(
+    Sequence *hueA = new Sequence(
+        PlaybackMode::ONCE,
+        {localGraphBank._bank[DefaultGraph::UP], 0, 127, 500},
+        60);
+    Sequence *hueB = new Sequence(
         PlaybackMode::REPEAT,
-        {localGraphBank._bank[DefaultGraph::SINE], 50, 100, 10 * 1000, 0.5f});
-    LedEffect *pixelEffect = new LedEffect(pixel, hue, hue, brightness, brightness);
+        {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000},
+        61);
+    Sequence *brightnessA = new Sequence(
+        PlaybackMode::ONCE,
+        {localGraphBank._bank[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f},
+        60);
+    Sequence *brightnessB = new Sequence(
+        PlaybackMode::REPEAT,
+        {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000},
+        61);
+    LedEffect *pixelEffect = new LedEffect(pixel, hueA, hueB, brightnessA, brightnessB);
 
     Scene *firstScene = new Scene();
     firstScene->_ledEffects.push_back(*pixelEffect);
@@ -117,6 +129,6 @@ void loop1()
 
     currentScene->update();
 
-    screen.displaySceneData((*currentScene));
+    screen.displaySceneData(*currentScene);
     screen.loop();
 }

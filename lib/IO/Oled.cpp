@@ -94,20 +94,27 @@ void Oled::displaySceneData(const Scene &scene)
         return;
 
     LedEffect first = scene._ledEffects[0];
-    Sequence *hue = first.hueA;
-    Sequence *brightness = first.brightnessA;
+    Sequence *hueA = first.hueA;
+    Sequence *brightnessA = first.brightnessA;
+    Sequence *hueB = first.hueB;
+    Sequence *brightnessB = first.brightnessB;
 
     int x2, elapsed;
     int xMax = SCREEN_WIDTH / 2 - 5;
+
     _display.clearDisplay();
     _display.setCursor(0, 0);
     _display.print("Hue");
-    x2 = min(xMax, xMax * hue->elapsed() / hue->_duration);
+    x2 = min(xMax, xMax * hueA->elapsed() / hueA->_duration);
     _display.drawLine(0, 18, x2, 18, SSD1306_WHITE);
+    x2 = min(xMax, xMax * hueB->elapsed() / hueB->_duration);
+    _display.drawLine(0, 25, x2, 25, SSD1306_WHITE);
     int xOffset = SCREEN_WIDTH / 2;
     _display.setCursor(xOffset, 0);
     _display.print("Brightness");
-    x2 = min(xOffset + xMax, xOffset + (xMax * brightness->elapsed() / brightness->_duration));
+    x2 = min(xOffset + xMax, xOffset + (xMax * brightnessA->elapsed() / brightnessA->_duration));
     _display.drawLine(xOffset, 18, x2, 18, SSD1306_WHITE);
+    x2 = min(xOffset + xMax, xOffset + (xMax * brightnessB->elapsed() / brightnessB->_duration));
+    _display.drawLine(xOffset, 25, x2, 25, SSD1306_WHITE);
     _display.display();
 }
