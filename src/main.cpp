@@ -81,9 +81,9 @@ void setup1()
     localSceneBank._scenes.push_back(scene);
 
     scene = new Scene();
-    hueA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 0, 255, 10 * 1000});
+    hueA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 0, 255, 10 * 1000}, 60);
     hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000});
-    brightnessA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 13 * 1000});
+    brightnessA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 13 * 1000}, 60);
     brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000});
 
     pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
@@ -131,8 +131,7 @@ void setup1()
 
 void loop()
 {
-    Scene *currentScene = sb.getCurrentScene();
-    midiSerial.loop(currentScene);
+    midiSerial.loop(sb);
 }
 
 void loop1()

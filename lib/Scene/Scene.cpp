@@ -147,6 +147,9 @@ void Scene::dump()
 void SceneBank::next()
 {
     currentScene = (currentScene + 1) % _scenes.size();
+
+    debug(1, "[scene bank] switching to scene %d", currentScene + 1);
+
     _scenes[currentScene]->restart();
 }
 
@@ -158,6 +161,8 @@ void SceneBank::previous()
 
 void SceneBank::restart()
 {
+    debug(1, "[scene bank] restarting scene bank");
+
     _scenes[currentScene]->restart();
 }
 

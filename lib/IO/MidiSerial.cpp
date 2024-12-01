@@ -11,7 +11,57 @@ void MidiSerial::setup()
     MidiUART.begin(MIDI_CHANNEL_OMNI);
 }
 
-void MidiSerial::loop(Scene *currentScene)
+void MidiSerial::handleNoteOn(SceneBank &sceneBank)
+{
+    byte note = MidiUART.getData1();
+    byte velocity = MidiUART.getData2();
+    debug(1, "[midi] received note on: %02X, velocity: %02X", note, velocity);
+
+    Scene *currentScene = sceneBank.getCurrentScene();
+
+    if (!currentScene)
+    {
+        debug(1, "[midi] no current scene");
+        return;
+    }
+
+    currentScene->onNotePlayed(note, velocity);
+}
+
+void MidiSerial::handleSystemExclusive(SceneBank &sceneBank)
+{
+    const byte *array = MidiUART.getSysExArray();
+    unsigned size = MidiUART.getSysExArrayLength();
+
+    Serial.print("[midi] received System Exclusive: ");
+
+    for (int i = 0; i < size; i++)
+    {
+        Serial.print(array[i], HEX);
+        Serial.print(" ");
+    }
+    Serial.println();
+}
+
+void MidiSerial::handleProgramChange(SceneBank &sceneBank)
+{
+    byte value = MidiUART.getData1();
+    debug(1, "[midi] received program change: %02X", value);
+
+    switch (value)
+    {
+    case 0x00:
+        sceneBank.restart();
+        break;
+    case 0x01:
+        sceneBank.next();
+        break;
+    default:
+        break;
+    }
+}
+
+void MidiSerial::loop(SceneBank &sceneBank)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -19,35 +69,20 @@ void MidiSerial::loop(Scene *currentScene)
         // Handle the MIDI message
         byte type = MidiUART.getType();
 
-        if (type == MidiType::NoteOn)
+        switch (type)
         {
-            byte channel = MidiUART.getChannel();
-            byte note = MidiUART.getData1();
-            byte velocity = MidiUART.getData2();
-            debug(1, "[midi] Received note on channel %02X: %02X %02X %02X", channel, type, note, velocity);
-            currentScene->onNotePlayed(note, velocity);
-        }
-        else if (type == MidiType::SystemExclusive)
-        {
-            byte channel = MidiUART.getChannel();
-            const byte *array = MidiUART.getSysExArray();
-            unsigned size = MidiUART.getSysExArrayLength();
-
-            Serial.print("[midi] System Exclusive: ");
-
-            for (int i = 0; i < size; i++)
-            {
-                Serial.print(array[i], HEX);
-                Serial.print(" ");
-            }
-            Serial.println();
-        }
-        else if (type == MidiType::ControlChange)
-        {
-            byte channel = MidiUART.getChannel();
-            byte control = MidiUART.getData1();
-            byte value = MidiUART.getData2();
-            debug(1, "[midi] Received control change: %02X %02X %02X", type, control, value);
+        case MidiType::NoteOn:
+            handleNoteOn(sceneBank);
+            break;
+        case MidiType::SystemExclusive:
+            handleSystemExclusive(sceneBank);
+            break;
+        case MidiType::ProgramChange:
+            handleProgramChange(sceneBank);
+            break;
+        default:
+            debug(1, "[midi] received midi message type: %02X, value: %02X", type, MidiUART.getData1());
+            break;
         }
     }
 }

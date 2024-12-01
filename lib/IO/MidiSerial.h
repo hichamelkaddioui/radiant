@@ -13,7 +13,12 @@ class MidiSerial
 {
 public:
     void setup();
-    void loop(Scene *scene);
+    void loop(SceneBank &sceneBank);
+
+private:
+    void handleNoteOn(SceneBank &sceneBank);
+    void handleSystemExclusive(SceneBank &sceneBank);
+    void handleProgramChange(SceneBank &sceneBank);
 };
 
 #endif

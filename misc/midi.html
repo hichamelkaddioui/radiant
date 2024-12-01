@@ -4,48 +4,181 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Send MIDI Message to External Interface</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
   </head>
   <body>
-    <h1>Send MIDI Message to External Interface</h1>
-    <div id="connection-info">
-      <button id="connectMIDI">Connect MIDI Device</button>
-    </div>
+    <main class="container">
+      <h1>Send MIDI Message to External Interface</h1>
 
-    <br />
+      <div id="connection-info">
+        <button id="connectMIDI">Connect MIDI Device</button>
+      </div>
 
-    <form action="#" onsubmit="sendMidi(); return false;">
-      <input type="number" id="noteNumber" value="60" />
-      <label for="velocity">Velocity:</label>
-      <input
-        type="range"
-        id="velocity"
-        min="1"
-        max="127"
-        value="127"
-        oninput="document.getElementById('velocityValue').innerText = this.value"
-      />
-      <span id="velocityValue">127</span>
-      <button id="sendNote" type="submit">Send Note On</button>
-    </form>
+      <br />
 
-    <br />
+      <!-- Send Program Change -->
+      <article>
+        <header>
+          <h3>Send Program Change</h3>
+        </header>
 
-    <button id="sendSysex" onclick="sendSysex()">Send Sysex</button>
-    <button id="sendControlChange" onclick="sendControlChange()">
-      Send Control Change
-    </button>
+        <div role="group">
+          <button class="outline" onclick="next()">
+            🡢&nbsp;&nbsp;&nbsp;Next scene
+          </button>
+          <button class="outline" onclick="restart()">
+            ⭯&nbsp;&nbsp;&nbsp;Restart scene
+          </button>
+        </div>
+      </article>
 
-    <br />
+      <!-- Send Note On -->
+      <article>
+        <header>
+          <h3>Send Note</h3>
+        </header>
 
-    <!-- ABC Notation Display -->
-    <h3>ABC Notation</h3>
-    <div id="abcNotation">No note sent</div>
+        <form onsubmit="sendNoteOn(); return false;">
+          <fieldset class="grid">
+            <label>
+              Note
+              <input
+                type="number"
+                id="note"
+                min="1"
+                max="127"
+                value="60"
+                oninput="document.getElementById('abcNotation').innerText = midiNoteToABC(this.value)"
+              />
+              <code id="abcNotation">C4</code>
+            </label>
+            <label>
+              Duration <small>(ms)</small>
+              <input type="number" id="duration" min="0" value="1000" />
+            </label>
+          </fieldset>
+
+          <label>
+            Velocity
+            <input
+              type="range"
+              id="velocity"
+              min="1"
+              max="127"
+              value="127"
+              oninput="document.getElementById('velocityValue').innerText = this.value"
+            />
+            <code id="velocityValue">127</code>
+          </label>
+
+          <br />
+
+          <input type="submit" value="Send" />
+        </form>
+      </article>
+
+      <!-- Send SysEx -->
+      <article>
+        <header><h3>Send SysEx</h3></header>
+
+        <p>
+          <textarea
+            id="sysexMessage"
+            style="font-family: 'Courier New', Courier, monospace"
+            rows="4"
+          ></textarea>
+        </p>
+
+        <button id="sendSysex" onclick="sendSysex()">Send Sysex</button>
+      </article>
+
+      <!-- Log -->
+      <article>
+        <header><h3>MIDI Log</h3></header>
+
+        <code
+          id="log"
+          class="overflow-auto"
+          style="max-height: 20rem; width: 100%"
+        >
+          No log so far...
+        </code>
+      </article>
+    </main>
 
     <script>
       let midiAccess;
       let outputDevice;
 
-      const midiNoteToABC = (noteNumber) => {
+      /**
+       * MIDI I/O
+       */
+      const requestMidiDevice = () => {
+        navigator
+          .requestMIDIAccess({ sysex: true })
+          .then((access) => {
+            midiAccess = access;
+
+            // List available output devices
+            const outputs = Array.from(midiAccess.outputs.values());
+
+            console.log(outputs);
+
+            if (outputs.length > 0) {
+              outputDevice = outputs[0];
+
+              document.getElementById(
+                "connection-info"
+              ).innerHTML = `<kbd>${outputDevice.name} 🟢 </kbd>`;
+            } else {
+              alert("No MIDI output devices found.");
+            }
+          })
+          .catch((err) => {
+            console.error("MIDI Access failed: ", err);
+          });
+      };
+
+      /**
+       * Utils
+       */
+      const defaultSysExMessage = [
+        0xf0, 0x7e, 0x7f, 0x00, 0x00, 0x00, 0x13, 0x12, 0x13, 0x12, 0x13, 0x13,
+        0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+        0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13,
+        0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
+        0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13,
+        0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x13,
+        0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12,
+        0x13, 0x12, 0x13, 0x12, 0xf7,
+      ];
+
+      const decToHex = (dec) => "0x" + dec.toString(16).padStart(2, "0");
+
+      let logArray = [];
+
+      const log = (message) => {
+        console.log(message);
+
+        const now = new Date();
+        const time = now.toLocaleTimeString();
+        const ms = now.getMilliseconds();
+
+        logArray.push(`[${time}.${String(ms).padStart(3, "0")}] ${message}`);
+        document.getElementById("log").innerText = [...logArray]
+          .reverse()
+          .join("\n");
+      };
+
+      const midiNoteToABC = (note) => {
+        if (note < 1 || note > 127) {
+          return "";
+        }
+
         // Define the note names in order starting from C
         const noteNames = [
           "C",
@@ -63,8 +196,8 @@
         ];
 
         // MIDI note number for middle C is 60, so we calculate the offset
-        const octave = Math.floor((noteNumber - 12) / 12);
-        const noteIndex = noteNumber % 12;
+        const octave = Math.floor((note - 12) / 12);
+        const noteIndex = note % 12;
 
         // Get the note name (C, C#, D, etc.)
         const noteName = noteNames[noteIndex];
@@ -73,105 +206,97 @@
         return `${noteName}${octave}`;
       };
 
-      const requestMidiDevice = () => {
-        navigator
-          .requestMIDIAccess({ sysex: true })
-          .then((access) => {
-            midiAccess = access;
+      /**
+       * MIDI messages functions
+       */
 
-            // List available output devices
-            const outputs = Array.from(midiAccess.outputs.values());
+      // Program Change
+      const sendProgramChange = (number) => {
+        if (!outputDevice) {
+          alert("No MIDI device connected.");
+          return;
+        }
 
-            console.log(outputs);
+        // MIDI message format: [statusByte, programNumber]
+        // Program Change message for the specified program number
+        let programChangeMessage = [0xc0, number];
+        outputDevice.send(programChangeMessage);
 
-            if (outputs.length > 0) {
-              outputDevice = outputs[0];
+        log(`Sent Program Change (program ${number})`);
+      };
+      const restart = () => sendProgramChange(0x00);
+      const next = () => sendProgramChange(0x01);
 
-              document.getElementById(
-                "connection-info"
-              ).innerHTML = `Connected to: ${outputDevice.name}`;
-            } else {
-              alert("No MIDI output devices found.");
-            }
-          })
-          .catch((err) => {
-            console.error("MIDI Access failed: ", err);
-          });
+      // Note On
+      const sendNoteOn = () => {
+        if (!outputDevice) {
+          alert("No MIDI device connected.");
+          return;
+        }
+
+        const note = parseInt(document.getElementById("note").value);
+        const velocity = parseInt(document.getElementById("velocity").value);
+        const duration = parseInt(document.getElementById("duration").value);
+
+        // MIDI message format: [statusByte, dataByte1, dataByte2]
+        // Note On for the specified note number with maximum velocity (127)
+        let noteOnMessage = [0x90, note, velocity];
+        outputDevice.send(noteOnMessage);
+
+        const noteAbc = midiNoteToABC(note);
+
+        log(`Sent Note On: ${noteAbc}, velocity ${velocity}`);
+
+        // Optionally, send a Note Off after 1 second (to stop the note)
+        setTimeout(() => {
+          let noteOffMessage = [0x80, note, 0];
+          outputDevice.send(noteOffMessage);
+          log(`Sent Note Off: ${noteAbc}`);
+        }, duration);
       };
 
-      // Check for Web MIDI API support
-      if (navigator.requestMIDIAccess) {
-        console.log("Web MIDI API is supported!");
-
-        // Request MIDI access
-        document
-          .getElementById("connectMIDI")
-          .addEventListener("click", requestMidiDevice());
-        requestMidiDevice();
-      } else {
-        alert("Web MIDI API is not supported in this browser.");
-      }
-
+      // SysEx
       const sendSysex = () => {
-        if (outputDevice) {
-          let sysexMessage = [
-            0xf0, 0x7e, 0x7f, 0x00, 0x00, 0x00, 0x13, 0x12, 0x13, 0x12, 0x13,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0x13, 0x12, 0x13, 0x12, 0x13, 0x13, 0x12, 0x13, 0x12, 0x13, 0x12,
-            0xf7,
-          ];
-          outputDevice.send(sysexMessage);
-          console.log("Sent Sysex Message");
-        } else {
+        if (!outputDevice) {
           alert("No MIDI device connected.");
+          return;
         }
+
+        const message = document
+          .getElementById("sysexMessage")
+          .value.split(",")
+          .map((hex) => Number(hex));
+
+        outputDevice.send(message);
+
+        log(`Sent Sysex: ${message.map(decToHex).join(", ")}`);
       };
 
-      const sendControlChange = () => {
-        if (outputDevice) {
-          let controlChangeMessage = [0xb0, 0x66, 0x7f];
-          outputDevice.send(controlChangeMessage);
-          console.log("Sent Control Change Message");
+      /**
+       * Main
+       */
+
+      const init = () => {
+        // Check for Web MIDI API support
+        if (navigator.requestMIDIAccess) {
+          console.log("Web MIDI API is supported!");
+
+          // Request MIDI access
+          document
+            .getElementById("connectMIDI")
+            .addEventListener("click", requestMidiDevice());
+
+          requestMidiDevice();
         } else {
-          alert("No MIDI device connected.");
+          alert("Web MIDI API is not supported in this browser.");
         }
+
+        document.getElementById("sysexMessage").value = defaultSysExMessage
+          .map(decToHex)
+          .join(", ");
       };
 
-      const sendMidi = () => {
-        if (outputDevice) {
-          const noteNumber = parseInt(
-            document.getElementById("noteNumber").value
-          );
-          const velocity = parseInt(document.getElementById("velocity").value);
-
-          // MIDI message format: [statusByte, dataByte1, dataByte2]
-          // Note On for the specified note number with maximum velocity (127)
-          let noteOnMessage = [0x90, noteNumber, velocity];
-          outputDevice.send(noteOnMessage);
-          console.log(
-            `Sent Note On (note ${noteNumber}, velocity ${velocity})`
-          );
-
-          const abcNote = midiNoteToABC(noteNumber);
-          document.getElementById(
-            "abcNotation"
-          ).innerText = `Sent MIDI note: ${abcNote}`;
-
-          // Optionally, send a Note Off after 1 second (to stop the note)
-          setTimeout(() => {
-            let noteOffMessage = [0x80, noteNumber, 0];
-            outputDevice.send(noteOffMessage);
-            console.log(`Sent Note Off (note ${noteNumber})`);
-          }, 1000);
-        } else {
-          alert("No MIDI device connected.");
-        }
-      };
+      init();
     </script>
   </body>
 </html>
