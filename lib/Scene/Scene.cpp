@@ -166,7 +166,7 @@ void SceneBank::update()
     _scenes[currentScene]->update();
 }
 
-Scene *SceneBank::getCurrentScene()
+Scene *SceneBank::getCurrentScene() const
 {
     return _scenes[currentScene];
 }

@@ -72,8 +72,7 @@ class Oled
 public:
     Oled();
     void setup();
-    void loop();
-    void displaySceneData(const Scene &scene);
+    void loop(SceneBank &sceneBank);
 
     Adafruit_SSD1306 _display;
 
@@ -81,7 +80,8 @@ private:
     ButtonState *_buttonA;
 
     void showGreetings();
-    void handleButtonPress();
+    void handleButtonPress(SceneBank &sceneBank);
+    void displaySceneData(SceneBank &sceneBank);
 };
 
 #endif

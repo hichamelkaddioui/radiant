@@ -59,7 +59,7 @@ void Oled::setup()
 /**
  * TODO: fix contact failure for pin 6 (button B) & 5 (button C)
  */
-void Oled::handleButtonPress()
+void Oled::handleButtonPress(SceneBank &sceneBank)
 {
     int reading = digitalRead(_buttonA->pin);
 
@@ -75,7 +75,9 @@ void Oled::handleButtonPress()
             _buttonA->state = reading;
             if (_buttonA->state == LOW)
             {
-                Serial.println(F("Button A pressed"));
+                debug(1, "[oled] Button A pressed");
+
+                sceneBank.next();
             }
         }
     }
@@ -83,38 +85,64 @@ void Oled::handleButtonPress()
     _buttonA->lastState = reading;
 }
 
-void Oled::loop()
+void Oled::loop(SceneBank &sceneBank)
 {
-    handleButtonPress();
+    handleButtonPress(sceneBank);
+    displaySceneData(sceneBank);
 }
 
-void Oled::displaySceneData(const Scene &scene)
+void Oled::displaySceneData(SceneBank &sceneBank)
 {
     if (millis() % 10 != 0)
         return;
 
-    LedEffect first = scene._ledEffects[0];
-    Sequence *hueA = first.hueA;
-    Sequence *brightnessA = first.brightnessA;
-    Sequence *hueB = first.hueB;
-    Sequence *brightnessB = first.brightnessB;
+    Scene *scenePtr = sceneBank.getCurrentScene();
+
+    if (scenePtr == nullptr)
+        return;
+
+    Scene &scene = *scenePtr;
 
     int x2, elapsed;
-    int xMax = SCREEN_WIDTH / 2 - 5;
+    int maxCols = min(3, scene._ledEffects.size());
+    int xOffset = SCREEN_WIDTH / maxCols;
+    int xMax = xOffset - 5;
+
+    Sequence *hueA;
+    Sequence *brightnessA;
+    Sequence *hueB;
+    Sequence *brightnessB;
 
     _display.clearDisplay();
     _display.setCursor(0, 0);
-    _display.print("Hue");
-    x2 = min(xMax, xMax * hueA->elapsed() / hueA->_duration);
-    _display.drawLine(0, 18, x2, 18, SSD1306_WHITE);
-    x2 = min(xMax, xMax * hueB->elapsed() / hueB->_duration);
-    _display.drawLine(0, 25, x2, 25, SSD1306_WHITE);
-    int xOffset = SCREEN_WIDTH / 2;
-    _display.setCursor(xOffset, 0);
-    _display.print("Brightness");
-    x2 = min(xOffset + xMax, xOffset + (xMax * brightnessA->elapsed() / brightnessA->_duration));
-    _display.drawLine(xOffset, 18, x2, 18, SSD1306_WHITE);
-    x2 = min(xOffset + xMax, xOffset + (xMax * brightnessB->elapsed() / brightnessB->_duration));
-    _display.drawLine(xOffset, 25, x2, 25, SSD1306_WHITE);
+    _display.print("Scene ");
+    _display.print(sceneBank.currentScene + 1);
+
+    int i = 0;
+
+    for (LedEffect ledEffect : scene._ledEffects)
+    {
+        if (maxCols <= i)
+            continue;
+
+        int offset = i * xOffset;
+
+        hueA = ledEffect.hueA;
+        brightnessA = ledEffect.brightnessA;
+        hueB = ledEffect.hueB;
+        brightnessB = ledEffect.brightnessB;
+
+        x2 = min(xMax, xMax * hueA->elapsed() / hueA->_duration);
+        _display.drawLine(offset, 10, offset + x2, 10, SSD1306_WHITE);
+        x2 = min(xMax, xMax * hueB->elapsed() / hueB->_duration);
+        _display.drawLine(offset, 15, offset + x2, 15, SSD1306_WHITE);
+        x2 = min(xMax, xMax * brightnessA->elapsed() / brightnessA->_duration);
+        _display.drawLine(offset, 20, offset + x2, 20, SSD1306_WHITE);
+        x2 = min(xMax, xMax * brightnessB->elapsed() / brightnessB->_duration);
+        _display.drawLine(offset, 25, offset + x2, 25, SSD1306_WHITE);
+
+        i++;
+    }
+
     _display.display();
 }

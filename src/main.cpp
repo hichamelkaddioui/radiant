@@ -42,9 +42,13 @@ void setup1()
     uint8_t buffer[1024]{};
 
     // LedBank
-    NeoPixel *pixel = new NeoPixel(16);
     LedBank localLedBank;
-    localLedBank._bank[10] = pixel;
+    NeoPixel *pixel13 = new NeoPixel(16);
+    localLedBank._bank[13] = pixel13;
+    NeoPixel *pixel12 = new NeoPixel(-1);
+    localLedBank._bank[12] = pixel12;
+    NeoPixel *pixel666 = new NeoPixel(-1);
+    localLedBank._bank[666] = pixel666;
 
     // GraphBank
     GraphBank localGraphBank = defaultGraphBank();
@@ -52,30 +56,44 @@ void setup1()
     localGraphBank._bank[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
 
     // SceneBank
-    Sequence *hueA = new Sequence(
-        PlaybackMode::ONCE,
-        {localGraphBank._bank[DefaultGraph::UP], 0, 127, 500},
-        60);
-    Sequence *hueB = new Sequence(
-        PlaybackMode::REPEAT,
-        {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000},
-        61);
-    Sequence *brightnessA = new Sequence(
-        PlaybackMode::ONCE,
-        {localGraphBank._bank[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f},
-        60);
-    Sequence *brightnessB = new Sequence(
-        PlaybackMode::REPEAT,
-        {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000},
-        61);
-    LedEffect *pixelEffect = new LedEffect(pixel, hueA, hueB, brightnessA, brightnessB);
-
-    Scene *firstScene = new Scene();
-    firstScene->_ledEffects.push_back(*pixelEffect);
-
     SceneBank localSceneBank;
-    localSceneBank._scenes.push_back(firstScene);
-    localSceneBank.getCurrentScene()->dump();
+    Sequence *hueA;
+    Sequence *hueB;
+    Sequence *brightnessA;
+    Sequence *brightnessB;
+    Scene *scene;
+    LedEffect *pixelEffect;
+
+    // SceneBank
+    scene = new Scene();
+    hueA = new Sequence(PlaybackMode::ONCE, {localGraphBank._bank[DefaultGraph::UP], 0, 127, 500}, 60);
+    hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000});
+    brightnessA = new Sequence(PlaybackMode::ONCE, {localGraphBank._bank[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f}, 60);
+    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000});
+
+    pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects.push_back(*pixelEffect);
+    pixelEffect = new LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
+    scene->_ledEffects.push_back(*pixelEffect);
+    pixelEffect = new LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects.push_back(*pixelEffect);
+
+    localSceneBank._scenes.push_back(scene);
+
+    scene = new Scene();
+    hueA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 0, 255, 10 * 1000});
+    hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000});
+    brightnessA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 13 * 1000});
+    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000});
+
+    pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects.push_back(*pixelEffect);
+    pixelEffect = new LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
+    scene->_ledEffects.push_back(*pixelEffect);
+    pixelEffect = new LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects.push_back(*pixelEffect);
+
+    localSceneBank._scenes.push_back(scene);
 
     // Serialize
     offset += localLedBank.serialize(buffer);
@@ -129,6 +147,5 @@ void loop1()
 
     currentScene->update();
 
-    screen.displaySceneData(*currentScene);
-    screen.loop();
+    screen.loop(sb);
 }

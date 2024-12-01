@@ -49,7 +49,7 @@ public:
     void previous();
     void restart();
     void update();
-    Scene *getCurrentScene();
+    Scene *getCurrentScene() const;
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
 };
