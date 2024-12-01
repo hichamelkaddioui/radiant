@@ -99,6 +99,7 @@ int Sequence::update()
 
 void Sequence::restart()
 {
+    _triggered = false;
     _chrono.restart();
 }
 
