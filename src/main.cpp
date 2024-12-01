@@ -69,7 +69,7 @@ void setup1()
     hueA = new Sequence(PlaybackMode::ONCE, {localGraphBank._bank[DefaultGraph::UP], 0, 127, 500}, 60);
     hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 70, 255, 5 * 1000});
     brightnessA = new Sequence(PlaybackMode::ONCE, {localGraphBank._bank[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000});
+    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000}, 60);
 
     pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
     scene->_ledEffects.push_back(*pixelEffect);

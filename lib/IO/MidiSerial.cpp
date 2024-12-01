@@ -61,6 +61,23 @@ void MidiSerial::handleProgramChange(SceneBank &sceneBank)
     }
 }
 
+void MidiSerial::handleControlChange(SceneBank &sceneBank)
+{
+    byte type = MidiUART.getData1();
+    byte value = MidiUART.getData2();
+    debug(1, "[midi] received control change: %02X %02X", type, value);
+
+    switch (type)
+    {
+    // Balance
+    case 0x08:
+        sceneBank.getCurrentScene()->_ab = value / 127.0f;
+        break;
+    default:
+        break;
+    }
+}
+
 void MidiSerial::loop(SceneBank &sceneBank)
 {
     // Read incoming MIDI messages
@@ -79,6 +96,9 @@ void MidiSerial::loop(SceneBank &sceneBank)
             break;
         case MidiType::ProgramChange:
             handleProgramChange(sceneBank);
+            break;
+        case MidiType::ControlChange:
+            handleControlChange(sceneBank);
             break;
         default:
             debug(1, "[midi] received midi message type: %02X, value: %02X", type, MidiUART.getData1());

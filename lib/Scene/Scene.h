@@ -24,6 +24,8 @@ class Scene
 public:
     Scene() = default;
     Scene(std::vector<LedEffect> ledScenes) : _ledEffects(ledScenes) {}
+
+    float _ab = 0.0f;
     std::vector<LedEffect> _ledEffects;
 
     void update();

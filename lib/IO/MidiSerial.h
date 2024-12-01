@@ -19,6 +19,7 @@ private:
     void handleNoteOn(SceneBank &sceneBank);
     void handleSystemExclusive(SceneBank &sceneBank);
     void handleProgramChange(SceneBank &sceneBank);
+    void handleControlChange(SceneBank &sceneBank);
 };
 
 #endif

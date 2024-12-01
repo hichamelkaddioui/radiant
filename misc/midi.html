@@ -36,6 +36,31 @@
         </div>
       </article>
 
+      <article>
+        <header>
+          <h3>Send Control Change</h3>
+        </header>
+        <form onsubmit="sendAB(); return false;">
+          <fieldset>
+            <input
+              id="ab"
+              type="range"
+              min="0"
+              max="127"
+              value="0"
+              oninput="sendAB()"
+            />
+            <div class="grid">
+              <div>A</div>
+              <div dir="rtl">B</div>
+            </div>
+            <code id="abValue">0 %</code>
+          </fieldset>
+
+          <input class="outline" type="submit" value="Send A/B value" />
+        </form>
+      </article>
+
       <!-- Send Note On -->
       <article>
         <header>
@@ -93,7 +118,9 @@
           ></textarea>
         </p>
 
-        <button id="sendSysex" onclick="sendSysex()">Send Sysex</button>
+        <br />
+
+        <input type="submit" value="Send Sysex" onclick="sendSysex()" />
       </article>
 
       <!-- Log -->
@@ -131,15 +158,21 @@
             if (outputs.length > 0) {
               outputDevice = outputs[0];
 
-              document.getElementById(
-                "connection-info"
-              ).innerHTML = `<kbd>${outputDevice.name} 🟢 </kbd>`;
+              const info = `<kbd>${outputDevice.name} 🟢 </kbd>`;
+
+              document.getElementById("connection-info").innerHTML = info;
+
+              outputDevice.addEventListener("midimessage", (event) => {
+                log(event);
+              });
+
+              log(`Connected to output device: ${outputDevice.name})`);
             } else {
               alert("No MIDI output devices found.");
             }
           })
           .catch((err) => {
-            console.error("MIDI Access failed: ", err);
+            log("MIDI Access failed: " + err);
           });
       };
 
@@ -169,6 +202,7 @@
         const ms = now.getMilliseconds();
 
         logArray.push(`[${time}.${String(ms).padStart(3, "0")}] ${message}`);
+
         document.getElementById("log").innerText = [...logArray]
           .reverse()
           .join("\n");
@@ -224,8 +258,36 @@
 
         log(`Sent Program Change (program ${number})`);
       };
-      const restart = () => sendProgramChange(0x00);
-      const next = () => sendProgramChange(0x01);
+      const restart = () => {
+        sendProgramChange(0x00);
+        resetAb();
+      };
+      const next = () => {
+        sendProgramChange(0x01);
+        resetAb();
+      };
+      const resetAb = () => {
+        document.getElementById("ab").value = 0;
+        document.getElementById("abValue").innerText = "0 %";
+      };
+      const sendAB = () => {
+        if (!outputDevice) {
+          alert("No MIDI device connected.");
+          return;
+        }
+
+        const value = parseInt(document.getElementById("ab").value);
+
+        // Update A/B value
+        const percent = ((value * 100) / 127).toFixed(2);
+        document.getElementById("abValue").innerText = `${percent} %`;
+
+        // Send control change message for A/B value
+        const controlChangeMessage = [0xb0, 0x8, value];
+        outputDevice.send(controlChangeMessage);
+
+        log(`Sent A/B value: ${value} / 127`);
+      };
 
       // Note On
       const sendNoteOn = () => {
@@ -279,7 +341,7 @@
       const init = () => {
         // Check for Web MIDI API support
         if (navigator.requestMIDIAccess) {
-          console.log("Web MIDI API is supported!");
+          log("Web MIDI API is supported!");
 
           // Request MIDI access
           document

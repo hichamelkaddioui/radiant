@@ -23,16 +23,19 @@ void Scene::update()
         int brightnessA = ledEffect.brightnessA->update();
         int brightnessB = ledEffect.brightnessB->update();
 
-        // TODO: Implement convolution between A and B
+        int hue = _ab * hueB + (1 - _ab) * hueA;
+        int brightness = _ab * brightnessB + (1 - _ab) * brightnessA;
 
         CRGB colorRGB;
-        hsv2rgb_rainbow(CHSV(hueA, 255, brightnessA), colorRGB);
+        hsv2rgb_rainbow(CHSV(hue, 255, brightness), colorRGB);
         led->setRgb(colorRGB.r, colorRGB.g, colorRGB.b);
     }
 }
 
 void Scene::restart()
 {
+    _ab = 0.0f;
+
     for (LedEffect ledEffect : _ledEffects)
     {
         ledEffect.hueA->restart();

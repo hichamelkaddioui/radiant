@@ -103,21 +103,41 @@ void Oled::displaySceneData(SceneBank &sceneBank)
 
     Scene &scene = *scenePtr;
 
-    int x2, elapsed;
-    int maxCols = min(3, scene._ledEffects.size());
-    int xOffset = SCREEN_WIDTH / maxCols;
-    int xMax = xOffset - 5;
-
-    Sequence *hueA;
-    Sequence *brightnessA;
-    Sequence *hueB;
-    Sequence *brightnessB;
-
     _display.clearDisplay();
     _display.setCursor(0, 0);
     _display.print("Scene ");
     _display.print(sceneBank.currentScene + 1);
 
+    int xA = SCREEN_WIDTH / 2;
+    int xB = SCREEN_WIDTH - 6;
+
+    _display.setCursor(xA, 0);
+    _display.print("A");
+    _display.setCursor(xB, 0);
+    _display.print("B");
+
+    int rectangleStart = xA + 8;
+    int rectangleWidth = xB - (xA + 8) - 3;
+
+    _display.drawRoundRect(xA + 8, 0, xB - (xA + 8) - 3, 7, 3, SSD1306_WHITE);
+
+    int middleRectangle = rectangleStart + rectangleWidth / 2;
+    int halfLengthRectangle = rectangleWidth / 2;
+    int width = halfLengthRectangle * abs((map(scene._ab * 1000, 0, 1000, -1000, 1000) / 1000.0f)) - 2;
+
+    if (scene._ab < 0.5)
+    {
+        _display.fillRoundRect(middleRectangle - width, 2, width, 3, 3, SSD1306_WHITE);
+    }
+    else
+    {
+        _display.fillRoundRect(middleRectangle, 2, width, 3, 3, SSD1306_WHITE);
+    }
+
+    int maxCols = min(3, scene._ledEffects.size());
+    int xOffset = SCREEN_WIDTH / maxCols;
+    int maxHeight = SCREEN_HEIGHT - 15;
+    int gap = min(5, xOffset / 5);
     int i = 0;
 
     for (LedEffect ledEffect : scene._ledEffects)
@@ -127,19 +147,22 @@ void Oled::displaySceneData(SceneBank &sceneBank)
 
         int offset = i * xOffset;
 
-        hueA = ledEffect.hueA;
-        brightnessA = ledEffect.brightnessA;
-        hueB = ledEffect.hueB;
-        brightnessB = ledEffect.brightnessB;
+        Sequence *hueA = ledEffect.hueA;
+        Sequence *brightnessA = ledEffect.brightnessA;
+        Sequence *hueB = ledEffect.hueB;
+        Sequence *brightnessB = ledEffect.brightnessB;
 
-        x2 = min(xMax, xMax * hueA->elapsed() / hueA->_duration);
-        _display.drawLine(offset, 10, offset + x2, 10, SSD1306_WHITE);
-        x2 = min(xMax, xMax * hueB->elapsed() / hueB->_duration);
-        _display.drawLine(offset, 15, offset + x2, 15, SSD1306_WHITE);
-        x2 = min(xMax, xMax * brightnessA->elapsed() / brightnessA->_duration);
-        _display.drawLine(offset, 20, offset + x2, 20, SSD1306_WHITE);
-        x2 = min(xMax, xMax * brightnessB->elapsed() / brightnessB->_duration);
-        _display.drawLine(offset, 25, offset + x2, 25, SSD1306_WHITE);
+        int yHueA = min(maxHeight, maxHeight * hueA->elapsed() / hueA->_duration);
+        int yHueB = min(maxHeight, maxHeight * hueB->elapsed() / hueB->_duration);
+        int yBrightnessA = min(maxHeight, maxHeight * brightnessA->elapsed() / brightnessA->_duration);
+        int yBrightnessB = min(maxHeight, maxHeight * brightnessB->elapsed() / brightnessB->_duration);
+
+        _display.setCursor(offset, SCREEN_HEIGHT / 2 + 3);
+        _display.print(i + 1);
+        _display.drawLine(offset + 2 * gap, SCREEN_HEIGHT, offset + 2 * gap, SCREEN_HEIGHT - yHueA, SSD1306_WHITE);
+        _display.drawLine(offset + 3 * gap, SCREEN_HEIGHT, offset + 3 * gap, SCREEN_HEIGHT - yHueB, SSD1306_WHITE);
+        _display.drawLine(offset + 5 * gap, SCREEN_HEIGHT, offset + 5 * gap, SCREEN_HEIGHT - yBrightnessA, SSD1306_WHITE);
+        _display.drawLine(offset + 6 * gap, SCREEN_HEIGHT, offset + 6 * gap, SCREEN_HEIGHT - yBrightnessB, SSD1306_WHITE);
 
         i++;
     }
