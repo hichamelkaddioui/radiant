@@ -23,6 +23,28 @@ void debug(int printEveryMs, const char *format, ...)
 #endif
 }
 
+void debugByteArray(const uint8_t *data, size_t length)
+{
+#ifdef DEBUG
+    for (int i = 0; i < length; i++)
+    {
+        if (i % 8 == 0 && i != 0)
+            Serial.print("\n\t");
+        else
+            Serial.print("\t");
+
+        Serial.print("0x");
+
+        if (data[i] < 16)
+            Serial.print("0");
+
+        Serial.print(data[i], HEX);
+    }
+
+    Serial.println();
+#endif
+}
+
 /**
  * Interpolates a value between two points, given a curve coefficient.
  *

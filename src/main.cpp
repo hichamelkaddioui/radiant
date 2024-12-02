@@ -103,6 +103,8 @@ void setup1()
     // Write to flash
     flash.write(0x0, buffer, offset);
 
+    debugByteArray(buffer, offset);
+
     // Reset buffer
     offset = 0;
     memset(buffer, 0, 1024);

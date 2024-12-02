@@ -15,7 +15,7 @@ void MidiSerial::handleNoteOn(SceneBank &sceneBank)
 {
     byte note = MidiUART.getData1();
     byte velocity = MidiUART.getData2();
-    debug(1, "[midi] received note on: %02X, velocity: %02X", note, velocity);
+    debug(1, "[midi] received note on: 0x%02X, velocity: 0x%02X", note, velocity);
 
     Scene *currentScene = sceneBank.getCurrentScene();
 
@@ -33,20 +33,15 @@ void MidiSerial::handleSystemExclusive(SceneBank &sceneBank)
     const byte *array = MidiUART.getSysExArray();
     unsigned size = MidiUART.getSysExArrayLength();
 
-    Serial.print("[midi] received System Exclusive: ");
+    debug(1, "[midi] received System Exclusive");
 
-    for (int i = 0; i < size; i++)
-    {
-        Serial.print(array[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
+    debugByteArray(array, size);
 }
 
 void MidiSerial::handleProgramChange(SceneBank &sceneBank)
 {
     byte value = MidiUART.getData1();
-    debug(1, "[midi] received program change: %02X", value);
+    debug(1, "[midi] received program change: 0x%02X", value);
 
     switch (value)
     {
@@ -65,7 +60,7 @@ void MidiSerial::handleControlChange(SceneBank &sceneBank)
 {
     byte type = MidiUART.getData1();
     byte value = MidiUART.getData2();
-    debug(1, "[midi] received control change: %02X %02X", type, value);
+    debug(1, "[midi] received control change: 0x%02X 0x%02X", type, value);
 
     switch (type)
     {
@@ -101,7 +96,7 @@ void MidiSerial::loop(SceneBank &sceneBank)
             handleControlChange(sceneBank);
             break;
         default:
-            debug(1, "[midi] received midi message type: %02X, value: %02X", type, MidiUART.getData1());
+            debug(1, "[midi] received midi message type: 0x%02X, value: 0x%02X", type, MidiUART.getData1());
             break;
         }
     }
