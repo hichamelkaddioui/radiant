@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Send MIDI Message to External Interface</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <script src="midi.js"></script>
+    <script src="canvas.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Send MIDI Message to External Interface</h1>
+
+      <div id="connection-info">
+        <button id="connectMIDI">Connect MIDI Device</button>
+      </div>
+
+      <br />
+
+      <!-- Send Program Change -->
+      <article>
+        <header>
+          <h2>Send Program Change</h2>
+        </header>
+
+        <div role="group">
+          <button class="outline" onclick="next()">
+            🡢&nbsp;&nbsp;&nbsp;Next scene
+          </button>
+          <button class="outline" onclick="restart()">
+            ⭯&nbsp;&nbsp;&nbsp;Restart scene
+          </button>
+        </div>
+      </article>
+
+      <article>
+        <header>
+          <h2>Send Control Change</h2>
+        </header>
+
+        <form id="sendAB">
+          <fieldset>
+            <input
+              id="ab"
+              type="range"
+              min="0"
+              max="127"
+              value="0"
+              oninput="sendAB()"
+            />
+            <div class="grid">
+              <div>A</div>
+              <div dir="rtl">B</div>
+            </div>
+            <code id="abValue">0.00 %</code>
+          </fieldset>
+
+          <input class="outline" type="submit" value="Send A/B value" />
+        </form>
+      </article>
+
+      <!-- Send Note On -->
+      <article>
+        <header>
+          <h2>Send Note</h2>
+        </header>
+
+        <form id="sendNoteOn">
+          <fieldset class="grid">
+            <label>
+              Note
+              <input
+                type="number"
+                id="note"
+                min="1"
+                max="127"
+                value="60"
+                oninput="document.getElementById('abcNotation').innerText = midiNoteToABC(this.value)"
+              />
+              <code id="abcNotation">C4</code>
+            </label>
+            <label>
+              Duration <small>(ms)</small>
+              <input type="number" id="duration" min="0" value="1000" />
+            </label>
+          </fieldset>
+
+          <label>
+            Velocity
+            <input
+              type="range"
+              id="velocity"
+              min="1"
+              max="127"
+              value="127"
+              oninput="document.getElementById('velocityValue').innerText = this.value"
+            />
+            <code id="velocityValue">127</code>
+          </label>
+
+          <br />
+
+          <input type="submit" value="Send note on" />
+        </form>
+      </article>
+
+      <!-- Send SysEx -->
+      <article>
+        <header><h2>Send SysEx</h2></header>
+
+        <form id="sendSysex">
+          <p>
+            <textarea
+              id="sysexMessage"
+              style="font-family: 'Courier New', Courier, monospace"
+              rows="4"
+            ></textarea>
+          </p>
+
+          <br />
+
+          <input type="submit" value="Send Sysex" />
+        </form>
+      </article>
+
+      <!-- Log -->
+      <article>
+        <header><h2>MIDI Log</h2></header>
+
+        <code
+          id="log"
+          class="overflow-auto"
+          style="max-height: 20rem; width: 100%"
+        >
+          No log so far...
+        </code>
+      </article>
+
+      <hr />
+
+      <h1>OLED bitmap helper</h1>
+
+      <!-- PNG converter -->
+      <article>
+        <header><h2>PNG converter</h2></header>
+
+        <form id="imageUploadForm">
+          <input type="file" id="fileInput" accept="image/png" />
+
+          <input type="submit" value="Upload PNG" />
+        </form>
+      </article>
+
+      <!-- Drawable Canvas -->
+      <article>
+        <header><h2>Drawable Canvas</h2></header>
+
+        <div class="overflow-auto">
+          <canvas
+            id="canvas"
+            width="120"
+            height="32"
+            style="display: block; margin: auto"
+          ></canvas>
+        </div>
+
+        <br />
+
+        <div role="group">
+          <button id="pencilTool" class="secondary">Pencil</button>
+          <button id="eraserTool" class="secondary">Eraser</button>
+        </div>
+      </article>
+
+      <!-- Bitmap -->
+      <article>
+        <header><h2>Binary bitmap</h2></header>
+
+        <h3>Bitmap</h3>
+
+        <textarea
+          style="
+            font-family: 'Courier New', Courier, monospace;
+            font-size: small;
+          "
+          id="bitmapInput"
+          rows="6"
+          cols="60"
+          placeholder="Enter bitmap data (.g. 0 1 0 1... per row)"
+        ></textarea>
+
+        <div class="grid">
+          <button id="loadBitmap" class="outline">
+            Load bitmap into canvas
+          </button>
+        </div>
+
+        <br />
+        <br />
+
+        <h3>C++ bitmap</h3>
+
+        <pre id="outputCpp"></pre>
+      </article>
+    </main>
+  </body>
+</html>
