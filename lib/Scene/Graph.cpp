@@ -164,30 +164,6 @@ size_t deserializeKeyframes(std::vector<Keyframe> &keyframes, const uint8_t *buf
     return offset;
 }
 
-size_t serializeGraph(const Graph &graph, uint8_t *buffer)
-{
-    size_t offset = 0;
-
-    GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(const_cast<Graph *>(&graph));
-
-    if (keyframeGraph == nullptr)
-        return 0;
-
-    return serializeKeyframes(keyframeGraph->_keyframes, buffer + offset);
-}
-
-size_t deserializeGraph(Graph &graph, const uint8_t *buffer)
-{
-    size_t offset = 0;
-
-    GraphKeyframe *keyframeGraph = dynamic_cast<GraphKeyframe *>(&graph);
-
-    if (keyframeGraph == nullptr)
-        return 0;
-
-    return deserializeKeyframes(keyframeGraph->_keyframes, buffer + offset);
-}
-
 size_t GraphBank::serialize(uint8_t *buffer) const
 {
     size_t offset = 0, graphCount = 0;
@@ -208,7 +184,7 @@ size_t GraphBank::serialize(uint8_t *buffer) const
         debug(1, "[serialize graph] id: %d, number of keyframes: %lu", it.first, keyframeGraph->_keyframes.size());
         memcpy(buffer + offset, &it.first, sizeOfInt);
         offset += sizeOfInt;
-        offset += serializeGraph(*keyframeGraph, buffer + offset);
+        offset += serializeKeyframes(keyframeGraph->_keyframes, buffer + offset);
 
         graphCount++;
     }
@@ -240,7 +216,7 @@ size_t GraphBank::deserialize(const uint8_t *buffer)
         }
 
         GraphKeyframe *graph = new GraphKeyframe();
-        offset += deserializeGraph(*graph, buffer + offset);
+        offset += deserializeKeyframes(graph->_keyframes, buffer + offset);
         debug(1, "[deserialized graph] id: %d, number of keyframes: %lu", id, graph->_keyframes.size());
 
         _bank[id] = graph;

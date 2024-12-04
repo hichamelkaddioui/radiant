@@ -95,7 +95,6 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
     size_t ledEffectCount = 0;
     memcpy(&ledEffectCount, buffer + offset, sizeOfSizeT);
     offset += sizeOfSizeT;
-    debug(1, "[deserialize scene] %lu LED effects", ledEffectCount);
 
     _ledEffects.clear();
     _ledEffects.reserve(ledEffectCount);
