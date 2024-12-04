@@ -179,13 +179,13 @@
 
 #### External control mode
 
-|                               | Parameter   | Value              | Min | Max   |
-| ----------------------------- | ----------- | ------------------ | --- | ----- |
-| <span class="first">■</span>  | Message ID  | `5`, `6`, `7`, `8` |
-| <span class="second">■</span> | Scene id    | 1 byte             | `1` | `127` |
-| <span class="second">■</span> | Light id    | 1 byte             | `1` | `127` |
-| <span class="third">■</span>  | Hue Mode    | `2` (external)     |
-| <span class="fourth">■</span> | Hue Control | 1 byte             | `0` | `127` |
+|                               | Parameter  | Value              | Min | Max   |
+| ----------------------------- | ---------- | ------------------ | --- | ----- |
+| <span class="first">■</span>  | Message ID | `5`, `6`, `7`, `8` |
+| <span class="second">■</span> | Scene id   | 1 byte             | `1` | `127` |
+| <span class="second">■</span> | Light id   | 1 byte             | `1` | `127` |
+| <span class="third">■</span>  | Mode       | `2` (external)     |
+| <span class="fourth">■</span> | Control    | 1 byte             | `0` | `127` |
 
 **Set hue B of scene `2`, light `1` to mode "external", control note `0x3e` = 62 (D4)**
 
