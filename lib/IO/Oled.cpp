@@ -140,13 +140,14 @@ void Oled::displaySceneData(SceneBank &sceneBank)
     int gap = min(5, xOffset / 5);
     int i = 0;
 
-    for (LedEffect ledEffect : scene._ledEffects)
+    for (const auto &it : scene._ledEffects)
     {
         if (maxCols <= i)
             continue;
 
         int offset = i * xOffset;
 
+        LedEffect ledEffect = it.second;
         Sequence *hueA = ledEffect.hueA;
         Sequence *brightnessA = ledEffect.brightnessA;
         Sequence *hueB = ledEffect.hueB;

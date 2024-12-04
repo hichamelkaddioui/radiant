@@ -59,17 +59,6 @@ void LedBank::clear()
     _bank.clear();
 }
 
-int LedBank::getLedId(Led *led) const
-{
-    for (const auto &it : _bank)
-    {
-        if (it.second == led)
-            return it.first;
-    }
-
-    return -1;
-}
-
 size_t LedBank::serialize(uint8_t *buffer) const
 {
     size_t offset = 0, ledCount = 0;

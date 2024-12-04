@@ -62,7 +62,6 @@ void setup1()
     Sequence *brightnessA;
     Sequence *brightnessB;
     Scene *scene;
-    LedEffect *pixelEffect;
 
     // SceneBank
     scene = new Scene();
@@ -71,14 +70,11 @@ void setup1()
     brightnessA = new Sequence(PlaybackMode::ONCE, {localGraphBank._bank[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f}, 60);
     brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000}, 60);
 
-    pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects.push_back(*pixelEffect);
-    pixelEffect = new LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects.push_back(*pixelEffect);
-    pixelEffect = new LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
-    scene->_ledEffects.push_back(*pixelEffect);
+    scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
+    scene->_ledEffects[666] = LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
 
-    localSceneBank._scenes[666] = scene;
+    localSceneBank._scenes[12] = scene;
 
     scene = new Scene();
     hueA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::UP], 0, 255, 10 * 1000}, 60);
@@ -86,14 +82,11 @@ void setup1()
     brightnessA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 13 * 1000}, 60);
     brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._bank[DefaultGraph::SINE], 0, 255, 1000});
 
-    pixelEffect = new LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects.push_back(*pixelEffect);
-    pixelEffect = new LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects.push_back(*pixelEffect);
-    pixelEffect = new LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
-    scene->_ledEffects.push_back(*pixelEffect);
+    scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
+    scene->_ledEffects[666] = LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
 
-    localSceneBank._scenes[1312] = scene;
+    localSceneBank._scenes[13] = scene;
 
     // Serialize
     offset += localLedBank.serialize(buffer);

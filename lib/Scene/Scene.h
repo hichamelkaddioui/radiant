@@ -23,10 +23,11 @@ class Scene
 {
 public:
     Scene() = default;
-    Scene(std::vector<LedEffect> ledScenes) : _ledEffects(ledScenes) {}
+    Scene(std::map<int, LedEffect> ledScenes) : _ledEffects(ledScenes) {}
+    ~Scene();
 
     float _ab = 0.0f;
-    std::vector<LedEffect> _ledEffects;
+    std::map<int, LedEffect> _ledEffects;
 
     void update();
     void restart();

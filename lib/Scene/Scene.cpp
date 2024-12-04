@@ -2,10 +2,26 @@
 #include <Scene.h>
 #include <Utils.h>
 
+Scene::~Scene()
+{
+    for (const auto &it : _ledEffects)
+    {
+        LedEffect ledEffect = it.second;
+
+        delete ledEffect.hueA;
+        delete ledEffect.hueB;
+        delete ledEffect.brightnessA;
+        delete ledEffect.brightnessB;
+    }
+
+    _ledEffects.clear();
+}
+
 void Scene::update()
 {
-    for (LedEffect ledEffect : _ledEffects)
+    for (const auto &it : _ledEffects)
     {
+        LedEffect ledEffect = it.second;
         Led *led = ledEffect.led;
 
         if (led == nullptr)
@@ -36,8 +52,9 @@ void Scene::restart()
 {
     _ab = 0.0f;
 
-    for (LedEffect ledEffect : _ledEffects)
+    for (const auto &it : _ledEffects)
     {
+        LedEffect ledEffect = it.second;
         ledEffect.hueA->restart();
         ledEffect.hueB->restart();
         ledEffect.brightnessA->restart();
@@ -47,8 +64,9 @@ void Scene::restart()
 
 void Scene::onNotePlayed(uint8_t note, uint8_t velocity)
 {
-    for (LedEffect ledEffect : _ledEffects)
+    for (const auto &it : _ledEffects)
     {
+        LedEffect ledEffect = it.second;
         ledEffect.hueA->onNotePlayed(note, velocity, "hue A");
         ledEffect.hueB->onNotePlayed(note, velocity, "hue B");
         ledEffect.brightnessA->onNotePlayed(note, velocity, "brightness A");
@@ -58,27 +76,25 @@ void Scene::onNotePlayed(uint8_t note, uint8_t velocity)
 
 size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
 {
-    size_t offset = 0;
-
-    size_t ledEffectCount = _ledEffects.size();
+    size_t offset = 0, ledEffectCount = _ledEffects.size();
     memcpy(buffer + offset, &ledEffectCount, sizeOfSizeT);
     offset += sizeOfSizeT;
     debug(1, "[serialize scene] %lu LED effects", ledEffectCount);
 
-    for (const LedEffect &ledEffect : _ledEffects)
+    for (const auto &it : _ledEffects)
     {
-        // Find the led
-        int ledId = ledBank.getLedId(ledEffect.led);
+        int ledId = it.first;
 
-        if (ledId == -1)
+        if (ledBank._bank.find(ledId) == ledBank._bank.end())
         {
-            debug(1, "[serialize scene] led not found");
+            debug(1, "[serialize scene] led id: %d not found, skipping led effect", ledId);
             continue;
         }
 
         memcpy(buffer + offset, &ledId, sizeOfInt);
         offset += sizeOfInt;
 
+        LedEffect ledEffect = it.second;
         offset += ledEffect.hueA->serialize(buffer + offset, graphBank);
         offset += ledEffect.hueB->serialize(buffer + offset, graphBank);
         offset += ledEffect.brightnessA->serialize(buffer + offset, graphBank);
@@ -90,14 +106,11 @@ size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank
 
 size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank)
 {
-    size_t offset = 0;
-
-    size_t ledEffectCount = 0;
+    size_t offset = 0, ledEffectCount = 0;
     memcpy(&ledEffectCount, buffer + offset, sizeOfSizeT);
     offset += sizeOfSizeT;
 
     _ledEffects.clear();
-    _ledEffects.reserve(ledEffectCount);
 
     for (size_t i = 0; i < ledEffectCount; i++)
     {
@@ -111,7 +124,7 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
 
         if (ledEffect.led == nullptr)
         {
-            debug(1, "[deserialize scene] led not found");
+            debug(1, "[deserialize scene] led %d not found, skipping led effect", ledId);
             continue;
         }
 
@@ -125,7 +138,7 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
         offset += ledEffect.brightnessA->deserialize(buffer + offset, graphBank);
         offset += ledEffect.brightnessB->deserialize(buffer + offset, graphBank);
 
-        _ledEffects.push_back(ledEffect);
+        _ledEffects[ledId] = ledEffect;
     }
 
     debug(1, "[deserialize scene] %lu LED effects", _ledEffects.size());
@@ -137,8 +150,9 @@ void Scene::dump()
 {
     debug(1, "[scene] Dumping scene, number of led effects: %d", _ledEffects.size());
 
-    for (LedEffect ledEffect : _ledEffects)
+    for (const auto &it : _ledEffects)
     {
+        LedEffect ledEffect = it.second;
         ledEffect.hueA->dump("hue A");
         ledEffect.hueB->dump("hue B");
         ledEffect.brightnessA->dump("brightness A");
