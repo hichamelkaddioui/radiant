@@ -227,7 +227,7 @@ size_t GraphBank::deserialize(const uint8_t *buffer)
 
 void GraphBank::createFromSysEx(const uint8_t *buffer, size_t length)
 {
-    debug(1, "[SysEx][graph] reading %lu bytes", length);
+    debug(1, "[SysEx] [graph] reading %lu bytes", length);
 
     // The keyframes list is two bytes after the begining of the SysEx message and the last byte is SysEx end
     size_t lengthOfKeyframes = length - 3;
@@ -235,7 +235,7 @@ void GraphBank::createFromSysEx(const uint8_t *buffer, size_t length)
     // Ensure the length of the keyframes list is a multiple of 6
     if (lengthOfKeyframes % 6 != 0)
     {
-        debug(1, "[SysEx][graph] keyframes length is not a multiple of 6: %lu", lengthOfKeyframes);
+        debug(1, "[SysEx] [graph] keyframes length is not a multiple of 6: %lu", lengthOfKeyframes);
         return;
     }
 
@@ -243,7 +243,7 @@ void GraphBank::createFromSysEx(const uint8_t *buffer, size_t length)
     int graphId = buffer[1];
     int storeId = 4 * sceneId + graphId + DefaultGraph::LAST;
 
-    debug(1, "[SysEx][graph] scene id is %d, graph id is %d, store id is %d", sceneId, graphId, storeId);
+    debug(1, "[SysEx] [graph] scene id is %d, graph id is %d, store id is %d", sceneId, graphId, storeId);
 
     // Skip 2 bytes
     buffer = buffer + 2;
@@ -259,7 +259,7 @@ void GraphBank::createFromSysEx(const uint8_t *buffer, size_t length)
         y = twoBytesToFloat(buffer[i + 2], buffer[i + 3]);
         c = twoBytesToFloat(buffer[i + 4], buffer[i + 5], true);
 
-        debug(1, "[SysEx][graph] x: %f, y: %f, c: %f", x, y, c);
+        debug(1, "[SysEx] [graph] x: %f, y: %f, c: %f", x, y, c);
 
         // Create the keyframe
         Keyframe keyframe(x, y, c);
