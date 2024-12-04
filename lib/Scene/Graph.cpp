@@ -225,7 +225,7 @@ size_t GraphBank::deserialize(const uint8_t *buffer)
     return offset;
 }
 
-void GraphBank::createFromSysEx(const uint8_t *buffer, size_t length)
+void GraphBank::sysExCreate(const uint8_t *buffer, size_t length)
 {
     debug(1, "[SysEx] [graph] reading %lu bytes", length);
 

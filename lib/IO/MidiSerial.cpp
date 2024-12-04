@@ -41,7 +41,7 @@ void MidiSerial::handleSystemExclusive(LedBank &ledBank, GraphBank &graphBank, S
     switch (messageId)
     {
     case SysExMessage::CREATE_GRAPH:
-        graphBank.createFromSysEx(buffer + 3, length - 3);
+        graphBank.sysExCreate(buffer + 3, length - 3);
         break;
     case SysExMessage::SET_PARAMS:
     case SysExMessage::CREATE_LIGHT:

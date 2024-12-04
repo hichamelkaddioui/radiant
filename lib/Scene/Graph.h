@@ -74,7 +74,7 @@ public:
     int getGraphId(Graph *graph) const;
     size_t serialize(uint8_t *buffer) const;
     size_t deserialize(const uint8_t *buffer);
-    void createFromSysEx(const uint8_t *buffer, size_t length);
+    void sysExCreate(const uint8_t *buffer, size_t length);
 };
 
 GraphBank defaultGraphBank();
