@@ -133,7 +133,7 @@ void setup1()
 
 void loop()
 {
-    midiSerial.loop(sb);
+    midiSerial.loop(lb, gb, sb);
 }
 
 void loop1()

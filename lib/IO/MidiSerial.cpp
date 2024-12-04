@@ -28,14 +28,34 @@ void MidiSerial::handleNoteOn(SceneBank &sceneBank)
     currentScene->onNotePlayed(note, velocity);
 }
 
-void MidiSerial::handleSystemExclusive(SceneBank &sceneBank)
+void MidiSerial::handleSystemExclusive(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank)
 {
-    const byte *array = MidiUART.getSysExArray();
-    unsigned size = MidiUART.getSysExArrayLength();
+    const byte *buffer = MidiUART.getSysExArray();
+    unsigned length = MidiUART.getSysExArrayLength();
 
     debug(1, "[midi] received System Exclusive");
 
-    debugByteArray(array, size);
+    // Read message id
+    byte messageId = buffer[2];
+
+    switch (messageId)
+    {
+    case SysExMessage::CREATE_GRAPH:
+        graphBank.createFromSysEx(buffer + 3, length - 3);
+        break;
+    case SysExMessage::SET_PARAMS:
+    case SysExMessage::CREATE_LIGHT:
+    case SysExMessage::CREATE_SCENE:
+    case SysExMessage::SET_HUE_A:
+    case SysExMessage::SET_BRIGHTNESS_A:
+    case SysExMessage::SET_HUE_B:
+    case SysExMessage::SET_BRIGHTNESS_B:
+    case SysExMessage::SET_STROBE_A:
+    case SysExMessage::SET_STROBE_B:
+    default:
+        debugByteArray(buffer, length);
+        break;
+    }
 }
 
 void MidiSerial::handleProgramChange(SceneBank &sceneBank)
@@ -73,7 +93,7 @@ void MidiSerial::handleControlChange(SceneBank &sceneBank)
     }
 }
 
-void MidiSerial::loop(SceneBank &sceneBank)
+void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -87,7 +107,7 @@ void MidiSerial::loop(SceneBank &sceneBank)
             handleNoteOn(sceneBank);
             break;
         case MidiType::SystemExclusive:
-            handleSystemExclusive(sceneBank);
+            handleSystemExclusive(ledBank, graphBank, sceneBank);
             break;
         case MidiType::ProgramChange:
             handleProgramChange(sceneBank);

@@ -91,3 +91,25 @@ float interpolate(float t, float startX, float startY, float endX, float endY, f
         return gp * valueRange + startY;
     }
 }
+
+/**
+ * Converts two bytes to a floating point number.
+ *
+ * The two bytes are interpreted as a 14-bit signed or unsigned number.
+ * If the number is signed, its range is [-1, 1], otherwise it is [0, 1].
+ *
+ * \param msb The most significant byte of the 14-bit number.
+ * \param lsb The least significant 7 bits of the 14-bit number.
+ * \param isSigned If true, the number is interpreted as signed, otherwise it is unsigned.
+ *
+ * \returns The floating point representation of the 14-bit number.
+ */
+float twoBytesToFloat(byte msb, byte lsb, bool isSigned = false)
+{
+    float result = constrain((msb << 7 | (lsb & 0x7F)) / 16383.0f, 0.0f, 1.0f);
+
+    if (isSigned)
+        return result * 2.0f - 1.0f;
+
+    return result;
+}

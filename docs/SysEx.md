@@ -90,7 +90,7 @@
 |                               | Parameter  | Value  | Min | Max   |
 | ----------------------------- | ---------- | ------ | --- | ----- |
 | <span class="first">■</span>  | Message ID | `3`    |
-| <span class="second">■</span> | Scene id   | 1 byte | `0` | `127` |
+| <span class="second">■</span> | Scene id   | 1 byte | `1` | `127` |
 
 **Create scene with id `2`**
 
@@ -106,8 +106,8 @@
 |                                | Parameter    | Value   | Min | Max     |
 | ------------------------------ | ------------ | ------- | --- | ------- |
 | <span class="first">■</span>   | Message ID   | `4`     |
-| <span class="second">■</span>  | Scene id     | 1 byte  | `0` | `127`   |
-| <span class="second">■</span>  | Graph id     | 1 byte  | `9` | `12`    |
+| <span class="second">■</span>  | Scene id     | 1 byte  | `1` | `127`   |
+| <span class="second">■</span>  | Graph id     | 1 byte  | `1` | `4`     |
 | <span class="third">■ ■</span> | Keyframe 1 x | 2 bytes | `0` | `16384` |
 | <span class="third">■ ■</span> | Keyframe 1 y | 2 bytes | `0` | `16384` |
 | <span class="third">■ ■</span> | Keyframe 1 c | 2 bytes | `0` | `16384` |
@@ -116,14 +116,14 @@
 | <span class="third">■ ■</span> | Keyframe N y | 2 bytes | `0` | `16384` |
 | <span class="third">■ ■</span> | Keyframe N c | 2 bytes | `0` | `16384` |
 
-**Create graph with id `4` in scene `2` defined by two keyframes: (0.0, 0.0, 0.0) and (1.0, 1.0, 0.0)**
+**Create graph with id `4` in scene `2` defined by three keyframes: (0.0, 0.0, 0.0), (0.5, 0.5, -1.0) and (1.0, 1.0, 1.0)**
 
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x04</span>
 <span class="second">0x02 0x04</span>
 <span class="third">
-(0x00 0x00, 0x00 0x00, 0x00 0x00) (0x7f 0x7f, 0x7f 0x7f, 0x00 0x00)
+(0x00 0x00, 0x00 0x00, 0x40 0x00) (0x40 0x00, 0x40 0x00, 0x00 0x00) (0x7f 0x7f, 0x7f 0x7f, 0x7f 0x7f)
 </span>
 <span class="end">0xf7</span>
 </p>
@@ -135,11 +135,11 @@
 |                                   | Parameter     | Value                    | Min | Max         |
 | --------------------------------- | ------------- | ------------------------ | --- | ----------- |
 | <span class="first">■</span>      | Message ID    | `5`, `6`, `7`, `8`       |
-| <span class="second">■</span>     | Scene id      | 1 byte                   | `0` | `127`       |
-| <span class="second">■</span>     | Light id      | 1 byte                   | `0` | `127`       |
+| <span class="second">■</span>     | Scene id      | 1 byte                   | `1` | `127`       |
+| <span class="second">■</span>     | Light id      | 1 byte                   | `1` | `127`       |
 | <span class="third">■</span>      | Mode          | `0` (once), `1` (repeat) |
-| <span class="fourth">■</span>     | Trigger       | 1 byte                   | `0` | `127`       |
-| <span class="fifth">■</span>      | Graph         | 1 byte                   | `0` | `12`        |
+| <span class="fourth">■</span>     | Trigger       | 1 byte                   | `1` | `127`       |
+| <span class="fifth">■</span>      | Graph         | 1 byte                   | `1` | `127`       |
 | <span class="sixth">■</span>      | Min           | 1 byte                   | `0` | `127`       |
 | <span class="seventh">■</span>    | Max           | 1 byte                   | `0` | `127`       |
 | <span class="eighth">■ ■ ■</span> | Duration (ms) | 3 bytes                  | `0` | `268435455` |
@@ -182,8 +182,8 @@
 |                               | Parameter   | Value              | Min | Max   |
 | ----------------------------- | ----------- | ------------------ | --- | ----- |
 | <span class="first">■</span>  | Message ID  | `5`, `6`, `7`, `8` |
-| <span class="second">■</span> | Scene id    | 1 byte             | `0` | `127` |
-| <span class="second">■</span> | Light id    | 1 byte             | `0` | `127` |
+| <span class="second">■</span> | Scene id    | 1 byte             | `1` | `127` |
+| <span class="second">■</span> | Light id    | 1 byte             | `1` | `127` |
 | <span class="third">■</span>  | Hue Mode    | `2` (external)     |
 | <span class="fourth">■</span> | Hue Control | 1 byte             | `0` | `127` |
 
@@ -214,11 +214,11 @@
 |                                 | Parameter  | Value                    | Min | Max     |
 | ------------------------------- | ---------- | ------------------------ | --- | ------- |
 | <span class="first">■</span>    | Message ID | `9`, `10`                |
-| <span class="second">■</span>   | Scene id   | 1 byte                   | `0` | `127`   |
-| <span class="second">■</span>   | Light id   | 1 byte                   | `0` | `127`   |
+| <span class="second">■</span>   | Scene id   | 1 byte                   | `1` | `127`   |
+| <span class="second">■</span>   | Light id   | 1 byte                   | `1` | `127`   |
 | <span class="third">■</span>    | Mode       | `0` (once), `1` (repeat) |
 | <span class="fourth">■</span>   | Trigger    | 1 byte                   | `0` | `127`   |
-| <span class="fifth">■</span>    | Graph      | 1 byte                   | `0` | `12`    |
+| <span class="fifth">■</span>    | Graph      | 1 byte                   | `1` | `127`   |
 | <span class="sixth">■</span>    | Min        | 1 byte                   | `0` | `127`   |
 | <span class="seventh">■</span>  | Max        | 1 byte                   | `0` | `127`   |
 | <span class="eighth">■ ■</span> | Frequency  | 2 bytes                  | `0` | `16384` |

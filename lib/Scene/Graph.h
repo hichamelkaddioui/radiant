@@ -14,7 +14,8 @@ enum DefaultGraph
     DOWN_EXP = 5,
     DOWN_LOG = 6,
     SINE = 7,
-    GATE = 8
+    GATE = 8,
+    LAST,
 };
 
 class Graph
@@ -73,6 +74,7 @@ public:
     int getGraphId(Graph *graph) const;
     size_t serialize(uint8_t *buffer) const;
     size_t deserialize(const uint8_t *buffer);
+    void createFromSysEx(const uint8_t *buffer, size_t length);
 };
 
 GraphBank defaultGraphBank();
