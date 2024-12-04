@@ -113,3 +113,23 @@ float twoBytesToFloat(byte msb, byte lsb, bool isSigned = false)
 
     return result;
 }
+
+/**
+ * Converts three bytes to an unsigned long.
+ *
+ * The three bytes are interpreted as a 21-bit unsigned number.
+ *
+ * \param msb The most significant byte of the 21-bit number.
+ * \param lsb The middle byte of the 21-bit number.
+ * \param lsb2 The least significant 7 bits of the 21-bit number.
+ *
+ * \returns The unsigned long representation of the 21-bit number.
+ */
+unsigned long threeBytesToLong(byte msb, byte lsb, byte lsb2)
+{
+    unsigned long result =
+        (static_cast<unsigned long>(msb) << 14) |
+        (static_cast<unsigned long>(lsb) << 7) |
+        static_cast<unsigned long>(lsb2);
+    return result;
+}

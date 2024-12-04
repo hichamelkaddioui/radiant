@@ -26,5 +26,6 @@ void debug(int printEveryMs, const char *format, ...);
 void debugByteArray(const uint8_t *data, size_t length);
 float interpolate(float t, float startX, float startY, float endX, float endY, float curve);
 float twoBytesToFloat(byte msb, byte lsb, bool isSigned = false);
+unsigned long threeBytesToLong(byte msb, byte lsb, byte lsb2);
 
 #endif

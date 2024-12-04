@@ -146,6 +146,34 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
     return offset;
 }
 
+void Scene::sysExSetHueBrightness(int messageId, int lightId, Sequence *sequence)
+{
+    LedEffect ledEffect = LedEffect();
+
+    if (_ledEffects.find(lightId) != _ledEffects.end())
+        ledEffect = _ledEffects[lightId];
+
+    switch (messageId)
+    {
+    case 5:
+        ledEffect.hueA = sequence;
+        break;
+    case 6:
+        ledEffect.brightnessA = sequence;
+        break;
+    case 7:
+        ledEffect.hueB = sequence;
+        break;
+    case 8:
+        ledEffect.brightnessB = sequence;
+        break;
+    default:
+        break;
+    }
+
+    _ledEffects[lightId] = ledEffect;
+}
+
 void Scene::dump()
 {
     debug(1, "[scene] Dumping scene, number of led effects: %d", _ledEffects.size());
@@ -252,4 +280,91 @@ size_t SceneBank::deserialize(const uint8_t *buffer, const LedBank &ledBank, con
     currentSceneId = _scenes.begin()->first;
 
     return offset;
+}
+
+void SceneBank::sysExCreate(const uint8_t *buffer, size_t length)
+{
+    debug(1, "[SysEx] [scene] reading %lu bytes", length);
+
+    int sceneId = buffer[0];
+
+    debug(1, "[SysEx] [scene] scene id is %d", sceneId);
+
+    Scene *scene = new Scene();
+
+    const auto it = _scenes.find(sceneId);
+
+    if (it != _scenes.end())
+    {
+        delete it->second;
+
+        debug(1, "[SysEx] [scene] deleted previous scene with id %d", sceneId);
+    }
+    else
+    {
+        debug(1, "[SysEx] [scene] no previous scene with id %d", sceneId);
+    }
+
+    _scenes[sceneId] = scene;
+}
+
+void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, const LedBank &ledBank, const GraphBank &graphBank)
+{
+    int index = 0;
+
+    int messageId = buffer[index];
+    String parameter = messageId % 2 == 1 ? "hue" : "brightness";
+    String ab = messageId < 7 ? "A" : "B";
+    String moduleString = parameter + " " + ab;
+    const char *module = moduleString.c_str();
+
+    int sceneId = static_cast<int>(buffer[++index]);
+    const auto &sceneIt = _scenes.find(sceneId);
+
+    if (sceneIt == _scenes.end() || sceneIt->second == nullptr)
+    {
+        debug(1, "[SysEx] [%s] scene %d not found", module, sceneId);
+        return;
+    }
+
+    int lightId = static_cast<int>(buffer[++index]);
+    const auto &lightIt = ledBank._bank.find(lightId);
+
+    if (lightIt == ledBank._bank.end() || lightIt->second == nullptr)
+    {
+        debug(1, "[SysEx] [%s] light %d not found", module, lightId);
+        return;
+    }
+
+    PlaybackMode mode = (PlaybackMode)buffer[++index];
+    int note = static_cast<int>(buffer[++index]);
+
+    if (mode == PlaybackMode::EXTERNAL_CONTROL)
+    {
+        Sequence *sequence = new Sequence(note);
+        sceneIt->second->sysExSetHueBrightness(messageId, lightId, sequence);
+
+        debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d", module, sceneId, lightId, note, mode);
+
+        return;
+    }
+
+    int graphId = static_cast<int>(buffer[++index]);
+    const auto &graphIt = graphBank._bank.find(graphId);
+
+    if (graphIt == graphBank._bank.end() || graphIt->second == nullptr)
+    {
+        debug(1, "[SysEx] [%s] graph %d not found", module, graphId);
+        return;
+    }
+
+    int min = static_cast<int>(buffer[++index]) * 2;
+    int max = static_cast<int>(buffer[++index]) * 2;
+    unsigned long duration = threeBytesToLong(buffer[++index], buffer[++index], buffer[++index]);
+    float period = twoBytesToFloat(buffer[++index], buffer[++index]);
+
+    Sequence *sequence = new Sequence(mode, {graphIt->second, min, max, duration, period}, note);
+    sceneIt->second->sysExSetHueBrightness(messageId, lightId, sequence);
+
+    debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d, graph %d, min %d, max %d, duration %lu, period %0.2f", module, sceneId, lightId, note, mode, graphId, min, max, duration, period);
 }

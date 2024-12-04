@@ -105,6 +105,7 @@ void Oled::displaySceneData(SceneBank &sceneBank)
 
     _display.clearDisplay();
     _display.setCursor(0, 0);
+    _display.setTextColor(SSD1306_WHITE);
     _display.print("Scene ");
     _display.print(sceneBank.currentSceneId);
 
@@ -158,12 +159,19 @@ void Oled::displaySceneData(SceneBank &sceneBank)
         int yBrightnessA = min(maxHeight, maxHeight * brightnessA->elapsed() / brightnessA->_duration);
         int yBrightnessB = min(maxHeight, maxHeight * brightnessB->elapsed() / brightnessB->_duration);
 
-        _display.setCursor(offset, SCREEN_HEIGHT / 2 + 3);
-        _display.print(i + 1);
-        _display.drawLine(offset + 2 * gap, SCREEN_HEIGHT, offset + 2 * gap, SCREEN_HEIGHT - yHueA, SSD1306_WHITE);
-        _display.drawLine(offset + 3 * gap, SCREEN_HEIGHT, offset + 3 * gap, SCREEN_HEIGHT - yHueB, SSD1306_WHITE);
-        _display.drawLine(offset + 5 * gap, SCREEN_HEIGHT, offset + 5 * gap, SCREEN_HEIGHT - yBrightnessA, SSD1306_WHITE);
-        _display.drawLine(offset + 6 * gap, SCREEN_HEIGHT, offset + 6 * gap, SCREEN_HEIGHT - yBrightnessB, SSD1306_WHITE);
+        char label[10];
+        sprintf(label, "%d", it.first);
+
+        for (int j = 0; j < 3; j++)
+        {
+            _display.setCursor(offset + j, SCREEN_HEIGHT / 2 + (j * 8));
+            _display.print(label[j]);
+        }
+
+        _display.drawLine(offset + 3 * gap, SCREEN_HEIGHT, offset + 3 * gap, SCREEN_HEIGHT - yHueA, SSD1306_WHITE);
+        _display.drawLine(offset + 4 * gap, SCREEN_HEIGHT, offset + 4 * gap, SCREEN_HEIGHT - yBrightnessA, SSD1306_WHITE);
+        _display.drawLine(offset + 6 * gap, SCREEN_HEIGHT, offset + 6 * gap, SCREEN_HEIGHT - yHueB, SSD1306_WHITE);
+        _display.drawLine(offset + 7 * gap, SCREEN_HEIGHT, offset + 7 * gap, SCREEN_HEIGHT - yBrightnessB, SSD1306_WHITE);
 
         i++;
     }

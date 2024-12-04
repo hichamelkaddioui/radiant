@@ -34,6 +34,7 @@ public:
     void onNotePlayed(uint8_t note, uint8_t velocity);
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
+    void sysExSetHueBrightness(int messageId, int lightId, Sequence *sequence);
 
 #ifdef DEBUG
     void dump();
@@ -49,12 +50,13 @@ public:
     std::map<int, Scene *> _scenes;
 
     void next();
-    void previous();
     void restart();
     void update();
     Scene *getCurrentScene() const;
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
+    void sysExCreate(const uint8_t *buffer, size_t length);
+    void sysExSetHueBrightness(const uint8_t *buffer, size_t length, const LedBank &ledBank, const GraphBank &graphBank);
 };
 
 #endif

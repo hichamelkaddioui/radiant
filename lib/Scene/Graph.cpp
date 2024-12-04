@@ -239,8 +239,8 @@ void GraphBank::sysExCreate(const uint8_t *buffer, size_t length)
         return;
     }
 
-    int sceneId = buffer[0];
-    int graphId = buffer[1];
+    int sceneId = static_cast<int>(buffer[0]);
+    int graphId = static_cast<int>(buffer[1]);
     int storeId = 4 * sceneId + graphId + DefaultGraph::LAST;
 
     debug(1, "[SysEx] [graph] scene id is %d, graph id is %d, store id is %d", sceneId, graphId, storeId);
