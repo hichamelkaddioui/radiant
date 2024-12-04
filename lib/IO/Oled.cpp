@@ -106,7 +106,7 @@ void Oled::displaySceneData(SceneBank &sceneBank)
     _display.clearDisplay();
     _display.setCursor(0, 0);
     _display.print("Scene ");
-    _display.print(sceneBank.currentScene + 1);
+    _display.print(sceneBank.currentSceneId);
 
     int xA = SCREEN_WIDTH / 2;
     int xB = SCREEN_WIDTH - 6;

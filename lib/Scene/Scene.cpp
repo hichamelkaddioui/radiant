@@ -148,34 +148,53 @@ void Scene::dump()
 
 void SceneBank::next()
 {
-    currentScene = (currentScene + 1) % _scenes.size();
+    const auto &next = std::next(_scenes.find(currentSceneId));
 
-    debug(1, "[scene bank] switching to scene %d", currentScene + 1);
+    if (next == _scenes.end())
+    {
+        currentSceneId = _scenes.begin()->first;
+        _scenes.begin()->second->restart();
 
-    _scenes[currentScene]->restart();
-}
+        return;
+    }
 
-void SceneBank::previous()
-{
-    currentScene = (currentScene - 1) % _scenes.size();
-    _scenes[currentScene]->restart();
+    currentSceneId = next->first;
+    next->second->restart();
 }
 
 void SceneBank::restart()
 {
+    Scene *currentScene = getCurrentScene();
+
+    if (currentScene == nullptr)
+        return;
+
     debug(1, "[scene bank] restarting scene bank");
 
-    _scenes[currentScene]->restart();
+    currentScene->restart();
 }
 
 void SceneBank::update()
 {
-    _scenes[currentScene]->update();
+    Scene *currentScene = getCurrentScene();
+
+    if (currentScene == nullptr)
+        return;
+
+    currentScene->update();
 }
 
 Scene *SceneBank::getCurrentScene() const
 {
-    return _scenes[currentScene];
+    const auto &it = _scenes.find(currentSceneId);
+
+    if (it == _scenes.end())
+    {
+        debug(1, "[scene bank] no scene found");
+        return nullptr;
+    }
+
+    return it->second;
 }
 
 size_t SceneBank::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
@@ -185,9 +204,11 @@ size_t SceneBank::serialize(uint8_t *buffer, const LedBank &ledBank, const Graph
     offset += sizeOfSizeT;
     debug(1, "[serialize scene bank] serializing, %lu scenes in bank", sceneCount);
 
-    for (Scene *scene : _scenes)
+    for (const auto &it : _scenes)
     {
-        offset += scene->serialize(buffer + offset, ledBank, graphBank);
+        memcpy(buffer + offset, &it.first, sizeOfInt);
+        offset += sizeOfInt;
+        offset += it.second->serialize(buffer + offset, ledBank, graphBank);
     }
 
     return offset;
@@ -202,10 +223,19 @@ size_t SceneBank::deserialize(const uint8_t *buffer, const LedBank &ledBank, con
 
     for (size_t i = 0; i < sceneCount; i++)
     {
+        int id = 0;
+        memcpy(&id, buffer + offset, sizeOfInt);
+        offset += sizeOfInt;
+
         Scene *scene = new Scene();
         offset += scene->deserialize(buffer + offset, ledBank, graphBank);
-        _scenes.push_back(scene);
+
+        debug(1, "[deserialized scene] id: %d", id);
+
+        _scenes[id] = scene;
     }
+
+    currentSceneId = _scenes.begin()->first;
 
     return offset;
 }

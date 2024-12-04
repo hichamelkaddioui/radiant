@@ -1,8 +1,8 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include <map>
 #include <Arduino.h>
-#include <vector>
 #include <Graph.h>
 #include <Sequence.h>
 #include <Led.h>
@@ -44,8 +44,8 @@ class SceneBank
 public:
     SceneBank() = default;
 
-    int currentScene = 0;
-    std::vector<Scene *> _scenes;
+    int currentSceneId = 0;
+    std::map<int, Scene *> _scenes;
 
     void next();
     void previous();
