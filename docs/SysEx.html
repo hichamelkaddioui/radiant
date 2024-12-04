@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>SysEx messages</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="sysex-messages">SysEx messages</h1>
+<h2 id="message-structure">Message structure</h2>
+<p><code>&lt;SysEx start&gt; &lt;Manufacturer ID&gt; &lt;Message ID&gt; &lt;Message payload&gt; &lt;SysEx end&gt;</code></p>
+<blockquote>
+<p>Data is sent in bytes, bit #7 is always 0, so each byte is a 7-bit word. Hence <strong>the max value is <code>0b01111111 = 0x7f = 127</code></strong>. In this document, a 7-bit word is called a <strong>byte</strong>.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="start">■</span></td>
+<td>SysEx start</td>
+<td><code>0xf0</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="start">■</span></td>
+<td>Manufacturer ID</td>
+<td><code>0x7e</code> (universal)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Message payload</td>
+<td>N bytes</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="end">■</span></td>
+<td>SysEx end</td>
+<td><code>0xf7</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">...</span>
+<span class="second">...</span>
+<span class="third">...</span>
+<span class="fourth">...</span>
+<span class="fifth">...</span>
+<span class="sixth">...</span>
+<span class="seventh">...</span>
+<span class="eighth">...</span>
+<span class="ninth">...</span>
+<span class="end">0xf7</span>
+</p>
+<h2 id="messages-list">Messages list</h2>
+<table>
+<thead>
+<tr>
+<th>Message ID</th>
+<th>Message Name</th>
+<th>Message payload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code></td>
+<td>Set params</td>
+<td>General parameters</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Create light</td>
+<td>Light id</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Create scene</td>
+<td>Scene id</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td>Create graph</td>
+<td>Scene id, graph id, keyframes</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>Set hue A</td>
+<td>Scene id, light id, params</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>Set brightness A</td>
+<td>Scene id, light id, params</td>
+</tr>
+<tr>
+<td><code>7</code></td>
+<td>Set hue B</td>
+<td>Scene id, light id, params</td>
+</tr>
+<tr>
+<td><code>8</code></td>
+<td>Set brightness B</td>
+<td>Scene id, light id, params</td>
+</tr>
+<tr>
+<td><code>9</code></td>
+<td>Set strobe A</td>
+<td>Scene id, light id, params</td>
+</tr>
+<tr>
+<td><code>10</code></td>
+<td>Set strobe B</td>
+<td>Scene id, light id, params</td>
+</tr>
+</tbody>
+</table>
+<h2 id="message-payload">Message payload</h2>
+<h3 id="set-params">Set params</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>1</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>A / B control note</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Set A / B control note to <code>0x3e</code> = 62 (D4)</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x01</span>
+<span class="second">0x3e</span>
+<span class="end">0xf7</span>
+<h3 id="create-light">Create light</h3>
+<h4 id="led-strip-rgbw">LED strip RGBW</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>2</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Light id</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="third">■</span></td>
+<td>Pin R</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="fourth">■</span></td>
+<td>Pin G</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="fifth">■</span></td>
+<td>Pin B</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="sixth">■</span></td>
+<td>Pin W</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Create light with id <code>1</code> and pins R: <code>0x04</code>, G: <code>0x05</code>, B: <code>0x06</code>, W: <code>0x07</code></strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x02</span>
+<span class="second">0x01</span>
+<span class="third">0x04</span>
+<span class="fourth">0x05</span>
+<span class="fifth">0x06</span>
+<span class="sixth">0x07</span>
+<span class="end">0xf7</span>
+<h3 id="create-scene">Create scene</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>3</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Scene id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Create scene with id <code>2</code></strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x03</span>
+<span class="second">0x02</span>
+<span class="end">0xf7</span>
+</p>
+<h3 id="create-graph">Create graph</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>4</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Scene id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Graph id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe 1 x</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe 1 y</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe 1 c</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe N x</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe N y</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td><span class="third">■ ■</span></td>
+<td>Keyframe N c</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Create graph with id <code>4</code> in scene <code>2</code> defined by three keyframes: (0.0, 0.0, 0.0), (0.5, 0.5, -1.0) and (1.0, 1.0, 1.0)</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x04</span>
+<span class="second">0x02 0x04</span>
+<span class="third">
+(0x00 0x00, 0x00 0x00, 0x40 0x00) (0x40 0x00, 0x40 0x00, 0x00 0x00) (0x7f 0x7f, 0x7f 0x7f, 0x7f 0x7f)
+</span>
+<span class="end">0xf7</span>
+</p>
+<h3 id="hue-and-brightness">Hue and brightness</h3>
+<h4 id="graph-mode">Graph mode</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>5</code>, <code>6</code>, <code>7</code>, <code>8</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Scene id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Light id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="third">■</span></td>
+<td>Mode</td>
+<td><code>0</code> (once), <code>1</code> (repeat)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="fourth">■</span></td>
+<td>Trigger</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="fifth">■</span></td>
+<td>Graph</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="sixth">■</span></td>
+<td>Min</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="seventh">■</span></td>
+<td>Max</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="eighth">■ ■ ■</span></td>
+<td>Duration (ms)</td>
+<td>3 bytes</td>
+<td><code>0</code></td>
+<td><code>268435455</code></td>
+</tr>
+<tr>
+<td><span class="ninth">■ ■</span></td>
+<td>Period</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Set hue A of scene <code>2</code>, light <code>1</code> to mode &quot;once&quot;, trigger note <code>0x3c</code> = 60 (C4), graph id #8, min 0, max 127, duration 30 000 ms, period 1.0</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x05</span>
+<span class="second">0x02 0x01</span>
+<span class="third">0x00</span>
+<span class="fourth">0x3c</span>
+<span class="fifth">0x08</span>
+<span class="sixth">0x00</span>
+<span class="seventh">0x7f</span>
+<span class="eighth"> 0x01 0x6a 0x30</span>
+<span class="ninth">0x7f 0x7f</span>
+<span class="end">0xf7</span>
+</p>
+<pre><code>0xf0 0x7e 0x06 0x0d 0x01 0x01 0x3c 0x08 0x00 0x7f 0x00 0x00 0x13 0x88 0x3f 0x00 0xf7
+</code></pre>
+<p><strong>Set brightness A of scene <code>3</code>, light <code>1</code> to mode &quot;repeat&quot;, no trigger note (<code>0x00</code>), graph id #9, min 0, max 127, duration 1000 ms, period 1.0</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x06</span>
+<span class="second">0x03 0x01</span>
+<span class="third">0x01</span>
+<span class="fourth">0x00</span>
+<span class="fifth">0x09</span>
+<span class="sixth">0x00</span>
+<span class="seventh">0x7f</span>
+<span class="eighth">0x00 0x07 0x68</span>
+<span class="ninth">0x7f 0x7f</span>
+<span class="end">0xf7</span>
+</p>
+<h4 id="external-control-mode">External control mode</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>5</code>, <code>6</code>, <code>7</code>, <code>8</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Scene id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Light id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="third">■</span></td>
+<td>Mode</td>
+<td><code>2</code> (external)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="fourth">■</span></td>
+<td>Control</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Set hue B of scene <code>2</code>, light <code>1</code> to mode &quot;external&quot;, control note <code>0x3e</code> = 62 (D4)</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x07</span>
+<span class="second">0x02 0x01</span>
+<span class="third">0x02</span>
+<span class="fourth">0x3e</span>
+<span class="end">0xf7</span>
+</p>
+<p><strong>Set brightness B of scene <code>2</code>, light <code>1</code> to mode &quot;external&quot;, control note <code>0x3e</code> = 62 (D4)</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x08</span>
+<span class="second">0x02 0x01</span>
+<span class="third">0x02</span>
+<span class="fourth">0x3e</span>
+<span class="end">0xf7</span>
+</p>
+<h3 id="set-strobe-a--b">Set strobe A / B</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="first">■</span></td>
+<td>Message ID</td>
+<td><code>9</code>, <code>10</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Scene id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="second">■</span></td>
+<td>Light id</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="third">■</span></td>
+<td>Mode</td>
+<td><code>0</code> (once), <code>1</code> (repeat)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><span class="fourth">■</span></td>
+<td>Trigger</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="fifth">■</span></td>
+<td>Graph</td>
+<td>1 byte</td>
+<td><code>1</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="sixth">■</span></td>
+<td>Min</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="seventh">■</span></td>
+<td>Max</td>
+<td>1 byte</td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+</tr>
+<tr>
+<td><span class="eighth">■ ■</span></td>
+<td>Frequency</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+<tr>
+<td><span class="ninth">■ ■</span></td>
+<td>Period</td>
+<td>2 bytes</td>
+<td><code>0</code></td>
+<td><code>16384</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Set strobe A of scene <code>4</code>, light <code>3</code> to mode &quot;repeat&quot;, no trigger note (<code>0x00</code>), graph id #12, min 0, max 127, frequency 1.0, period 1.0</strong></p>
+<p class="code">
+<span class="start">0xf0 0x7e</span>
+<span class="first">0x09</span>
+<span class="second">0x04 0x03</span>
+<span class="third">0x01</span>
+<span class="fourth">0x00</span>
+<span class="fifth">0x0c</span>
+<span class="sixth">0x00</span>
+<span class="seventh">0x7f</span>
+<span class="eighth">0x07 0x68</span>
+<span class="ninth">0x7f 0x7f</span>
+<span class="end">0xf7</span>
+</p>
+<hr>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.recordingblogs.com/wiki/midi-system-exclusive-message">MIDI System Exclusive</a></li>
+<li><a href="http://midi.teragonaudio.com/tech/midispec/sysex.htm">SysEx</a></li>
+</ul>
+<style>
+.code { font-family: "Courier New", monospace; font-weight: bold; background-color: #011627 }
+.start, .end { color: #FFC8DD; }
+.first { color: #CDB4DB; }
+.second { color: #BDE0FE; }
+.third { color: #B2FF9E; }
+.fourth { color: #9EFFEC; }
+.fifth { color: #F4FF9E; }
+.sixth { color: #FF9EB1; }
+.seventh { color: #FF9EB1; }
+.eighth { color: #FF9EF2; }
+.ninth { color: #9EB1FF; }
+</style>
+
+            
+            
+        </body>
+        </html>

@@ -11,6 +11,53 @@
     />
     <script src="midi.js"></script>
     <script src="canvas.js"></script>
+
+    <style>
+      #sysexMessage {
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      #sysexPayload {
+        font-weight: bold;
+      }
+
+      .help {
+        display: none;
+        font-size: smaller;
+        color: #9f9f9f53;
+      }
+      .start,
+      .end {
+        color: #ffc8dd;
+      }
+      .first {
+        color: #cdb4db;
+      }
+      .second {
+        color: #bde0fe;
+      }
+      .third {
+        color: #b2ff9e;
+      }
+      .fourth {
+        color: #9effec;
+      }
+      .fifth {
+        color: #f4ff9e;
+      }
+      .sixth {
+        color: #ff9eb1;
+      }
+      .seventh {
+        color: #ff9eb1;
+      }
+      .eighth {
+        color: #ff9ef2;
+      }
+      .ninth {
+        color: #9eb1ff;
+      }
+    </style>
   </head>
   <body>
     <main class="container">
@@ -29,10 +76,10 @@
         </header>
 
         <div role="group">
-          <button class="outline" onclick="next()">
+          <button id="next-scene" class="outline">
             🡢&nbsp;&nbsp;&nbsp;Next scene
           </button>
-          <button class="outline" onclick="restart()">
+          <button id="restart" class="outline">
             ⭯&nbsp;&nbsp;&nbsp;Restart scene
           </button>
         </div>
@@ -45,14 +92,7 @@
 
         <form id="sendAB">
           <fieldset>
-            <input
-              id="ab"
-              type="range"
-              min="0"
-              max="127"
-              value="0"
-              oninput="sendAB()"
-            />
+            <input id="ab" type="range" min="0" max="127" value="0" />
             <div class="grid">
               <div>A</div>
               <div dir="rtl">B</div>
@@ -74,14 +114,7 @@
           <fieldset class="grid">
             <label>
               Note
-              <input
-                type="number"
-                id="note"
-                min="1"
-                max="127"
-                value="60"
-                oninput="document.getElementById('abcNotation').innerText = midiNoteToABC(this.value)"
-              />
+              <input type="number" id="note" min="1" max="127" value="60" />
               <code id="abcNotation">C4</code>
             </label>
             <label>
@@ -114,13 +147,26 @@
         <header><h2>Send SysEx</h2></header>
 
         <form id="sendSysex">
-          <p>
-            <textarea
-              id="sysexMessage"
-              style="font-family: 'Courier New', Courier, monospace"
-              rows="4"
-            ></textarea>
-          </p>
+          <label for="sysexMessage">
+            SysEx message
+
+            <textarea id="sysexMessage" rows="4"></textarea>
+          </label>
+
+          <br />
+
+          <label for="sysexPayload" class="overflow-auto">
+            Colorized payload
+
+            <p>
+              <code id="sysexPayload"></code>
+            </p>
+          </label>
+
+          <label>
+            <input type="checkbox" id="sysexHelp" />
+            Show helper text
+          </label>
 
           <br />
 
