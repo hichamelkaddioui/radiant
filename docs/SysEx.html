@@ -195,14 +195,14 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">...</span>
-<span class="second">...</span>
-<span class="third">...</span>
-<span class="fourth">...</span>
-<span class="fifth">...</span>
-<span class="sixth">...</span>
-<span class="seventh">...</span>
-<span class="eighth">...</span>
-<span class="ninth">...</span>
+<span class="payload-1">...</span>
+<span class="payload-2">...</span>
+<span class="payload-3">...</span>
+<span class="payload-4">...</span>
+<span class="payload-5">...</span>
+<span class="payload-6">...</span>
+<span class="payload-7">...</span>
+<span class="payload-8">...</span>
 <span class="end">0xf7</span>
 </p>
 <h2 id="messages-list">Messages list</h2>
@@ -288,7 +288,7 @@
 <td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>A / B control note</td>
 <td>1 byte</td>
 <td><code>0</code></td>
@@ -300,8 +300,9 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x01</span>
-<span class="second">0x3e</span>
+<span class="payload-1">0x3e</span>
 <span class="end">0xf7</span>
+</p>
 <h3 id="create-light">Create light</h3>
 <h4 id="led-strip-rgbw">LED strip RGBW</h4>
 <table>
@@ -323,52 +324,45 @@
 <td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Light id</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
 </tr>
 <tr>
-<td><span class="third">■</span></td>
+<td><span class="payload-2">■</span></td>
 <td>Pin R</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
 </tr>
 <tr>
-<td><span class="fourth">■</span></td>
+<td><span class="payload-3">■</span></td>
 <td>Pin G</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
 </tr>
 <tr>
-<td><span class="fifth">■</span></td>
+<td><span class="payload-4">■</span></td>
 <td>Pin B</td>
-<td>1 byte</td>
-<td><code>0</code></td>
-<td><code>127</code></td>
-</tr>
-<tr>
-<td><span class="sixth">■</span></td>
-<td>Pin W</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Create light with id <code>1</code> and pins R: <code>0x04</code>, G: <code>0x05</code>, B: <code>0x06</code>, W: <code>0x07</code></strong></p>
+<p><strong>Create light with id <code>1</code> and pins R: <code>0x04</code>, G: <code>0x05</code>, B: <code>0x06</code></strong></p>
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x02</span>
-<span class="second">0x01</span>
-<span class="third">0x04</span>
-<span class="fourth">0x05</span>
-<span class="fifth">0x06</span>
-<span class="sixth">0x07</span>
+<span class="payload-1">0x01</span>
+<span class="payload-2">0x04</span>
+<span class="payload-3">0x05</span>
+<span class="payload-4">0x06</span>
 <span class="end">0xf7</span>
+</p>
 <h3 id="create-scene">Create scene</h3>
 <table>
 <thead>
@@ -389,7 +383,7 @@
 <td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Scene id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
@@ -401,7 +395,7 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x03</span>
-<span class="second">0x02</span>
+<span class="payload-1">0x02</span>
 <span class="end">0xf7</span>
 </p>
 <h3 id="create-graph">Create graph</h3>
@@ -413,6 +407,8 @@
 <th>Value</th>
 <th>Min</th>
 <th>Max</th>
+<th>Parsed min</th>
+<th>Parsed max</th>
 </tr>
 </thead>
 <tbody>
@@ -422,41 +418,53 @@
 <td><code>4</code></td>
 <td></td>
 <td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Scene id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-2">■</span></td>
 <td>Graph id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>4</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe 1 x</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe 1 y</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe 1 c</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>-1.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
 <td>...</td>
@@ -464,27 +472,35 @@
 <td>...</td>
 <td>...</td>
 <td>...</td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe N x</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe N y</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
-<td><span class="third">■ ■</span></td>
+<td><span class="payload-3">■ ■</span></td>
 <td>Keyframe N c</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>-1.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 </tbody>
 </table>
@@ -492,8 +508,9 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x04</span>
-<span class="second">0x02 0x04</span>
-<span class="third">
+<span class="payload-1">0x02</span>
+<span class="payload-2">0x04</span>
+<span class="payload-3">
 (0x00 0x00, 0x00 0x00, 0x40 0x00) (0x40 0x00, 0x40 0x00, 0x00 0x00) (0x7f 0x7f, 0x7f 0x7f, 0x7f 0x7f)
 </span>
 <span class="end">0xf7</span>
@@ -508,6 +525,8 @@
 <th>Value</th>
 <th>Min</th>
 <th>Max</th>
+<th>Parsed min</th>
+<th>Parsed max</th>
 </tr>
 </thead>
 <tbody>
@@ -517,69 +536,89 @@
 <td><code>5</code>, <code>6</code>, <code>7</code>, <code>8</code></td>
 <td></td>
 <td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Scene id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-2">■</span></td>
 <td>Light id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="third">■</span></td>
+<td><span class="payload-3">■</span></td>
 <td>Mode</td>
 <td><code>0</code> (once), <code>1</code> (repeat)</td>
 <td></td>
 <td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="fourth">■</span></td>
+<td><span class="payload-4">■</span></td>
 <td>Trigger</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="fifth">■</span></td>
+<td><span class="payload-5">■</span></td>
 <td>Graph</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="sixth">■</span></td>
+<td><span class="payload-6">■</span></td>
 <td>Min</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
+<td><code>0</code></td>
+<td><code>255</code></td>
 </tr>
 <tr>
-<td><span class="seventh">■</span></td>
+<td><span class="payload-7">■</span></td>
 <td>Max</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
+<td><code>0</code></td>
+<td><code>255</code></td>
 </tr>
 <tr>
-<td><span class="eighth">■ ■ ■</span></td>
+<td><span class="payload-8">■ ■ ■</span></td>
 <td>Duration (ms)</td>
 <td>3 bytes</td>
 <td><code>0</code></td>
 <td><code>268435455</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="ninth">■ ■</span></td>
+<td><span class="payload-9">■ ■</span></td>
 <td>Period</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 </tbody>
 </table>
@@ -587,30 +626,30 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x05</span>
-<span class="second">0x02 0x01</span>
-<span class="third">0x00</span>
-<span class="fourth">0x3c</span>
-<span class="fifth">0x08</span>
-<span class="sixth">0x00</span>
-<span class="seventh">0x7f</span>
-<span class="eighth"> 0x01 0x6a 0x30</span>
-<span class="ninth">0x7f 0x7f</span>
+<span class="payload-1">0x02</span>
+<span class="payload-2">0x01</span>
+<span class="payload-3">0x00</span>
+<span class="payload-4">0x3c</span>
+<span class="payload-5">0x08</span>
+<span class="payload-6">0x00</span>
+<span class="payload-7">0x7f</span>
+<span class="payload-8">0x01 0x6a 0x30</span>
+<span class="payload-9">0x7f 0x7f</span>
 <span class="end">0xf7</span>
 </p>
-<pre><code>0xf0 0x7e 0x06 0x0d 0x01 0x01 0x3c 0x08 0x00 0x7f 0x00 0x00 0x13 0x88 0x3f 0x00 0xf7
-</code></pre>
 <p><strong>Set brightness A of scene <code>3</code>, light <code>1</code> to mode &quot;repeat&quot;, no trigger note (<code>0x00</code>), graph id #9, min 0, max 127, duration 1000 ms, period 1.0</strong></p>
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x06</span>
-<span class="second">0x03 0x01</span>
-<span class="third">0x01</span>
-<span class="fourth">0x00</span>
-<span class="fifth">0x09</span>
-<span class="sixth">0x00</span>
-<span class="seventh">0x7f</span>
-<span class="eighth">0x00 0x07 0x68</span>
-<span class="ninth">0x7f 0x7f</span>
+<span class="payload-1">0x03</span>
+<span class="payload-2">0x01</span>
+<span class="payload-3">0x01</span>
+<span class="payload-4">0x00</span>
+<span class="payload-5">0x09</span>
+<span class="payload-6">0x00</span>
+<span class="payload-7">0x7f</span>
+<span class="payload-8">0x00 0x07 0x68</span>
+<span class="payload-9">0x7f 0x7f</span>
 <span class="end">0xf7</span>
 </p>
 <h4 id="external-control-mode">External control mode</h4>
@@ -633,28 +672,28 @@
 <td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Scene id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-2">■</span></td>
 <td>Light id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
 </tr>
 <tr>
-<td><span class="third">■</span></td>
+<td><span class="payload-3">■</span></td>
 <td>Mode</td>
 <td><code>2</code> (external)</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
-<td><span class="fourth">■</span></td>
+<td><span class="payload-4">■</span></td>
 <td>Control</td>
 <td>1 byte</td>
 <td><code>0</code></td>
@@ -666,18 +705,20 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x07</span>
-<span class="second">0x02 0x01</span>
-<span class="third">0x02</span>
-<span class="fourth">0x3e</span>
+<span class="payload-1">0x02</span>
+<span class="payload-2">0x01</span>
+<span class="payload-3">0x02</span>
+<span class="payload-4">0x3e</span>
 <span class="end">0xf7</span>
 </p>
 <p><strong>Set brightness B of scene <code>2</code>, light <code>1</code> to mode &quot;external&quot;, control note <code>0x3e</code> = 62 (D4)</strong></p>
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x08</span>
-<span class="second">0x02 0x01</span>
-<span class="third">0x02</span>
-<span class="fourth">0x3e</span>
+<span class="payload-1">0x02</span>
+<span class="payload-2">0x01</span>
+<span class="payload-3">0x02</span>
+<span class="payload-4">0x3e</span>
 <span class="end">0xf7</span>
 </p>
 <h3 id="set-strobe-a--b">Set strobe A / B</h3>
@@ -689,6 +730,8 @@
 <th>Value</th>
 <th>Min</th>
 <th>Max</th>
+<th>Parsed min</th>
+<th>Parsed max</th>
 </tr>
 </thead>
 <tbody>
@@ -698,69 +741,89 @@
 <td><code>9</code>, <code>10</code></td>
 <td></td>
 <td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-1">■</span></td>
 <td>Scene id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="second">■</span></td>
+<td><span class="payload-2">■</span></td>
 <td>Light id</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="third">■</span></td>
+<td><span class="payload-3">■</span></td>
 <td>Mode</td>
 <td><code>0</code> (once), <code>1</code> (repeat)</td>
 <td></td>
 <td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="fourth">■</span></td>
+<td><span class="payload-4">■</span></td>
 <td>Trigger</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="fifth">■</span></td>
+<td><span class="payload-5">■</span></td>
 <td>Graph</td>
 <td>1 byte</td>
 <td><code>1</code></td>
 <td><code>127</code></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td><span class="sixth">■</span></td>
+<td><span class="payload-6">■</span></td>
 <td>Min</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
+<td><code>0</code></td>
+<td><code>255</code></td>
 </tr>
 <tr>
-<td><span class="seventh">■</span></td>
+<td><span class="payload-7">■</span></td>
 <td>Max</td>
 <td>1 byte</td>
 <td><code>0</code></td>
 <td><code>127</code></td>
+<td><code>0</code></td>
+<td><code>255</code></td>
 </tr>
 <tr>
-<td><span class="eighth">■ ■</span></td>
+<td><span class="payload-8">■ ■</span></td>
 <td>Frequency</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 <tr>
-<td><span class="ninth">■ ■</span></td>
+<td><span class="payload-9">■ ■</span></td>
 <td>Period</td>
 <td>2 bytes</td>
 <td><code>0</code></td>
 <td><code>16384</code></td>
+<td><code>0.0</code></td>
+<td><code>1.0</code></td>
 </tr>
 </tbody>
 </table>
@@ -768,14 +831,15 @@
 <p class="code">
 <span class="start">0xf0 0x7e</span>
 <span class="first">0x09</span>
-<span class="second">0x04 0x03</span>
-<span class="third">0x01</span>
-<span class="fourth">0x00</span>
-<span class="fifth">0x0c</span>
-<span class="sixth">0x00</span>
-<span class="seventh">0x7f</span>
-<span class="eighth">0x07 0x68</span>
-<span class="ninth">0x7f 0x7f</span>
+<span class="payload-1">0x04</span>
+<span class="payload-2">0x03</span>
+<span class="payload-3">0x01</span>
+<span class="payload-4">0x00</span>
+<span class="payload-5">0x0c</span>
+<span class="payload-6">0x00</span>
+<span class="payload-7">0x7f</span>
+<span class="payload-8">0x07 0x68</span>
+<span class="payload-9">0x7f 0x7f</span>
 <span class="end">0xf7</span>
 </p>
 <hr>
@@ -785,17 +849,27 @@
 <li><a href="http://midi.teragonaudio.com/tech/midispec/sysex.htm">SysEx</a></li>
 </ul>
 <style>
-.code { font-family: "Courier New", monospace; font-weight: bold; background-color: #011627 }
-.start, .end { color: #FFC8DD; }
+.code { font-family: "Courier New", monospace; font-weight: bold; background-color: #011627; padding: 0.5rem 1rem; }
 .first { color: #CDB4DB; }
-.second { color: #BDE0FE; }
-.third { color: #B2FF9E; }
-.fourth { color: #9EFFEC; }
-.fifth { color: #F4FF9E; }
-.sixth { color: #FF9EB1; }
-.seventh { color: #FF9EB1; }
-.eighth { color: #FF9EF2; }
-.ninth { color: #9EB1FF; }
+.payload-1 { color: #BDE0FE; }
+.payload-2 { color: #B2FF9E; }
+.payload-3 { color: #9EFFEC; }
+.payload-4 { color: #F4FF9E; }
+.payload-5 { color: #FF9EB1; }
+.payload-6 { color: #FF9EB1; }
+.payload-7 { color: #FF9EF2; }
+.payload-8 { color: #9EB1FF; }
+.start, .end { color: #8c8f9f; }
+.first { color: #ff0000; }
+.payload-1 { color: #ff8700; }
+.payload-2 { color: #ffd300; }
+.payload-3 { color: #ffff0a; }
+.payload-4 { color: #a1ff0a; }
+.payload-5 { color: #0aff99; }
+.payload-6 { color: #0aefff; }
+.payload-7 { color: #1a85ff; }
+.payload-8 { color: #9f73ff; }
+.payload-9 { color: #be0aff; }
 </style>
 
             
