@@ -8,7 +8,8 @@
 
 enum LedType
 {
-    LED_NEOPIXEL
+    LED_NEOPIXEL,
+    LED_STRIP,
 };
 
 class Led

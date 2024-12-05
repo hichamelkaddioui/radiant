@@ -1,6 +1,7 @@
 #include <Utils.h>
-#include <NeoPixel.h>
 #include <Led.h>
+#include <NeoPixel.h>
+#include <LedStrip.h>
 
 void LedBank::setup()
 {
@@ -34,22 +35,18 @@ size_t LedBank::serialize(uint8_t *buffer) const
         if (led == nullptr)
             continue;
 
-        int type = led->getType();
-        int id = it.first;
-
         // Type
         LedType ledType = led->getType();
         memcpy(buffer + offset, &ledType, sizeof(LedType));
         offset += sizeof(LedType);
 
         // ID
+        int id = it.first;
         memcpy(buffer + offset, &id, sizeOfInt);
         offset += sizeOfInt;
 
         // Led
         offset += led->serialize(id, buffer + offset);
-
-        debug(1, "[serialize led] id: %d", id);
 
         ledCount++;
     }
@@ -70,20 +67,33 @@ size_t LedBank::deserialize(const uint8_t *buffer)
 
     for (size_t i = 0; i < ledCount; i++)
     {
+        // Type
         LedType ledType;
         memcpy(&ledType, buffer + offset, sizeof(LedType));
         offset += sizeof(LedType);
 
-        if (ledType == LedType::LED_NEOPIXEL)
-        {
-            int id = 0;
-            memcpy(&id, buffer + offset, sizeOfInt);
-            offset += sizeOfInt;
+        // ID
+        int id = 0;
+        memcpy(&id, buffer + offset, sizeOfInt);
+        offset += sizeOfInt;
 
+        // Led
+        switch (ledType)
+        {
+        case LedType::LED_NEOPIXEL:
+        {
             NeoPixel *pixel = new NeoPixel();
             offset += pixel->deserialize(id, buffer + offset);
-
             _bank[id] = pixel;
+            break;
+        }
+        case LedType::LED_STRIP:
+        {
+            LedStrip *strip = new LedStrip();
+            offset += strip->deserialize(id, buffer + offset);
+            _bank[id] = strip;
+            break;
+        }
         }
     }
 

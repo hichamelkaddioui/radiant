@@ -2,6 +2,7 @@
 #include <MidiSerial.h>
 #include <Led.h>
 #include <NeoPixel.h>
+#include <LedStrip.h>
 #include <Graph.h>
 #include <Flash.h>
 #include <Utils.h>
@@ -47,8 +48,8 @@ void setup1()
     localLedBank._bank[13] = pixel13;
     NeoPixel *pixel12 = new NeoPixel(-1);
     localLedBank._bank[12] = pixel12;
-    NeoPixel *pixel666 = new NeoPixel(-1);
-    localLedBank._bank[666] = pixel666;
+    LedStrip *ledStrip = new LedStrip(-1, -1, -1);
+    localLedBank._bank[666] = ledStrip;
 
     // GraphBank
     GraphBank localGraphBank = defaultGraphBank();
@@ -72,7 +73,7 @@ void setup1()
 
     scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
     scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects[666] = LedEffect(ledStrip, brightnessA, brightnessB, hueA, hueB);
 
     localSceneBank._scenes[12] = scene;
 
@@ -84,7 +85,7 @@ void setup1()
 
     scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
     scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(pixel666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects[666] = LedEffect(ledStrip, brightnessA, brightnessB, hueA, hueB);
 
     localSceneBank._scenes[13] = scene;
 
