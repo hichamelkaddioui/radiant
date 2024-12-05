@@ -150,165 +150,135 @@ const getSysExMessages = () =>
         .filter((c) => c !== NaN)
     );
 
-const payloadToColoredSpans = (message) => {
+const messageIdMap = {
+  1: "Set params",
+  2: "Create light",
+  3: "Create scene",
+  4: "Create graph",
+  5: "Set hue A",
+  6: "Set brightness A",
+  7: "Set hue B",
+  8: "Set brightness B",
+  9: "Set strobe A",
+  10: "Set strobe B",
+};
+
+const payloadToColoredObjects = (message) => {
   const messageId = message[2];
   const payloadLength = message.length - 4;
 
-  const validateArgumentsCount = (expected) => {
+  const validateArgumentsCount = (structure) => {
+    const expected = structure.map((s) => s.length).reduce((a, b) => a + b);
+
     if (payloadLength !== expected) {
-      const expectedLength = expected + 4;
-      throw `Invalid SysEx message: message ID ${messageId} must have ${expectedLength} bytes, got ${message.length}`;
+      throw `Invalid SysEx message: message ID ${messageId} must have a payload of ${expected} bytes, got ${payloadLength}`;
     }
   };
 
-  const validateGraphPayload = () => {
-    if ((payloadLength - 2) % 6 !== 0) {
-      throw `Invalid SysEx message: message ID ${messageId} must have a payload that is a multiple of 6 bytes`;
+  const validateGraphPayload = (keyframes) => {
+    if (keyframes.length % 6 !== 0) {
+      throw `Invalid SysEx message: message ID ${messageId} must have a multiple of 6 keyframe bytes, got ${keyframes.length}`;
     }
   };
 
-  switch (messageId) {
-    case 1:
-    case 3:
-      validateArgumentsCount(1);
-      return [
-        `<span class="help">${messageId === 1 ? "Led ID" : "Scene ID"}</span>`,
-        `<span class="second">${decToHex(message[3])}</span>`,
-      ].join(" ");
-    case 2:
-      validateArgumentsCount(5);
+  const validateHueSaturation = (structure, mode) => {
+    if (mode === undefined) {
+      throw `Invalid SysEx message: message ID ${messageId} must have a mode`;
+    }
 
-      return [
-        `<span class="help">Light ID</span>`,
-        `<span class="second">${decToHex(message[3])}</span>`,
-        `<span class="help">Pin R</span>`,
-        `<span class="third">${decToHex(message[4])}</span>`,
-        `<span class="help">Pin G</span>`,
-        `<span class="fourth">${decToHex(message[5])}</span>`,
-        `<span class="help">Pin B</span>`,
-        `<span class="fifth">${decToHex(message[6])}</span>`,
-        `<span class="help">Pin W</span>`,
-        `<span class="sixth">${decToHex(message[7])}</span>`,
-      ].join(" ");
-    case 4:
-      validateGraphPayload();
+    validateArgumentsCount(structure[mode]);
+  };
 
-      return [
-        `<span class="help">Scene ID</span>`,
-        `<span class="second">${decToHex(message[3])}</span>`,
-        `<span class="help">Graph ID</span>`,
-        `<span class="second">${decToHex(message[4])}</span>`,
-      ]
-        .concat(
-          message
-            .filter((_, i) => i > 4 && i < message.length - 1)
-            .map((val, i) => {
-              if (i % 6 === 0) {
-                return [
-                  `<span class="help">Keyframe ${i / 6 + 1}</span>`,
-                  `(<span class="third">${decToHex(val)}</span>`,
-                ].join(" ");
-              }
+  const graphMode = [
+    { label: "Scene ID", length: 1 },
+    { label: "Light ID", length: 1 },
+    { label: "Mode", length: 1 },
+    { label: "Trigger note", length: 1 },
+    { label: "Graph ID", length: 1 },
+    { label: "Min", length: 1 },
+    { label: "Max", length: 1 },
+    { label: "Duration", length: 3 },
+    { label: "Period", length: 2 },
+  ];
 
-              if (i % 6 === 5) {
-                return `<span class="third">${decToHex(val)}</span>)`;
-              }
+  const hueMode = [
+    { label: "Scene ID", length: 1 },
+    { label: "Light ID", length: 1 },
+    { label: "Mode", length: 1 },
+    { label: "Control note", length: 1 },
+  ];
 
-              if (i % 2 === 1) {
-                return `<span class="third">${decToHex(val)}</span>,`;
-              }
+  const hueSaturation = { 0: graphMode, 1: graphMode, 2: hueMode };
 
-              return `<span class="third">${decToHex(val)}</span>`;
-            })
-        )
-        .join(" ");
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-      const mode = message[5];
+  const structures = {
+    "Set params": [{ label: "A/B control note", length: 1 }],
+    "Create light": [
+      { label: "Light ID", length: 1 },
+      { label: "Pin R", length: 1 },
+      { label: "Pin G", length: 1 },
+      { label: "Pin B", length: 1 },
+      { label: "Pin W", length: 1 },
+    ],
+    "Create scene": [{ label: "Scene ID", length: 1 }],
+    "Create graph": [
+      { label: "Scene ID", length: 1 },
+      { label: "Graph ID", length: 1 },
+    ],
+    "Set hue A": hueSaturation,
+    "Set brightness A": hueSaturation,
+    "Set hue B": hueSaturation,
+    "Set brightness B": hueSaturation,
+    "Set strobe A": [
+      { label: "Scene ID", length: 1 },
+      { label: "Light ID", length: 1 },
+      { label: "Mode", length: 1 },
+      { label: "Trigger note", length: 1 },
+      { label: "Graph ID", length: 1 },
+      { label: "Min", length: 1 },
+      { label: "Max", length: 1 },
+      { label: "Frequency", length: 2 },
+      { label: "Period", length: 2 },
+    ],
+  };
 
-      if (mode === undefined) {
-        throw `Invalid SysEx message: message ID ${messageId} must have a mode`;
-      }
+  const messageStructure = structures[messageIdMap[messageId]];
 
-      if (messageId === 9) {
-        validateArgumentsCount(11);
-
-        return [
-          `<span class="help">Scene ID</span>`,
-          `<span class="second">${decToHex(message[3])}</span>`,
-          `<span class="help">Light ID</span>`,
-          `<span class="second">${decToHex(message[4])}</span>`,
-          `<span class="help">Mode</span>`,
-          `<span class="third">${decToHex(message[5])}</span>`,
-          `<span class="help">Trigger note</span>`,
-          `<span class="fourth">${decToHex(message[6])}</span>`,
-          `<span class="help">Graph</span>`,
-          `<span class="fifth">${decToHex(message[7])}</span>`,
-          `<span class="help">Min</span>`,
-          `<span class="sixth">${decToHex(message[8])}</span>`,
-          `<span class="help">Max</span>`,
-          `<span class="seventh">${decToHex(message[9])}</span>`,
-          `<span class="help">Frequency</span>`,
-          `<span class="eighth">${decToHex(message[10])}</span>`,
-          `<span class="eighth">${decToHex(message[11])}</span>`,
-          `<span class="help">Period</span>`,
-          `<span class="ninth">${decToHex(message[12])}</span>`,
-          `<span class="ninth">${decToHex(message[13])}</span>`,
-        ].join(" ");
-      }
-
-      if (mode === 0 || mode === 1) {
-        validateArgumentsCount(12);
-
-        return [
-          `<span class="help">Scene ID</span>`,
-          `<span class="second">${decToHex(message[3])}</span>`,
-          `<span class="help">Light ID</span>`,
-          `<span class="second">${decToHex(message[4])}</span>`,
-          `<span class="help">Mode</span>`,
-          `<span class="third">${decToHex(message[5])}</span>`,
-          `<span class="help">Trigger note</span>`,
-          `<span class="fourth">${decToHex(message[6])}</span>`,
-          `<span class="help">Graph</span>`,
-          `<span class="fifth">${decToHex(message[7])}</span>`,
-          `<span class="help">Min</span>`,
-          `<span class="sixth">${decToHex(message[8])}</span>`,
-          `<span class="help">Max</span>`,
-          `<span class="seventh">${decToHex(message[9])}</span>`,
-          `<span class="help">Duration</span>`,
-          `<span class="eighth">${decToHex(message[10])}</span>`,
-          `<span class="eighth">${decToHex(message[11])}</span>`,
-          `<span class="eighth">${decToHex(message[12])}</span>`,
-          `<span class="help">Period</span>`,
-          `<span class="ninth">${decToHex(message[13])}</span>`,
-          `<span class="ninth">${decToHex(message[14])}</span>`,
-        ].join(" ");
-      }
-
-      if (mode === 2) {
-        validateArgumentsCount(4);
-
-        return [
-          `<span class="help">Scene ID</span>`,
-          `<span class="second">${decToHex(message[3])}</span>`,
-          `<span class="help">Light ID</span>`,
-          `<span class="second">${decToHex(message[4])}</span>`,
-          `<span class="help">Control note</span>`,
-          `<span class="third">${decToHex(message[5])}</span>`,
-        ].join(" ");
-      }
-
-      throw `Invalid SysEx message: message ID ${messageId} must have a mode of 0, 1 or 2`;
+  // Message ID is not supported
+  if (!messageStructure) {
+    return [{ label: "Unknown", length: payloadLength }];
   }
 
-  return message
-    .filter((_, i) => i > 2 && i < message.length - 1)
-    .map(decToHex)
-    .map((val) => `<span class="second">${val}</span>`)
-    .join(" ");
+  // Message ID is graph keyframe
+  const isGraphKeyframe = messageId === 4;
+
+  if (isGraphKeyframe) {
+    const keyframes = message.filter((_, i) => i > 4 && i < message.length - 1);
+
+    validateGraphPayload(keyframes);
+
+    return [
+      ...messageStructure,
+      ...keyframes
+        .filter((_, i) => i % 6 === 0)
+        .map((_, i) => ({ label: `Keyframe ${i + 1}`, length: 6 })),
+    ];
+  }
+
+  // Message ID is hue/saturation
+  const isHueSaturation = [5, 6, 7, 8].includes(messageId);
+
+  if (isHueSaturation) {
+    const mode = message[5];
+
+    validateHueSaturation(messageStructure, mode);
+
+    return messageStructure[mode];
+  }
+
+  // Message ID is not graph keyframe or hue/saturation
+  validateArgumentsCount(messageStructure);
+
+  return messageStructure;
 };
 
 const messageToColoredSpans = (message) => {
@@ -324,21 +294,56 @@ const messageToColoredSpans = (message) => {
   }
 
   const messageId = message[2];
-  if (!messageId || messageId <= 0 || messageId > 9) {
-    return "Invalid SysEx message: must have a valid message ID";
-  }
+  const messageIdName = messageIdMap[messageId] || "Unknown ID";
 
   res.push(
     ...[
       `<span class="help">SysEx start</span>`,
       `<span class="start">${decToHex(first)} ${decToHex(second)}</span>`,
-      `<span class="help">Message ID</span>`,
+      `<span class="help">${messageIdName}</span>`,
       `<span class="first">${decToHex(messageId)}</span>`,
     ]
   );
 
   try {
-    res.push(payloadToColoredSpans(message));
+    let offset = 3;
+
+    const payloadStructure = payloadToColoredObjects(message);
+    const coloredSpans = payloadStructure
+      .map(({ label, length }, i) => {
+        const help = `<span class="help">${label}</span>`;
+        const values = message.slice(offset, offset + length);
+        offset += length;
+
+        const isGraphKeyframes = messageId === 4 && i > 1;
+
+        if (isGraphKeyframes) {
+          const [x1, x2, y1, y2, c1, c2] = values.map(decToHex);
+          const spanValues = [
+            `(<span class="payload-3">${x1}</span>`,
+            `<span class="payload-3">${x2}</span>, `,
+            `<span class="payload-3">${y1}</span>`,
+            `<span class="payload-3">${y2}</span>, `,
+            `<span class="payload-3">${c1}</span>`,
+            `<span class="payload-3">${c2}</span>)`,
+          ].join(" ");
+
+          return [help, spanValues];
+        }
+
+        const spanValues = values
+          .map(
+            (value) =>
+              `<span class="payload-${i + 1}">${decToHex(value)}</span>`
+          )
+          .join(" ");
+
+        return [help, spanValues];
+      })
+      .map(([help, values]) => [help, values].join(" "))
+      .join(" ");
+
+    res.push(coloredSpans);
   } catch (error) {
     return error;
   }
