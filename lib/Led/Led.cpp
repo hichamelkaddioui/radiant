@@ -2,45 +2,6 @@
 #include <NeoPixel.h>
 #include <Led.h>
 
-size_t serializeNeoPixel(Led *led, uint8_t *buffer, int id)
-{
-    size_t offset = 0;
-
-    NeoPixel *pixel = dynamic_cast<NeoPixel *>(const_cast<Led *>(led));
-
-    if (pixel == nullptr)
-        return 0;
-
-    // Type
-    LedType neoPixelType = LedType::LED_NEOPIXEL;
-    memcpy(buffer + offset, &neoPixelType, sizeof(LedType));
-    offset += sizeof(LedType);
-
-    // ID
-    memcpy(buffer + offset, &id, sizeOfInt);
-    offset += sizeOfInt;
-
-    // Pin
-    memcpy(buffer + offset, &pixel->_pin, sizeOfInt);
-    offset += sizeOfInt;
-
-    debug(1, "[serialize neo pixel] id: %d, pin: %d", id, pixel->_pin);
-
-    return offset;
-}
-
-size_t deserializeNeoPixel(NeoPixel &pixel, const uint8_t *buffer)
-{
-    size_t offset = 0;
-
-    int pin = 0;
-    memcpy(&pin, buffer + offset, sizeOfInt);
-    offset += sizeOfInt;
-    pixel._pin = pin;
-
-    return offset;
-}
-
 void LedBank::setup()
 {
     for (const auto &it : _bank)
@@ -69,15 +30,28 @@ size_t LedBank::serialize(uint8_t *buffer) const
     for (const auto &it : _bank)
     {
         Led *led = it.second;
+
+        if (led == nullptr)
+            continue;
+
         int type = led->getType();
         int id = it.first;
 
-        if (type == LedType::LED_NEOPIXEL)
-        {
-            offset += serializeNeoPixel(led, buffer + offset, id);
+        // Type
+        LedType ledType = led->getType();
+        memcpy(buffer + offset, &ledType, sizeof(LedType));
+        offset += sizeof(LedType);
 
-            ledCount++;
-        }
+        // ID
+        memcpy(buffer + offset, &id, sizeOfInt);
+        offset += sizeOfInt;
+
+        // Led
+        offset += led->serialize(id, buffer + offset);
+
+        debug(1, "[serialize led] id: %d", id);
+
+        ledCount++;
     }
 
     debug(1, "[serialize led bank] %lu leds serialized", ledCount);
@@ -107,8 +81,7 @@ size_t LedBank::deserialize(const uint8_t *buffer)
             offset += sizeOfInt;
 
             NeoPixel *pixel = new NeoPixel();
-            offset += deserializeNeoPixel(*pixel, buffer + offset);
-            debug(1, "[deserialized neo pixel] id: %d, pin: %d", id, pixel->_pin);
+            offset += pixel->deserialize(id, buffer + offset);
 
             _bank[id] = pixel;
         }

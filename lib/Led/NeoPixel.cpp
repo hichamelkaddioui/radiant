@@ -1,6 +1,11 @@
 #include <Utils.h>
 #include <NeoPixel.h>
 
+NeoPixel::~NeoPixel()
+{
+    delete _strip;
+}
+
 void NeoPixel::setup()
 {
     _strip = new Adafruit_NeoPixel(1, _pin);
@@ -16,7 +21,28 @@ void NeoPixel::setRgb(uint8_t r, uint8_t g, uint8_t b)
     _strip->show();
 }
 
-NeoPixel::~NeoPixel()
+size_t NeoPixel::serialize(int id, uint8_t *buffer) const
 {
-    delete _strip;
+    size_t offset = 0;
+
+    // Pin
+    memcpy(buffer + offset, &_pin, sizeOfInt);
+    offset += sizeOfInt;
+
+    debug(1, "[serialize neo pixel] id: %d, pin: %d", id, _pin);
+
+    return offset;
+}
+
+size_t NeoPixel::deserialize(int id, const uint8_t *buffer)
+{
+    size_t offset = 0;
+
+    // Pin
+    memcpy(&_pin, buffer + offset, sizeOfInt);
+    offset += sizeOfInt;
+
+    debug(1, "[deserialize neo pixel] id: %d, pin: %d", id, _pin);
+
+    return offset;
 }
