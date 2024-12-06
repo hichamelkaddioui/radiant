@@ -59,7 +59,7 @@ void Oled::setup()
 /**
  * TODO: fix contact failure for pin 6 (button B) & 5 (button C)
  */
-void Oled::handleButtonPress(SceneBank &sceneBank)
+void Oled::handleButtonPress(StateManager &manager)
 {
     int reading = digitalRead(_buttonA->pin);
 
@@ -77,7 +77,7 @@ void Oled::handleButtonPress(SceneBank &sceneBank)
             {
                 debug(1, "[oled] Button A pressed");
 
-                sceneBank.next();
+                manager.handleOledButtonPress();
             }
         }
     }
@@ -85,18 +85,18 @@ void Oled::handleButtonPress(SceneBank &sceneBank)
     _buttonA->lastState = reading;
 }
 
-void Oled::loop(SceneBank &sceneBank)
+void Oled::loop(StateManager &manager)
 {
-    handleButtonPress(sceneBank);
-    displaySceneData(sceneBank);
+    handleButtonPress(manager);
+    displaySceneData(manager);
 }
 
-void Oled::displaySceneData(SceneBank &sceneBank)
+void Oled::displaySceneData(StateManager &manager)
 {
     if (millis() % 10 != 0)
         return;
 
-    Scene *scenePtr = sceneBank.getCurrentScene();
+    Scene *scenePtr = manager.getCurrentScene();
 
     if (scenePtr == nullptr)
         return;
@@ -107,7 +107,7 @@ void Oled::displaySceneData(SceneBank &sceneBank)
     _display.setCursor(0, 0);
     _display.setTextColor(SSD1306_WHITE);
     _display.print("Scene ");
-    _display.print(sceneBank.currentSceneId);
+    _display.print(manager.getCurrentSceneId());
 
     int xA = SCREEN_WIDTH / 2;
     int xB = SCREEN_WIDTH - 6;

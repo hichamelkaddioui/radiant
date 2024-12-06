@@ -11,107 +11,7 @@ void MidiSerial::setup()
     MidiUART.begin(MIDI_CHANNEL_OMNI);
 }
 
-void MidiSerial::handleNoteOn(SceneBank &sceneBank)
-{
-    byte note = MidiUART.getData1();
-    byte velocity = MidiUART.getData2();
-    debug(1, "[midi] received note on: 0x%02X, velocity: 0x%02X", note, velocity);
-
-    Scene *currentScene = sceneBank.getCurrentScene();
-
-    if (!currentScene)
-    {
-        debug(1, "[midi] no current scene");
-        return;
-    }
-
-    currentScene->onNotePlayed(note, velocity);
-}
-
-void MidiSerial::handleSystemExclusive(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank)
-{
-    const byte *buffer = MidiUART.getSysExArray();
-    unsigned length = MidiUART.getSysExArrayLength();
-
-    debug(1, "[midi] received System Exclusive");
-
-    // Read message id
-    byte messageId = buffer[2];
-
-    switch (messageId)
-    {
-    case SysExMessage::CREATE_LIGHT:
-        ledBank.sysExCreate(buffer + 3, length - 3);
-        break;
-    case SysExMessage::CREATE_SCENE:
-        sceneBank.sysExCreate(buffer + 3, length - 3);
-        break;
-    case SysExMessage::CREATE_GRAPH:
-        graphBank.sysExCreate(buffer + 3, length - 3);
-        break;
-    case SysExMessage::SET_HUE_A:
-    case SysExMessage::SET_BRIGHTNESS_A:
-    case SysExMessage::SET_HUE_B:
-    case SysExMessage::SET_BRIGHTNESS_B:
-        sceneBank.sysExSetHueBrightness(buffer + 2, length - 2, ledBank, graphBank);
-        break;
-    case SysExMessage::SET_PARAMS:
-    case SysExMessage::SET_STROBE_A:
-    case SysExMessage::SET_STROBE_B:
-    default:
-        debugByteArray(buffer, length);
-        break;
-    }
-}
-
-void MidiSerial::handleProgramChange(SceneBank &sceneBank)
-{
-    byte value = MidiUART.getData1();
-    debug(1, "[midi] received program change: 0x%02X", value);
-
-    switch (value)
-    {
-    case 0x00:
-        sceneBank.restart();
-        break;
-    case 0x01:
-        sceneBank.next();
-        break;
-    default:
-        break;
-    }
-}
-
-void MidiSerial::handleControlChange(SceneBank &sceneBank)
-{
-    byte type = MidiUART.getData1();
-    byte value = MidiUART.getData2();
-    debug(1, "[midi] received control change: 0x%02X 0x%02X", type, value);
-
-    switch (type)
-    {
-    // Balance
-    case 0x08:
-        sceneBank.getCurrentScene()->_ab = value / 127.0f;
-        break;
-    default:
-        break;
-    }
-}
-
-void MidiSerial::saveToFlash(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank, RP2040Flash &flash)
-{
-    size_t offset = 0;
-    uint8_t buffer[1024]{};
-
-    offset += ledBank.serialize(buffer + offset);
-    offset += graphBank.serialize(buffer + offset);
-    offset += sceneBank.serialize(buffer + offset, ledBank, graphBank);
-
-    flash.write(0x0, buffer, offset);
-}
-
-void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank, RP2040Flash &flash)
+void MidiSerial::loop(StateManager &manager)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -122,18 +22,13 @@ void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBa
         switch (type)
         {
         case MidiType::NoteOn:
-            handleNoteOn(sceneBank);
-            break;
+            return manager.handleNoteOn(MidiUART.getData1(), MidiUART.getData2());
         case MidiType::SystemExclusive:
-            handleSystemExclusive(ledBank, graphBank, sceneBank);
-            saveToFlash(ledBank, graphBank, sceneBank, flash);
-            break;
+            return manager.handleSystemExclusive(MidiUART.getSysExArray(), MidiUART.getSysExArrayLength());
         case MidiType::ProgramChange:
-            handleProgramChange(sceneBank);
-            break;
+            return manager.handleProgramChange(MidiUART.getData1());
         case MidiType::ControlChange:
-            handleControlChange(sceneBank);
-            break;
+            return manager.handleControlChange(MidiUART.getData1(), MidiUART.getData2());
         default:
             debug(1, "[midi] received midi message type: 0x%02X, value: 0x%02X", type, MidiUART.getData1());
             break;

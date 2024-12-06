@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <SceneBank.h>
+#include <StateManager.h>
 
 // https://learn.adafruit.com/adafruit-oled-featherwing/pinouts
 
@@ -72,7 +72,7 @@ class Oled
 public:
     Oled();
     void setup();
-    void loop(SceneBank &sceneBank);
+    void loop(StateManager &manager);
 
     Adafruit_SSD1306 _display;
 
@@ -80,8 +80,8 @@ private:
     ButtonState *_buttonA;
 
     void showGreetings();
-    void handleButtonPress(SceneBank &sceneBank);
-    void displaySceneData(SceneBank &sceneBank);
+    void handleButtonPress(StateManager &manager);
+    void displaySceneData(StateManager &manager);
 };
 
 #endif

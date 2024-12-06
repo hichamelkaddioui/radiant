@@ -6,13 +6,8 @@
 
 MidiSerial midiSerial;
 Oled screen;
-GraphBank gb;
-LedBank lb;
-SceneBank sb;
 RP2040Flash flash;
-
-static const int BUFFER_SIZE = 1024 * 4;
-static const int PIXEL_INDEX = 0;
+StateManager stateManager;
 
 void setup()
 {
@@ -26,25 +21,6 @@ void setup()
         ;
 }
 
-void createDummy()
-{
-    size_t offset = 0;
-    uint8_t buffer[BUFFER_SIZE]{};
-
-    // Create banks
-    LedBank localLedBank = LedBank::createDummy();
-    GraphBank localGraphBank = GraphBank::createDummy();
-    SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
-
-    // Serialize
-    offset += localLedBank.serialize(buffer);
-    offset += localGraphBank.serialize(buffer + offset);
-    offset += localSceneBank.serialize(buffer + offset, localLedBank, localGraphBank);
-
-    // Write to flash
-    flash.write(0x0, buffer, offset);
-}
-
 void setup1()
 {
     // OLED screen
@@ -53,25 +29,16 @@ void setup1()
     // Flash setup
     flash.begin();
 
-    // createDummy();
+    StateManager::createAndSaveStubs(flash);
 
     // Read from flash
-    size_t offset = 0;
-    uint8_t buffer[BUFFER_SIZE]{};
-    flash.read(0x0, buffer, BUFFER_SIZE);
+    stateManager.deserialize(flash);
 
-    // Deserialize
-    offset += lb.deserialize(buffer);
-    offset += gb.deserialize(buffer + offset);
-    offset += sb.deserialize(buffer + offset, lb, gb);
-
-    debug(1, "[setup] read %d bytes from flash", offset);
-
-    // Dump current scene
-    sb.getCurrentScene()->dump();
+    // Dump scene
+    stateManager.getCurrentScene()->dump();
 
     // Setup led bank
-    lb.setup();
+    stateManager.setup();
 
     // Done!
     debug(1, "[setup] Setup complete");
@@ -79,14 +46,12 @@ void setup1()
 
 void loop()
 {
-    midiSerial.loop(lb, gb, sb, flash);
+    midiSerial.loop(stateManager);
 }
 
 void loop1()
 {
-    Scene *currentScene = sb.getCurrentScene();
+    stateManager.update();
 
-    currentScene->update();
-
-    screen.loop(sb);
+    screen.loop(stateManager);
 }
