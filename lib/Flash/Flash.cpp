@@ -17,7 +17,5 @@ void RP2040Flash::write(uint32_t address, const uint8_t *data, uint32_t length)
 {
     debug(1, "[flash] Writing %lu bytes to address 0x%08X", length, address);
     _flash.eraseBlock(address / 4096);
-    uint8_t *copy = new uint8_t[length];
-    memcpy(copy, data, length);
-    _flash.writeBuffer(address, copy, length);
+    _flash.writeBuffer(address, data, length);
 }
