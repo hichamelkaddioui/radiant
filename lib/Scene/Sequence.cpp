@@ -112,12 +112,25 @@ size_t Sequence::serialize(uint8_t *buffer, const GraphBank &graphBank)
 {
     size_t offset = 0;
 
+    memcpy(buffer + offset, &_mode, sizeof(PlaybackMode));
+    offset += sizeof(PlaybackMode);
+
     if (_mode == PlaybackMode::EXTERNAL_CONTROL)
     {
-        memcpy(buffer + offset, &_mode, sizeof(PlaybackMode));
-        offset += sizeof(PlaybackMode);
         memcpy(buffer + offset, &_controlNote, sizeOfByte);
         offset += sizeOfByte;
+
+        return offset;
+    }
+
+    if (_graph == nullptr)
+    {
+        debug(1, "[serialize sequence] graph is nullptr");
+
+        // Write -1 to indicate no graph
+        int noGraphId = -1;
+        memcpy(buffer + offset, &noGraphId, sizeOfInt);
+        offset += sizeOfInt;
 
         return offset;
     }
@@ -128,11 +141,9 @@ size_t Sequence::serialize(uint8_t *buffer, const GraphBank &graphBank)
     {
         debug(1, "[serialize sequence] graph not found, graph address %p", _graph);
 
-        return 0;
+        return offset;
     }
 
-    memcpy(buffer + offset, &_mode, sizeof(PlaybackMode));
-    offset += sizeof(PlaybackMode);
     memcpy(buffer + offset, &graphId, sizeOfInt);
     offset += sizeOfInt;
     memcpy(buffer + offset, &_min, sizeOfInt);
@@ -172,14 +183,16 @@ size_t Sequence::deserialize(const uint8_t *buffer, const GraphBank &graphBank)
     memcpy(&graphId, buffer + offset, sizeOfInt);
     offset += sizeOfInt;
 
-    _graph = graphBank._graphs.at(graphId);
+    const auto &it = graphBank._graphs.find(graphId);
 
-    if (_graph == nullptr)
+    if (it == graphBank._graphs.end())
     {
         debug(1, "[deserialize sequence] graph not found");
 
-        return 0;
+        return offset;
     }
+
+    _graph = it->second;
 
     memcpy(&_min, buffer + offset, sizeOfInt);
     offset += sizeOfInt;

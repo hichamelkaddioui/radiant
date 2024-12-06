@@ -2,6 +2,21 @@
 #include <Scene.h>
 #include <Utils.h>
 
+void LedEffect::dump() const
+{
+    if (hueA != nullptr)
+        hueA->dump("hue A");
+
+    if (hueB != nullptr)
+        hueB->dump("hue B");
+
+    if (brightnessA != nullptr)
+        brightnessA->dump("brightness A");
+
+    if (brightnessB != nullptr)
+        brightnessB->dump("brightness B");
+}
+
 void Scene::update()
 {
     for (const auto &it : _ledEffects)
@@ -76,10 +91,17 @@ size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank
             continue;
         }
 
+        LedEffect ledEffect = it.second;
+
+        if (ledEffect.hueA == nullptr || ledEffect.hueB == nullptr || ledEffect.brightnessA == nullptr || ledEffect.brightnessB == nullptr)
+        {
+            debug(1, "[serialize scene] scene contains empty led effect, skipping led effect");
+            continue;
+        }
+
         memcpy(buffer + offset, &ledId, sizeOfInt);
         offset += sizeOfInt;
 
-        LedEffect ledEffect = it.second;
         offset += ledEffect.hueA->serialize(buffer + offset, graphBank);
         offset += ledEffect.hueB->serialize(buffer + offset, graphBank);
         offset += ledEffect.brightnessA->serialize(buffer + offset, graphBank);
@@ -105,14 +127,13 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
         memcpy(&ledId, buffer + offset, sizeOfInt);
         offset += sizeOfInt;
 
-        ledEffect.led = ledBank._leds.at(ledId);
-
-        if (ledEffect.led == nullptr)
+        if (ledBank._leds.find(ledId) == ledBank._leds.end())
         {
             debug(1, "[deserialize scene] led %d not found, skipping led effect", ledId);
             continue;
         }
 
+        ledEffect.led = ledBank._leds.at(ledId);
         ledEffect.hueA = new Sequence();
         ledEffect.hueB = new Sequence();
         ledEffect.brightnessA = new Sequence();
@@ -133,7 +154,7 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
 
 void Scene::sysExSetHueBrightness(int messageId, int lightId, Sequence *sequence)
 {
-    LedEffect ledEffect = LedEffect();
+    LedEffect ledEffect;
 
     if (_ledEffects.find(lightId) != _ledEffects.end())
         ledEffect = _ledEffects[lightId];
@@ -165,10 +186,6 @@ void Scene::dump()
 
     for (const auto &it : _ledEffects)
     {
-        LedEffect ledEffect = it.second;
-        ledEffect.hueA->dump("hue A");
-        ledEffect.hueB->dump("hue B");
-        ledEffect.brightnessA->dump("brightness A");
-        ledEffect.brightnessB->dump("brightness B");
+        it.second.dump();
     }
 }
