@@ -44,7 +44,7 @@ public:
     void handleOledButtonPress();
 
     // Serialization
-    size_t serialize(bool write = false);
+    size_t serialize();
     size_t deserialize();
     static void createAndSaveStubs();
 

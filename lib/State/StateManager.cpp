@@ -16,6 +16,7 @@ void StateManager::loop()
     sb.getCurrentScene()->update();
 }
 
+// Scene
 void StateManager::createAndSaveStubs()
 {
     // Create banks
@@ -34,45 +35,7 @@ Scene *StateManager::getCurrentScene()
     return sb.getCurrentScene();
 }
 
-int StateManager::getCurrentSceneId()
-{
-    return sb.currentSceneId;
-}
-
-size_t StateManager::serialize(bool write)
-{
-    size_t offset = 0;
-    uint8_t buffer[FLASH_BUFFER_SIZE]{};
-
-    offset += lb.serialize(buffer + offset);
-    offset += gb.serialize(buffer + offset);
-    offset += sb.serialize(buffer + offset, lb, gb);
-
-    if (write)
-        flash.write(0x0, buffer, offset);
-
-    debug(1, "[state manager] serialized %d bytes", offset);
-
-    return offset;
-}
-
-size_t StateManager::deserialize()
-{
-    size_t offset = 0;
-    uint8_t buffer[FLASH_BUFFER_SIZE]{};
-
-    flash.read(0x0, buffer, FLASH_BUFFER_SIZE);
-
-    // Deserialize
-    offset += lb.deserialize(buffer);
-    offset += gb.deserialize(buffer + offset);
-    offset += sb.deserialize(buffer + offset, lb, gb);
-
-    debug(1, "[state manager] deserialized %d bytes", offset);
-
-    return offset;
-}
-
+// MIDI
 void StateManager::handleProgramChange(byte value)
 {
     debug(1, "[midi] received program change: 0x%02X", value);
@@ -150,10 +113,50 @@ void StateManager::handleSystemExclusive(const byte *buffer, unsigned long lengt
         break;
     }
 
-    serialize(true);
+    serialize();
 }
 
+// OLED
 void StateManager::handleOledButtonPress()
 {
     sb.next();
+}
+
+// Serialization
+int StateManager::getCurrentSceneId()
+{
+    return sb.currentSceneId;
+}
+
+size_t StateManager::serialize()
+{
+    size_t offset = 0;
+    uint8_t buffer[FLASH_BUFFER_SIZE]{};
+
+    offset += lb.serialize(buffer + offset);
+    offset += gb.serialize(buffer + offset);
+    offset += sb.serialize(buffer + offset, lb, gb);
+
+    flash.write(0x0, buffer, offset);
+
+    debug(1, "[state manager] serialized %d bytes", offset);
+
+    return offset;
+}
+
+size_t StateManager::deserialize()
+{
+    size_t offset = 0;
+    uint8_t buffer[FLASH_BUFFER_SIZE]{};
+
+    flash.read(0x0, buffer, FLASH_BUFFER_SIZE);
+
+    // Deserialize
+    offset += lb.deserialize(buffer);
+    offset += gb.deserialize(buffer + offset);
+    offset += sb.deserialize(buffer + offset, lb, gb);
+
+    debug(1, "[state manager] deserialized %d bytes", offset);
+
+    return offset;
 }
