@@ -99,3 +99,32 @@ size_t LedBank::deserialize(const uint8_t *buffer)
 
     return offset;
 }
+
+void LedBank::sysExCreate(const uint8_t *buffer, size_t length)
+{
+    debug(1, "[SysEx] [led] reading %lu bytes", length);
+
+    int lightId = static_cast<int>(buffer[0]);
+    int pinR = static_cast<int>(buffer[1]);
+    int pinG = static_cast<int>(buffer[2]);
+    int pinB = static_cast<int>(buffer[3]);
+
+    LedStrip *strip = new LedStrip(pinR, pinG, pinB);
+
+    const auto it = _bank.find(lightId);
+
+    if (it != _bank.end())
+    {
+        delete it->second;
+
+        debug(1, "[SysEx] [led] deleted previous led with id %d", lightId);
+    }
+    else
+    {
+        debug(1, "[SysEx] [led] no previous led with id %d", lightId);
+    }
+
+    _bank[lightId] = strip;
+
+    debug(1, "[SysEx] [led] stored led id %d, pin R %d, pin G %d, pin B %d", lightId, pinR, pinG, pinB);
+}

@@ -40,6 +40,9 @@ void MidiSerial::handleSystemExclusive(LedBank &ledBank, GraphBank &graphBank, S
 
     switch (messageId)
     {
+    case SysExMessage::CREATE_LIGHT:
+        ledBank.sysExCreate(buffer + 3, length - 3);
+        break;
     case SysExMessage::CREATE_SCENE:
         sceneBank.sysExCreate(buffer + 3, length - 3);
         break;
@@ -53,7 +56,6 @@ void MidiSerial::handleSystemExclusive(LedBank &ledBank, GraphBank &graphBank, S
         sceneBank.sysExSetHueBrightness(buffer + 2, length - 2, ledBank, graphBank);
         break;
     case SysExMessage::SET_PARAMS:
-    case SysExMessage::CREATE_LIGHT:
     case SysExMessage::SET_STROBE_A:
     case SysExMessage::SET_STROBE_B:
     default:

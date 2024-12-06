@@ -32,6 +32,7 @@ public:
     void clear();
     size_t serialize(uint8_t *buffer) const;
     size_t deserialize(const uint8_t *buffer);
+    void sysExCreate(const uint8_t *buffer, size_t length);
 };
 
 #endif
