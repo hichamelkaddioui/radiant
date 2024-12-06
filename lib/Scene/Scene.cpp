@@ -233,7 +233,8 @@ Scene *SceneBank::getCurrentScene() const
     if (it == _scenes.end())
     {
         debug(1, "[scene bank] no scene found");
-        return nullptr;
+
+        return _scenes.begin()->second;
     }
 
     return it->second;

@@ -134,12 +134,6 @@ void loop1()
 {
     Scene *currentScene = sb.getCurrentScene();
 
-    if (currentScene == nullptr)
-    {
-        debug(23, "[loop] No scene found");
-        return;
-    }
-
     currentScene->update();
 
     screen.loop(sb);
