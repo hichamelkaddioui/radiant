@@ -95,7 +95,7 @@ size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank
 
         if (ledEffect.hueA == nullptr || ledEffect.hueB == nullptr || ledEffect.brightnessA == nullptr || ledEffect.brightnessB == nullptr)
         {
-            debug(1, "[serialize scene] scene contains empty led effect, skipping led effect");
+            debug(1, "[serialize scene] scene contains empty sequence, skipping led effect");
             continue;
         }
 

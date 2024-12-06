@@ -26,8 +26,9 @@ public:
     StateManager(){};
     StateManager(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank) : lb(ledBank), gb(graphBank), sb(sceneBank){};
 
-    void setup();
-    void update();
+    void setupFlash();
+    void setupLeds();
+    void loop();
 
     // Scene
     Scene *getCurrentScene();
@@ -43,14 +44,15 @@ public:
     void handleOledButtonPress();
 
     // Serialization
-    void serialize(RP2040Flash flash);
-    void deserialize(RP2040Flash flash);
-    static void createAndSaveStubs(RP2040Flash flash);
+    size_t serialize(bool write = false);
+    size_t deserialize();
+    static void createAndSaveStubs();
 
 private:
-    GraphBank gb;
     LedBank lb;
+    GraphBank gb;
     SceneBank sb;
+    RP2040Flash flash;
 };
 
 #endif

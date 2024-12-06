@@ -1,17 +1,22 @@
 #include <Utils.h>
 #include <StateManager.h>
 
-void StateManager::setup()
+void StateManager::setupFlash()
+{
+    flash.begin();
+}
+
+void StateManager::setupLeds()
 {
     lb.setup();
 }
 
-void StateManager::update()
+void StateManager::loop()
 {
     sb.getCurrentScene()->update();
 }
 
-void StateManager::createAndSaveStubs(RP2040Flash flash)
+void StateManager::createAndSaveStubs()
 {
     // Create banks
     LedBank localLedBank = LedBank::createDummy();
@@ -20,7 +25,8 @@ void StateManager::createAndSaveStubs(RP2040Flash flash)
     StateManager localStateManager(localLedBank, localGraphBank, localSceneBank);
 
     // Serialize
-    localStateManager.serialize(flash);
+    localStateManager.setupFlash();
+    localStateManager.serialize();
 }
 
 Scene *StateManager::getCurrentScene()
@@ -33,7 +39,7 @@ int StateManager::getCurrentSceneId()
     return sb.currentSceneId;
 }
 
-void StateManager::serialize(RP2040Flash flash)
+size_t StateManager::serialize(bool write)
 {
     size_t offset = 0;
     uint8_t buffer[FLASH_BUFFER_SIZE]{};
@@ -42,10 +48,15 @@ void StateManager::serialize(RP2040Flash flash)
     offset += gb.serialize(buffer + offset);
     offset += sb.serialize(buffer + offset, lb, gb);
 
-    flash.write(0x0, buffer, offset);
+    if (write)
+        flash.write(0x0, buffer, offset);
+
+    debug(1, "[state manager] serialized %d bytes", offset);
+
+    return offset;
 }
 
-void StateManager::deserialize(RP2040Flash flash)
+size_t StateManager::deserialize()
 {
     size_t offset = 0;
     uint8_t buffer[FLASH_BUFFER_SIZE]{};
@@ -57,7 +68,9 @@ void StateManager::deserialize(RP2040Flash flash)
     offset += gb.deserialize(buffer + offset);
     offset += sb.deserialize(buffer + offset, lb, gb);
 
-    debug(1, "[flash] deserialized %d bytes", offset);
+    debug(1, "[state manager] deserialized %d bytes", offset);
+
+    return offset;
 }
 
 void StateManager::handleProgramChange(byte value)
@@ -136,6 +149,8 @@ void StateManager::handleSystemExclusive(const byte *buffer, unsigned long lengt
         debugByteArray(buffer, length);
         break;
     }
+
+    serialize(true);
 }
 
 void StateManager::handleOledButtonPress()

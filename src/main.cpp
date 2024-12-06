@@ -1,12 +1,10 @@
 #include <MidiSerial.h>
 #include <Oled.h>
-#include <Flash.h>
 #include <SceneBank.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;
 Oled screen;
-RP2040Flash flash;
 StateManager stateManager;
 
 void setup()
@@ -19,26 +17,24 @@ void setup()
 
     while (!Serial && millis() < 5000)
         ;
-}
 
-void setup1()
-{
     // OLED screen
     screen.setup();
 
-    // Flash setup
-    flash.begin();
+    // Flash
+    stateManager.setupFlash();
 
-    StateManager::createAndSaveStubs(flash);
+    // Optional: create default stubs
+    // StateManager::createAndSaveStubs();
 
     // Read from flash
-    stateManager.deserialize(flash);
+    stateManager.deserialize();
 
     // Dump scene
     stateManager.getCurrentScene()->dump();
 
     // Setup led bank
-    stateManager.setup();
+    stateManager.setupLeds();
 
     // Done!
     debug(1, "[setup] Setup complete");
@@ -47,11 +43,8 @@ void setup1()
 void loop()
 {
     midiSerial.loop(stateManager);
-}
 
-void loop1()
-{
-    stateManager.update();
+    stateManager.loop();
 
     screen.loop(stateManager);
 }

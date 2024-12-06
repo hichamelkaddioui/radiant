@@ -122,16 +122,29 @@ void SceneBank::sysExCreate(const uint8_t *buffer, size_t length)
     _scenes[sceneId] = scene;
 }
 
+const char *getSceneName(int messageId)
+{
+    switch (messageId)
+    {
+    case 5:
+        return "hue A";
+    case 6:
+        return "brightness A";
+    case 7:
+        return "hue B";
+    case 8:
+        return "brightness B";
+    default:
+        return "unknown";
+    }
+}
+
 void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, const LedBank &ledBank, const GraphBank &graphBank)
 {
     int index = 0;
 
     int messageId = buffer[index];
-    String parameter = messageId % 2 == 1 ? "hue" : "brightness";
-    String ab = messageId < 7 ? "A" : "B";
-    String moduleString = parameter + " " + ab;
-    const char *module = moduleString.c_str();
-
+    const char *module = getSceneName(messageId);
     int sceneId = static_cast<int>(buffer[++index]);
     const auto &sceneIt = _scenes.find(sceneId);
 
@@ -181,6 +194,8 @@ void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, cons
     sceneIt->second->sysExSetHueBrightness(messageId, lightId, sequence);
 
     debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d, graph %d, min %d, max %d, duration %lu, period %0.2f", module, sceneId, lightId, note, mode, graphId, min, max, duration, period);
+
+    sceneIt->second->dump();
 }
 
 SceneBank SceneBank::createDummy(const LedBank &ledBank, const GraphBank &graphBank)
