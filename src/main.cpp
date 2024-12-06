@@ -12,6 +12,7 @@ Oled screen;
 GraphBank gb = defaultGraphBank();
 LedBank lb;
 SceneBank sb;
+RP2040Flash flash;
 
 static const int PIXEL_INDEX = 0;
 
@@ -127,7 +128,7 @@ void setup1()
 
 void loop()
 {
-    midiSerial.loop(lb, gb, sb);
+    midiSerial.loop(lb, gb, sb, flash);
 }
 
 void loop1()

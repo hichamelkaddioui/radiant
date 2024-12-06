@@ -99,7 +99,19 @@ void MidiSerial::handleControlChange(SceneBank &sceneBank)
     }
 }
 
-void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank)
+void MidiSerial::saveToFlash(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank, RP2040Flash &flash)
+{
+    size_t offset = 0;
+    uint8_t buffer[1024]{};
+
+    offset += ledBank.serialize(buffer + offset);
+    offset += graphBank.serialize(buffer + offset);
+    offset += sceneBank.serialize(buffer + offset, ledBank, graphBank);
+
+    flash.write(0x0, buffer, offset);
+}
+
+void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBank, RP2040Flash &flash)
 {
     // Read incoming MIDI messages
     while (MidiUART.read())
@@ -114,6 +126,7 @@ void MidiSerial::loop(LedBank &ledBank, GraphBank &graphBank, SceneBank &sceneBa
             break;
         case MidiType::SystemExclusive:
             handleSystemExclusive(ledBank, graphBank, sceneBank);
+            saveToFlash(ledBank, graphBank, sceneBank, flash);
             break;
         case MidiType::ProgramChange:
             handleProgramChange(sceneBank);
