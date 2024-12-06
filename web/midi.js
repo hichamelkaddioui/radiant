@@ -4,8 +4,6 @@ let outputDevice;
 /**
  * Utils
  */
-const decToHex = (dec) => "0x" + dec.toString(16).padStart(2, "0");
-
 let logArray = [];
 
 const log = (message) => {
@@ -21,10 +19,8 @@ const log = (message) => {
 };
 
 /**
- * MIDI messages functions
+ * Program Change
  */
-
-// Program Change
 const sendProgramChange = (number) => {
   if (!outputDevice) {
     alert("No MIDI device connected.");
@@ -49,6 +45,18 @@ const next = () => {
   resetAb();
 };
 
+const initProgramChange = () => {
+  document.getElementById("next-scene").addEventListener("click", () => {
+    next();
+  });
+  document.getElementById("restart").addEventListener("click", () => {
+    restart();
+  });
+};
+
+/**
+ * Control Change
+ */
 const resetAb = () => {
   document.getElementById("ab").value = 0;
   document.getElementById("abValue").innerText = "0 %";
@@ -73,7 +81,19 @@ const sendAB = () => {
   log(`Sent A/B value: ${value} / 127`);
 };
 
-// Note On
+const initControlChange = () => {
+  document.getElementById("sendAB").addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendAB();
+  });
+  document.getElementById("ab").addEventListener("input", () => {
+    sendAB();
+  });
+};
+
+/**
+ * Note on
+ */
 const midiNoteToABC = (note) => {
   if (note < 1 || note > 127) {
     return "";
@@ -118,13 +138,40 @@ const sendNoteOn = () => {
   }, duration);
 };
 
-// SysEx
+const initSendNote = () => {
+  document.getElementById("sendNoteOn").addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendNoteOn();
+  });
+
+  document.getElementById("note").addEventListener("input", () => {
+    document.getElementById("abcNotation").innerText = midiNoteToABC(
+      document.getElementById("note").value
+    );
+  });
+  document.getElementById("velocity").addEventListener("input", () => {
+    document.getElementById("velocityValue").innerText =
+      document.getElementById("velocity").value;
+  });
+};
+
+/**
+ * SysEx
+ */
 const showHideSysExHelp = () => {
   const isChecked = document.getElementById("sysexHelp").checked;
 
   document.querySelectorAll(".help").forEach((el) => {
     el.style.display = isChecked ? "inline-block" : "none";
   });
+};
+
+let showHex = true;
+
+const showHideSysExHex = () => {
+  showHex = document.getElementById("sysexHex").checked;
+
+  colorizeSysExMessage();
 };
 
 const getSysExMessages = () =>
@@ -181,9 +228,19 @@ const payloadToColoredObjects = (message) => {
     }
   };
 
-  const validateHueSaturation = (structure, mode) => {
+  const validateHueSaturation = (structure) => {
+    if (payloadLength < 3) {
+      throw `Invalid SysEx message: message ID ${messageId} must have at least 3 bytes, got ${payloadLength}`;
+    }
+
+    const mode = message[5];
+
     if (mode === undefined) {
       throw `Invalid SysEx message: message ID ${messageId} must have a mode`;
+    }
+
+    if (!(mode in structure)) {
+      throw `Invalid SysEx message: unknown mode ${mode} for message ID ${messageId}`;
     }
 
     validateArgumentsCount(structure[mode]);
@@ -201,14 +258,14 @@ const payloadToColoredObjects = (message) => {
     { label: "Period", length: 2 },
   ];
 
-  const hueMode = [
+  const controlMode = [
     { label: "Scene ID", length: 1 },
     { label: "Light ID", length: 1 },
     { label: "Mode", length: 1 },
     { label: "Control note", length: 1 },
   ];
 
-  const hueSaturation = { 0: graphMode, 1: graphMode, 2: hueMode };
+  const hueSaturation = { 0: graphMode, 1: graphMode, 2: controlMode };
 
   const structures = {
     "Set params": [{ label: "A/B control note", length: 1 }],
@@ -269,7 +326,7 @@ const payloadToColoredObjects = (message) => {
   if (isHueSaturation) {
     const mode = message[5];
 
-    validateHueSaturation(messageStructure, mode);
+    validateHueSaturation(messageStructure);
 
     return messageStructure[mode];
   }
@@ -280,16 +337,24 @@ const payloadToColoredObjects = (message) => {
   return messageStructure;
 };
 
+const formatByte = (dec) =>
+  showHex ? "0x" + dec.toString(16).padStart(2, "0") : dec;
+
 const messageToColoredSpans = (message) => {
   const [first, second] = message;
   const last = message[message.length - 1];
   const startsWithSysExStart = first === 0xf0 && second === 0x7e;
   const endsWithSysExEnd = last === 0xf7;
-
   let res = [];
 
   if (!startsWithSysExStart || !endsWithSysExEnd) {
-    return 'Invalid SysEx message: must start with "0xf0 0x7e" and end with "0xf7"';
+    return `Invalid SysEx message: must start with "${formatByte(
+      0xf0
+    )} ${formatByte(0x7e)}" and end with "${formatByte(0xf7)}"`;
+  }
+
+  if (message.length < 4) {
+    return `Invalid SysEx message: must have at least 4 bytes, got ${message.length}`;
   }
 
   const messageId = message[2];
@@ -298,9 +363,9 @@ const messageToColoredSpans = (message) => {
   res.push(
     ...[
       `<span class="help">SysEx start</span>`,
-      `<span class="start">${decToHex(first)} ${decToHex(second)}</span>`,
+      `<span class="start">${formatByte(first)} ${formatByte(second)}</span>`,
       `<span class="help">${messageIdName}</span>`,
-      `<span class="first">${decToHex(messageId)}</span>`,
+      `<span class="first">${formatByte(messageId)}</span>`,
     ]
   );
 
@@ -308,49 +373,52 @@ const messageToColoredSpans = (message) => {
     let offset = 3;
 
     const payloadStructure = payloadToColoredObjects(message);
-    const coloredSpans = payloadStructure
-      .map(({ label, length }, i) => {
-        const help = `<span class="help">${label}</span>`;
-        const values = message.slice(offset, offset + length);
-        offset += length;
 
-        const isGraphKeyframes = messageId === 4 && i > 1;
+    const coloredObjectsToSpan = (label, length, i) => {
+      const help = `<span class="help">${label}</span>`;
+      const values = message.slice(offset, offset + length);
+      offset += length;
 
-        if (isGraphKeyframes) {
-          const [x1, x2, y1, y2, c1, c2] = values.map(decToHex);
-          const spanValues = [
+      const isGraphKeyframes = messageId === 4 && i > 1;
+
+      if (isGraphKeyframes) {
+        const [x1, x2, y1, y2, c1, c2] = values.map(formatByte);
+
+        return [
+          help,
+          [
             `(<span class="payload-3">${x1}</span>`,
             `<span class="payload-3">${x2}</span>, `,
             `<span class="payload-3">${y1}</span>`,
             `<span class="payload-3">${y2}</span>, `,
             `<span class="payload-3">${c1}</span>`,
             `<span class="payload-3">${c2}</span>)`,
-          ].join(" ");
+          ],
+        ];
+      }
 
-          return [help, spanValues];
-        }
+      const spanValues = values.map(
+        (value) => `<span class="payload-${i + 1}">${formatByte(value)}</span>`
+      );
 
-        const spanValues = values
-          .map(
-            (value) =>
-              `<span class="payload-${i + 1}">${decToHex(value)}</span>`
-          )
-          .join(" ");
+      return [help, spanValues];
+    };
 
-        return [help, spanValues];
-      })
-      .map(([help, values]) => [help, values].join(" "))
+    const coloredSpans = payloadStructure
+      .map(({ label, length }, i) => coloredObjectsToSpan(label, length, i))
+      .map(([help, values]) => [help, values.join(" ")].join(" "))
       .join(" ");
 
     res.push(coloredSpans);
   } catch (error) {
+    console.error(error);
     return error;
   }
 
   res.push(
     ...[
       `<span class="help">SysEx end</span>`,
-      `<span class="end">${decToHex(last)}</span>`,
+      `<span class="end">${formatByte(last)}</span>`,
     ]
   );
 
@@ -379,11 +447,43 @@ const sendSysex = () => {
     try {
       outputDevice.send(message);
 
-      log(`Sent Sysex: ${message.map(decToHex).join(", ")}`);
+      log(`Sent Sysex: ${message.map(formatByte).join(", ")}`);
     } catch (error) {
       log(error);
     }
   });
+};
+
+const initSysEx = () => {
+  document.getElementById("sysexMessage").value = `0xf0 0x7e 0x01 0x3e 0xf7
+0xf0 0x7e 0x02 0x01 0x04 0x05 0x06 0xf7
+0xf0 0x7e 0x03 0x02 0xf7
+0xf0 0x7e 0x04 0x02 0x04 0x00 0x00 0x00 0x00 0x40 0x00 0x40 0x00 0x40 0x00 0x00 0x00 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0xf7
+0xf0 0x7e 0x05 0x02 0x01 0x00 0x3c 0x08 0x00 0x7f 0x01 0x6a 0x30 0x7f 0x7f 0xf7
+0xf0 0x7e 0x06 0x03 0x01 0x01 0x00 0x09 0x00 0x7f 0x00 0x07 0x68 0x7f 0x7f 0xf7
+0xf0 0x7e 0x07 0x02 0x01 0x02 0x3e 0xf7
+0xf0 0x7e 0x08 0x02 0x01 0x02 0x3e 0xf7
+0xf0 0x7e 0x09 0x04 0x03 0x01 0x00 0x0c 0x00 0x7f 0x07 0x68 0x7f 0x7f 0xf7`;
+
+  document
+    .getElementById("sysexMessage")
+    .addEventListener("input", colorizeSysExMessage);
+
+  document
+    .getElementById("sysexHelp")
+    .addEventListener("click", showHideSysExHelp);
+
+  document
+    .getElementById("sysexHex")
+    .addEventListener("click", showHideSysExHex);
+
+  document.getElementById("sendSysex").addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendSysex();
+  });
+
+  colorizeSysExMessage();
+  showHideSysExHelp();
 };
 
 /**
@@ -427,73 +527,6 @@ const requestMidiDevice = () => {
     });
 };
 
-/**
- * Main
- */
-const initProgramChange = () => {
-  document.getElementById("next-scene").addEventListener("click", () => {
-    next();
-  });
-  document.getElementById("restart").addEventListener("click", () => {
-    restart();
-  });
-};
-
-const initControlChange = () => {
-  document.getElementById("sendAB").addEventListener("submit", (e) => {
-    e.preventDefault();
-    sendAB();
-  });
-  document.getElementById("ab").addEventListener("input", () => {
-    sendAB();
-  });
-};
-
-const initSendNote = () => {
-  document.getElementById("sendNoteOn").addEventListener("submit", (e) => {
-    e.preventDefault();
-    sendNoteOn();
-  });
-
-  document.getElementById("note").addEventListener("input", () => {
-    document.getElementById("abcNotation").innerText = midiNoteToABC(
-      document.getElementById("note").value
-    );
-  });
-  document.getElementById("velocity").addEventListener("input", () => {
-    document.getElementById("velocityValue").innerText =
-      document.getElementById("velocity").value;
-  });
-};
-
-const initSysEx = () => {
-  document.getElementById("sysexMessage").value = `0xf0 0x7e 0x01 0x3e 0xf7
-0xf0 0x7e 0x02 0x01 0x04 0x05 0x06 0xf7
-0xf0 0x7e 0x03 0x02 0xf7
-0xf0 0x7e 0x04 0x02 0x04 0x00 0x00 0x00 0x00 0x40 0x00 0x40 0x00 0x40 0x00 0x00 0x00 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0xf7
-0xf0 0x7e 0x05 0x02 0x01 0x00 0x3c 0x08 0x00 0x7f 0x01 0x6a 0x30 0x7f 0x7f 0xf7
-0xf0 0x7e 0x06 0x03 0x01 0x01 0x00 0x09 0x00 0x7f 0x00 0x07 0x68 0x7f 0x7f 0xf7
-0xf0 0x7e 0x07 0x02 0x01 0x02 0x3e 0xf7
-0xf0 0x7e 0x08 0x02 0x01 0x02 0x3e 0xf7
-0xf0 0x7e 0x09 0x04 0x03 0x01 0x00 0x0c 0x00 0x7f 0x07 0x68 0x7f 0x7f 0xf7`;
-
-  document
-    .getElementById("sysexMessage")
-    .addEventListener("input", colorizeSysExMessage);
-
-  document
-    .getElementById("sysexHelp")
-    .addEventListener("click", showHideSysExHelp);
-
-  document.getElementById("sendSysex").addEventListener("submit", (e) => {
-    e.preventDefault();
-    sendSysex();
-  });
-
-  colorizeSysExMessage();
-  showHideSysExHelp();
-};
-
 const initMidi = () => {
   // Check for Web MIDI API support
   if (!navigator.requestMIDIAccess) {
@@ -507,12 +540,13 @@ const initMidi = () => {
   requestMidiDevice();
 };
 
-const init = () => {
+/**
+ * Init
+ */
+document.addEventListener("DOMContentLoaded", () => {
   initControlChange();
   initProgramChange();
   initSendNote();
   initSysEx();
   initMidi();
-};
-
-document.addEventListener("DOMContentLoaded", init);
+});
