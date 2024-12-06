@@ -30,7 +30,7 @@ size_t LedStrip::serialize(int id, uint8_t *buffer) const
     memcpy(buffer + offset, &pinB, sizeOfInt);
     offset += sizeOfInt;
 
-    debug(1, "[serialize led strip] id: %d, pinR: %d, pinG: %d, pinB: %d", id, pinR, pinG, pinB);
+    debug(1, "[serialize led strip] id: %d, pin R: %d, pin G: %d, pin B: %d", id, pinR, pinG, pinB);
 
     return offset;
 }
@@ -49,7 +49,7 @@ size_t LedStrip::deserialize(int id, const uint8_t *buffer)
     memcpy(&pinB, buffer + offset, sizeOfInt);
     offset += sizeOfInt;
 
-    debug(1, "[deserialize led strip] id: %d, pinR: %d, pinG: %d, pinB: %d", id, pinR, pinG, pinB);
+    debug(1, "[deserialize led strip] id: %d, pin R: %d, pin G: %d, pin B: %d", id, pinR, pinG, pinB);
 
     return offset;
 }
