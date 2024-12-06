@@ -72,8 +72,8 @@ void StateManager::handleNoteOn(byte note, byte velocity)
 {
     if (note == params.abNote)
     {
-        sb.getCurrentScene()->_ab = velocity / 127.0f;
-        debug(1, "[midi] received ab control with value 0x%02X", velocity);
+        sb.getCurrentScene()->_ab = (velocity - 1) / 126.0f;
+        debug(1, "[midi] received ab control with value %0.2f", sb.getCurrentScene()->_ab);
     }
 
     Scene *currentScene = sb.getCurrentScene();
