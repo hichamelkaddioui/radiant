@@ -16,6 +16,10 @@ public:
     size_t serialize(uint8_t *buffer) const;
     size_t deserialize(const uint8_t *buffer);
     void sysExCreate(const uint8_t *buffer, size_t length);
+
+#ifdef DEBUG
+    static GraphBank createDummy();
+#endif
 };
 
 #endif

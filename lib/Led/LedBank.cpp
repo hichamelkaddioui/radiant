@@ -118,3 +118,13 @@ void LedBank::sysExCreate(const uint8_t *buffer, size_t length)
 
     debug(1, "[SysEx] [led] stored led id %d, pin R %d, pin G %d, pin B %d", lightId, pinR, pinG, pinB);
 }
+
+LedBank LedBank::createDummy()
+{
+    LedBank bank;
+    bank._leds[13] = new NeoPixel(16);
+    bank._leds[12] = new NeoPixel(-1);
+    bank._leds[666] = new LedStrip(-1, -1, -1);
+
+    return bank;
+}

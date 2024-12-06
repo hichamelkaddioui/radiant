@@ -173,3 +173,10 @@ void GraphBank::sysExCreate(const uint8_t *buffer, size_t length)
 
     debug(1, "[SysEx] [graph] stored graph id %d, number of keyframes: %lu", storeId, graph->_keyframes.size());
 }
+
+GraphBank GraphBank::createDummy()
+{
+    GraphBank bank;
+    bank._graphs[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
+    return bank;
+}

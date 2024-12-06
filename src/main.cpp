@@ -1,13 +1,7 @@
-#include <vector>
 #include <MidiSerial.h>
-#include <Led.h>
-#include <NeoPixel.h>
-#include <LedStrip.h>
-#include <Graph.h>
-#include <Flash.h>
-#include <LedBank.h>
-#include <GraphBank.h>
 #include <Oled.h>
+#include <Flash.h>
+#include <SceneBank.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;
@@ -37,59 +31,15 @@ void createDummy()
     size_t offset = 0;
     uint8_t buffer[BUFFER_SIZE]{};
 
-    // LedBank
-    LedBank localLedBank;
-    NeoPixel *pixel13 = new NeoPixel(16);
-    localLedBank._leds[13] = pixel13;
-    NeoPixel *pixel12 = new NeoPixel(-1);
-    localLedBank._leds[12] = pixel12;
-    LedStrip *ledStrip = new LedStrip(-1, -1, -1);
-    localLedBank._leds[666] = ledStrip;
-
-    // GraphBank
-    GraphBank localGraphBank;
-    // Create special graph #9
-    localGraphBank._graphs[9] = new GraphKeyframe({Keyframe(0.0f, 0.13f, 0.0f), Keyframe(1.0f, 0.12f, 0.0f)});
-
-    // SceneBank
-    SceneBank localSceneBank;
-    Sequence *hueA;
-    Sequence *hueB;
-    Sequence *brightnessA;
-    Sequence *brightnessB;
-    Scene *scene;
-
-    // SceneBank
-    scene = new Scene();
-    hueA = new Sequence(PlaybackMode::ONCE, {localGraphBank._graphs[DefaultGraph::UP], 0, 127, 500}, 60);
-    hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::UP], 70, 255, 5 * 1000});
-    brightnessA = new Sequence(PlaybackMode::ONCE, {localGraphBank._graphs[DefaultGraph::GATE], 255, 0, 500, 1.0f / 10.0f}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::SINE], 0, 255, 1000}, 60);
-
-    scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(ledStrip, brightnessA, brightnessB, hueA, hueB);
-
-    localSceneBank._scenes[12] = scene;
-
-    scene = new Scene();
-    hueA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::UP], 0, 255, 10 * 1000}, 60);
-    hueB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::UP], 70, 255, 5 * 1000});
-    brightnessA = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::SINE], 0, 255, 13 * 1000}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {localGraphBank._graphs[DefaultGraph::SINE], 0, 255, 1000});
-
-    scene->_ledEffects[13] = LedEffect(pixel13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects[12] = LedEffect(pixel12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(ledStrip, brightnessA, brightnessB, hueA, hueB);
-
-    localSceneBank._scenes[13] = scene;
+    // Create banks
+    LedBank localLedBank = LedBank::createDummy();
+    GraphBank localGraphBank = GraphBank::createDummy();
+    SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
 
     // Serialize
     offset += localLedBank.serialize(buffer);
     offset += localGraphBank.serialize(buffer + offset);
     offset += localSceneBank.serialize(buffer + offset, localLedBank, localGraphBank);
-
-    debugByteArray(buffer, offset);
 
     // Write to flash
     flash.write(0x0, buffer, offset);
@@ -105,10 +55,9 @@ void setup1()
 
     // createDummy();
 
+    // Read from flash
     size_t offset = 0;
     uint8_t buffer[BUFFER_SIZE]{};
-
-    // Read from flash
     flash.read(0x0, buffer, BUFFER_SIZE);
 
     // Deserialize
