@@ -2,21 +2,6 @@
 #include <Scene.h>
 #include <Utils.h>
 
-Scene::~Scene()
-{
-    for (const auto &it : _ledEffects)
-    {
-        LedEffect ledEffect = it.second;
-
-        delete ledEffect.hueA;
-        delete ledEffect.hueB;
-        delete ledEffect.brightnessA;
-        delete ledEffect.brightnessB;
-    }
-
-    _ledEffects.clear();
-}
-
 void Scene::update()
 {
     for (const auto &it : _ledEffects)
@@ -85,7 +70,7 @@ size_t Scene::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank
     {
         int ledId = it.first;
 
-        if (ledBank._bank.find(ledId) == ledBank._bank.end())
+        if (ledBank._leds.find(ledId) == ledBank._leds.end())
         {
             debug(1, "[serialize scene] led id: %d not found, skipping led effect", ledId);
             continue;
@@ -120,7 +105,7 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
         memcpy(&ledId, buffer + offset, sizeOfInt);
         offset += sizeOfInt;
 
-        ledEffect.led = ledBank._bank.at(ledId);
+        ledEffect.led = ledBank._leds.at(ledId);
 
         if (ledEffect.led == nullptr)
         {

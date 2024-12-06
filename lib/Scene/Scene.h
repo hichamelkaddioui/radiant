@@ -24,7 +24,6 @@ class Scene
 public:
     Scene() = default;
     Scene(std::map<int, LedEffect> ledScenes) : _ledEffects(ledScenes) {}
-    ~Scene();
 
     float _ab = 0.0f;
     std::map<int, LedEffect> _ledEffects;

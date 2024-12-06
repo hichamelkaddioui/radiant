@@ -5,20 +5,10 @@
 
 void LedBank::setup()
 {
-    for (const auto &it : _bank)
+    for (const auto &it : _leds)
     {
         it.second->setup();
     }
-}
-
-void LedBank::clear()
-{
-    for (const auto &it : _bank)
-    {
-        delete it.second;
-    }
-
-    _bank.clear();
 }
 
 size_t LedBank::serialize(uint8_t *buffer) const
@@ -26,9 +16,9 @@ size_t LedBank::serialize(uint8_t *buffer) const
     size_t offset = 0, ledCount = 0;
     offset += sizeOfSizeT;
 
-    debug(1, "[serialize led bank] serializing, %lu leds in bank", _bank.size());
+    debug(1, "[serialize led bank] serializing, %lu leds in bank", _leds.size());
 
-    for (const auto &it : _bank)
+    for (const auto &it : _leds)
     {
         Led *led = it.second;
 
@@ -84,14 +74,14 @@ size_t LedBank::deserialize(const uint8_t *buffer)
         {
             NeoPixel *pixel = new NeoPixel();
             offset += pixel->deserialize(id, buffer + offset);
-            _bank[id] = pixel;
+            _leds[id] = pixel;
             break;
         }
         case LedType::LED_STRIP:
         {
             LedStrip *strip = new LedStrip();
             offset += strip->deserialize(id, buffer + offset);
-            _bank[id] = strip;
+            _leds[id] = strip;
             break;
         }
         }
@@ -111,9 +101,9 @@ void LedBank::sysExCreate(const uint8_t *buffer, size_t length)
 
     LedStrip *strip = new LedStrip(pinR, pinG, pinB);
 
-    const auto it = _bank.find(lightId);
+    const auto it = _leds.find(lightId);
 
-    if (it != _bank.end())
+    if (it != _leds.end())
     {
         delete it->second;
 
@@ -124,7 +114,7 @@ void LedBank::sysExCreate(const uint8_t *buffer, size_t length)
         debug(1, "[SysEx] [led] no previous led with id %d", lightId);
     }
 
-    _bank[lightId] = strip;
+    _leds[lightId] = strip;
 
     debug(1, "[SysEx] [led] stored led id %d, pin R %d, pin G %d, pin B %d", lightId, pinR, pinG, pinB);
 }

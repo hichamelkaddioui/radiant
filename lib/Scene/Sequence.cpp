@@ -172,7 +172,7 @@ size_t Sequence::deserialize(const uint8_t *buffer, const GraphBank &graphBank)
     memcpy(&graphId, buffer + offset, sizeOfInt);
     offset += sizeOfInt;
 
-    _graph = graphBank._bank.at(graphId);
+    _graph = graphBank._graphs.at(graphId);
 
     if (_graph == nullptr)
     {

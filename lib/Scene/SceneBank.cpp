@@ -142,9 +142,9 @@ void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, cons
     }
 
     int lightId = static_cast<int>(buffer[++index]);
-    const auto &lightIt = ledBank._bank.find(lightId);
+    const auto &lightIt = ledBank._leds.find(lightId);
 
-    if (lightIt == ledBank._bank.end() || lightIt->second == nullptr)
+    if (lightIt == ledBank._leds.end() || lightIt->second == nullptr)
     {
         debug(1, "[SysEx] [%s] light %d not found", module, lightId);
         return;
@@ -164,9 +164,9 @@ void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, cons
     }
 
     int graphId = static_cast<int>(buffer[++index]);
-    const auto &graphIt = graphBank._bank.find(graphId);
+    const auto &graphIt = graphBank._graphs.find(graphId);
 
-    if (graphIt == graphBank._bank.end() || graphIt->second == nullptr)
+    if (graphIt == graphBank._graphs.end() || graphIt->second == nullptr)
     {
         debug(1, "[SysEx] [%s] graph %d not found", module, graphId);
         return;

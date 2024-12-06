@@ -2,9 +2,47 @@
 #include <Utils.h>
 #include <GraphBank.h>
 
+GraphBank::GraphBank()
+{
+    // Increasing from 0 to 1
+    Keyframe fromZero = Keyframe(0.0f, 0.0f, 0.0f);
+    Keyframe fromZeroExp = Keyframe(0.0f, 0.0f, 0.5f);
+    Keyframe fromZeroLog = Keyframe(0.0f, 0.0f, -0.5f);
+    Keyframe toOne = Keyframe(1.0f, 1.0f, 0.0f);
+
+    GraphKeyframe *constant = new GraphKeyframe({fromZero});
+    GraphKeyframe *up = new GraphKeyframe({fromZero, toOne});
+    GraphKeyframe *upExp = new GraphKeyframe({fromZeroExp, toOne});
+    GraphKeyframe *upLog = new GraphKeyframe({fromZeroLog, toOne});
+
+    // Decreasing from 1 to 0
+    Keyframe fromOne = Keyframe(0.0f, 1.0f, 0.0f);
+    Keyframe fromOneExp = Keyframe(0.0f, 1.0f, 0.5f);
+    Keyframe fromOneLog = Keyframe(0.0f, 1.0f, -0.5f);
+    Keyframe toZero = Keyframe(1.0f, 0.0f, 0.0f);
+
+    GraphKeyframe *down = new GraphKeyframe({fromOne, toZero});
+    GraphKeyframe *downExp = new GraphKeyframe({fromOneLog, toZero});
+    GraphKeyframe *downLog = new GraphKeyframe({fromOneExp, toZero});
+
+    // Oscillate
+    GraphSine *sine = new GraphSine();
+    GraphGate *gate = new GraphGate();
+
+    _graphs[DefaultGraph::CONSTANT] = constant;
+    _graphs[DefaultGraph::UP] = up;
+    _graphs[DefaultGraph::UP_EXP] = upExp;
+    _graphs[DefaultGraph::UP_LOG] = upLog;
+    _graphs[DefaultGraph::DOWN] = down;
+    _graphs[DefaultGraph::DOWN_EXP] = downExp;
+    _graphs[DefaultGraph::DOWN_LOG] = downLog;
+    _graphs[DefaultGraph::SINE] = sine;
+    _graphs[DefaultGraph::GATE] = gate;
+}
+
 int GraphBank::getGraphId(Graph *graph) const
 {
-    for (const auto &it : _bank)
+    for (const auto &it : _graphs)
     {
         if (it.second == graph)
             return it.first;
@@ -18,7 +56,7 @@ size_t GraphBank::serialize(uint8_t *buffer) const
     size_t offset = 0, graphCount = 0;
     offset += sizeOfSizeT;
 
-    for (const auto &it : _bank)
+    for (const auto &it : _graphs)
     {
         if (it.first < 9)
         {
@@ -68,7 +106,7 @@ size_t GraphBank::deserialize(const uint8_t *buffer)
         offset += keyframeGraph->deserialize(buffer + offset);
         debug(1, "[deserialized graph] id: %d, number of keyframes: %lu", id, keyframeGraph->_keyframes.size());
 
-        _bank[id] = keyframeGraph;
+        _graphs[id] = keyframeGraph;
     }
 
     return offset;
@@ -118,9 +156,9 @@ void GraphBank::sysExCreate(const uint8_t *buffer, size_t length)
     // Create graph
     GraphKeyframe *graph = new GraphKeyframe(keyframes);
 
-    const auto it = _bank.find(storeId);
+    const auto it = _graphs.find(storeId);
 
-    if (it != _bank.end())
+    if (it != _graphs.end())
     {
         delete it->second;
 
@@ -131,49 +169,7 @@ void GraphBank::sysExCreate(const uint8_t *buffer, size_t length)
         debug(1, "[SysEx] [graph] no previous graph with id %d", storeId);
     }
 
-    _bank[storeId] = graph;
+    _graphs[storeId] = graph;
 
     debug(1, "[SysEx] [graph] stored graph id %d, number of keyframes: %lu", storeId, graph->_keyframes.size());
-}
-
-GraphBank defaultGraphBank()
-{
-    GraphBank result;
-
-    // Increasing from 0 to 1
-    Keyframe fromZero = Keyframe(0.0f, 0.0f, 0.0f);
-    Keyframe fromZeroExp = Keyframe(0.0f, 0.0f, 0.5f);
-    Keyframe fromZeroLog = Keyframe(0.0f, 0.0f, -0.5f);
-    Keyframe toOne = Keyframe(1.0f, 1.0f, 0.0f);
-
-    GraphKeyframe *constant = new GraphKeyframe({fromZero});
-    GraphKeyframe *up = new GraphKeyframe({fromZero, toOne});
-    GraphKeyframe *upExp = new GraphKeyframe({fromZeroExp, toOne});
-    GraphKeyframe *upLog = new GraphKeyframe({fromZeroLog, toOne});
-
-    // Decreasing from 1 to 0
-    Keyframe fromOne = Keyframe(0.0f, 1.0f, 0.0f);
-    Keyframe fromOneExp = Keyframe(0.0f, 1.0f, 0.5f);
-    Keyframe fromOneLog = Keyframe(0.0f, 1.0f, -0.5f);
-    Keyframe toZero = Keyframe(1.0f, 0.0f, 0.0f);
-
-    GraphKeyframe *down = new GraphKeyframe({fromOne, toZero});
-    GraphKeyframe *downExp = new GraphKeyframe({fromOneLog, toZero});
-    GraphKeyframe *downLog = new GraphKeyframe({fromOneExp, toZero});
-
-    // Oscillate
-    GraphSine *sine = new GraphSine();
-    GraphGate *gate = new GraphGate();
-
-    result._bank[DefaultGraph::CONSTANT] = constant;
-    result._bank[DefaultGraph::UP] = up;
-    result._bank[DefaultGraph::UP_EXP] = upExp;
-    result._bank[DefaultGraph::UP_LOG] = upLog;
-    result._bank[DefaultGraph::DOWN] = down;
-    result._bank[DefaultGraph::DOWN_EXP] = downExp;
-    result._bank[DefaultGraph::DOWN_LOG] = downLog;
-    result._bank[DefaultGraph::SINE] = sine;
-    result._bank[DefaultGraph::GATE] = gate;
-
-    return result;
 }
