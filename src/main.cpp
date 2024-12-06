@@ -14,6 +14,7 @@ LedBank lb;
 SceneBank sb;
 RP2040Flash flash;
 
+static const int BUFFER_SIZE = 1024 * 4;
 static const int PIXEL_INDEX = 0;
 
 void setup()
@@ -28,20 +29,10 @@ void setup()
         ;
 }
 
-void setup1()
+void createDummy()
 {
-    // OLED screen
-    screen.setup();
-
-    // Flash setup
-    RP2040Flash flash;
-    flash.begin();
-
-    /**
-     * Serialize, write to flash, read from flash and deserialize
-     */
     size_t offset = 0;
-    uint8_t buffer[1024]{};
+    uint8_t buffer[BUFFER_SIZE]{};
 
     // LedBank
     LedBank localLedBank;
@@ -97,15 +88,23 @@ void setup1()
 
     // Write to flash
     flash.write(0x0, buffer, offset);
+}
 
-    debugByteArray(buffer, offset);
+void setup1()
+{
+    // OLED screen
+    screen.setup();
 
-    // Reset buffer
-    offset = 0;
-    memset(buffer, 0, 1024);
+    // Flash setup
+    flash.begin();
+
+    // createDummy();
+
+    size_t offset = 0;
+    uint8_t buffer[BUFFER_SIZE]{};
 
     // Read from flash
-    flash.read(0x0, buffer, 1024);
+    flash.read(0x0, buffer, BUFFER_SIZE);
 
     gb = defaultGraphBank();
 
