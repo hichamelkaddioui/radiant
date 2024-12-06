@@ -1,7 +1,7 @@
 #include <Utils.h>
-#include <Led.h>
 #include <NeoPixel.h>
 #include <LedStrip.h>
+#include <LedBank.h>
 
 void LedBank::setup()
 {

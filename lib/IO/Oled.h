@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Scene.h>
+#include <SceneBank.h>
 
 // https://learn.adafruit.com/adafruit-oled-featherwing/pinouts
 

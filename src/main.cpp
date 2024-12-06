@@ -5,6 +5,9 @@
 #include <LedStrip.h>
 #include <Graph.h>
 #include <Flash.h>
+#include <LedBank.h>
+#include <GraphBank.h>
+#include <Oled.h>
 #include <Utils.h>
 
 MidiSerial midiSerial;

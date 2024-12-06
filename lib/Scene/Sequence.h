@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <LightChrono.h>
-#include <Graph.h>
+#include <GraphBank.h>
 
 enum PlaybackMode
 {

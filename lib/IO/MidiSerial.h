@@ -4,8 +4,9 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <MIDI.h>
-#include <Oled.h>
-#include <Scene.h>
+#include <LedBank.h>
+#include <GraphBank.h>
+#include <SceneBank.h>
 #include <Flash.h>
 
 USING_NAMESPACE_MIDI

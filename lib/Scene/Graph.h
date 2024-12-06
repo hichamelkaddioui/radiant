@@ -1,8 +1,8 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <Arduino.h>
 #include <vector>
-#include <map>
 
 enum DefaultGraph
 {
@@ -42,6 +42,8 @@ public:
     GraphKeyframe(std::vector<Keyframe> keyframes) : _keyframes(keyframes){};
     std::vector<Keyframe> _keyframes;
     float valueAt(float t) override;
+    size_t serialize(uint8_t *buffer) const;
+    size_t deserialize(const uint8_t *buffer);
 };
 
 class PeriodicGraph : public Graph
@@ -62,21 +64,5 @@ class GraphGate : public PeriodicGraph
 public:
     float valueAt(float t) override;
 };
-
-class GraphBank
-{
-public:
-    GraphBank() : _bank(){};
-
-    std::map<int, Graph *> _bank;
-
-    void clear();
-    int getGraphId(Graph *graph) const;
-    size_t serialize(uint8_t *buffer) const;
-    size_t deserialize(const uint8_t *buffer);
-    void sysExCreate(const uint8_t *buffer, size_t length);
-};
-
-GraphBank defaultGraphBank();
 
 #endif
