@@ -20,6 +20,11 @@ enum SysExMessage
     SET_STROBE_B = 10,
 };
 
+struct Params
+{
+    byte abNote = 62;
+};
+
 class StateManager
 {
 public:
@@ -53,6 +58,7 @@ private:
     GraphBank gb;
     SceneBank sb;
     RP2040Flash flash;
+    Params params;
 };
 
 #endif

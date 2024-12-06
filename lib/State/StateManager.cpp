@@ -70,6 +70,12 @@ void StateManager::handleControlChange(byte type, byte value)
 
 void StateManager::handleNoteOn(byte note, byte velocity)
 {
+    if (note == params.abNote)
+    {
+        sb.getCurrentScene()->_ab = velocity / 127.0f;
+        debug(1, "[midi] received ab control with value 0x%02X", velocity);
+    }
+
     Scene *currentScene = sb.getCurrentScene();
 
     if (!currentScene)
@@ -90,6 +96,10 @@ void StateManager::handleSystemExclusive(const byte *buffer, unsigned long lengt
 
     switch (messageId)
     {
+    case SysExMessage::SET_PARAMS:
+        params.abNote = static_cast<int>(buffer[3]);
+        debug(1, "[SysEx] [params] abNote set to %d", params.abNote);
+        break;
     case SysExMessage::CREATE_LIGHT:
         lb.sysExCreate(buffer + 3, length - 3);
         break;
@@ -105,7 +115,6 @@ void StateManager::handleSystemExclusive(const byte *buffer, unsigned long lengt
     case SysExMessage::SET_BRIGHTNESS_B:
         sb.sysExSetHueBrightness(buffer + 2, length - 2, lb, gb);
         break;
-    case SysExMessage::SET_PARAMS:
     case SysExMessage::SET_STROBE_A:
     case SysExMessage::SET_STROBE_B:
     default:
@@ -133,10 +142,17 @@ size_t StateManager::serialize()
     size_t offset = 0;
     uint8_t buffer[FLASH_BUFFER_SIZE]{};
 
+    // Serialize params
+    memcpy(buffer + offset, &params.abNote, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] serializing, abNote: %d", params.abNote);
+
+    // Serialize bank
     offset += lb.serialize(buffer + offset);
     offset += gb.serialize(buffer + offset);
     offset += sb.serialize(buffer + offset, lb, gb);
 
+    // Write
     flash.write(0x0, buffer, offset);
 
     debug(1, "[state manager] serialized %d bytes", offset);
@@ -149,10 +165,16 @@ size_t StateManager::deserialize()
     size_t offset = 0;
     uint8_t buffer[FLASH_BUFFER_SIZE]{};
 
+    // Read
     flash.read(0x0, buffer, FLASH_BUFFER_SIZE);
 
-    // Deserialize
-    offset += lb.deserialize(buffer);
+    // Deserialize params
+    memcpy(&params.abNote, buffer + offset, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] deserializing, abNote: %d", params.abNote);
+
+    // Deserialize bank
+    offset += lb.deserialize(buffer + offset);
     offset += gb.deserialize(buffer + offset);
     offset += sb.deserialize(buffer + offset, lb, gb);
 
