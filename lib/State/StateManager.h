@@ -22,7 +22,7 @@ enum SysExMessage
 
 struct Params
 {
-    byte abNote = 62;
+    byte abNote = 0;
 };
 
 class StateManager

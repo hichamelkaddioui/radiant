@@ -24,6 +24,7 @@ void StateManager::createAndSaveStubs()
     GraphBank localGraphBank = GraphBank::createDummy();
     SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
     StateManager localStateManager(localLedBank, localGraphBank, localSceneBank);
+    localStateManager.params.abNote = 62;
 
     // Serialize
     localStateManager.setupFlash();
