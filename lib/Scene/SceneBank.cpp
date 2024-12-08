@@ -208,30 +208,30 @@ SceneBank SceneBank::createDummy(const LedBank &ledBank, const GraphBank &graphB
     Sequence *brightnessB;
     Scene *scene;
 
-    Graph *up = graphBank._graphs.at(DefaultGraph::UP), *sine = graphBank._graphs.at(DefaultGraph::SINE), *gate = graphBank._graphs.at(DefaultGraph::GATE);
-    Led *led13 = ledBank._leds.at(13), *led12 = ledBank._leds.at(12), *led666 = ledBank._leds.at(666);
+    Graph *constant = graphBank._graphs.at(DefaultGraph::CONSTANT), *up = graphBank._graphs.at(DefaultGraph::UP), *upExp = graphBank._graphs.at(DefaultGraph::UP_EXP), *down = graphBank._graphs.at(DefaultGraph::DOWN), *sine = graphBank._graphs.at(DefaultGraph::SINE), *gate = graphBank._graphs.at(DefaultGraph::GATE);
+    Led *left = ledBank._leds.at(0), *right = ledBank._leds.at(1), *neoPixel = ledBank._leds.at(2);
 
     scene = new Scene();
-    hueA = new Sequence(PlaybackMode::ONCE, {up, 0, 127, 500}, 60);
-    hueB = new Sequence(PlaybackMode::REPEAT, {up, 70, 255, 5 * 1000});
+    hueA = new Sequence(PlaybackMode::ONCE, {up, UTILS_HUE_RED, UTILS_HUE_SOFT_GREEN, 500}, 60);
     brightnessA = new Sequence(PlaybackMode::ONCE, {gate, 255, 0, 500, 1.0f / 10.0f}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {sine, 0, 255, 1000}, 60);
+    hueB = new Sequence(PlaybackMode::REPEAT, {constant, UTILS_HUE_AQUA, UTILS_HUE_AQUA, 1000});
+    brightnessB = new Sequence(PlaybackMode::ONCE, {down, 255, 0, 600}, 61);
 
-    scene->_ledEffects[13] = LedEffect(led13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects[12] = LedEffect(led12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(led666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects[0] = LedEffect(left, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[1] = LedEffect(right, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[2] = LedEffect(neoPixel, hueA, hueB, brightnessA, brightnessB);
 
     bank._scenes[12] = scene;
 
     scene = new Scene();
-    hueA = new Sequence(PlaybackMode::REPEAT, {up, 0, 255, 10 * 1000}, 60);
-    hueB = new Sequence(PlaybackMode::REPEAT, {up, 70, 255, 5 * 1000});
-    brightnessA = new Sequence(PlaybackMode::REPEAT, {sine, 0, 255, 13 * 1000}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {sine, 0, 255, 1000});
+    hueA = new Sequence(PlaybackMode::REPEAT, {up, UTILS_HUE_RED, UTILS_HUE_WARM_PINK, 255 * 1000 / 2});
+    brightnessA = new Sequence(PlaybackMode::ONCE, {up, 255, 0, 500}, 60);
+    hueB = new Sequence(PlaybackMode::ONCE, {down, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_SOFT_GREEN, 3 * 1000}, 60);
+    brightnessB = new Sequence(PlaybackMode::REPEAT, {sine, 100, 255, 3 * 1000});
 
-    scene->_ledEffects[13] = LedEffect(led13, hueA, hueB, brightnessA, brightnessB);
-    scene->_ledEffects[12] = LedEffect(led12, hueB, brightnessA, brightnessB, hueA);
-    scene->_ledEffects[666] = LedEffect(led666, brightnessA, brightnessB, hueA, hueB);
+    scene->_ledEffects[0] = LedEffect(left, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[1] = LedEffect(right, hueA, hueB, brightnessA, brightnessB);
+    scene->_ledEffects[2] = LedEffect(neoPixel, hueA, hueB, brightnessA, brightnessB);
 
     bank._scenes[13] = scene;
 
