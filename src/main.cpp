@@ -15,11 +15,11 @@ void setup()
     // MIDI Serial
     midiSerial.setup();
 
-    while (!Serial && millis() < 5000)
-        ;
-
     // OLED screen
     screen.setup();
+
+    while (!Serial && millis() < 5000)
+        ;
 
     // Flash
     stateManager.setupFlash();
