@@ -141,61 +141,74 @@ const char *getSceneName(int messageId)
 
 void SceneBank::sysExSetHueBrightness(const uint8_t *buffer, size_t length, const LedBank &ledBank, const GraphBank &graphBank)
 {
+    if (length != 6 && length != 14)
+    {
+        debug(1, "[SysEx] [scene] invalid length %lu", length);
+        return;
+    }
+
     int index = 0;
 
     int messageId = buffer[index];
-    const char *module = getSceneName(messageId);
     int sceneId = static_cast<int>(buffer[++index]);
-    const auto &sceneIt = _scenes.find(sceneId);
+    int lightId = static_cast<int>(buffer[++index]);
+    PlaybackMode mode = (PlaybackMode)buffer[++index];
+    int note = static_cast<int>(buffer[++index]);
 
+    Scene *scene;
+    Led *led;
+    Sequence *sequence;
+
+    const char *module = getSceneName(messageId);
+
+    const auto &sceneIt = _scenes.find(sceneId);
     if (sceneIt == _scenes.end() || sceneIt->second == nullptr)
     {
         debug(1, "[SysEx] [%s] scene %d not found", module, sceneId);
         return;
     }
+    scene = sceneIt->second;
 
-    int lightId = static_cast<int>(buffer[++index]);
     const auto &lightIt = ledBank._leds.find(lightId);
-
     if (lightIt == ledBank._leds.end() || lightIt->second == nullptr)
     {
         debug(1, "[SysEx] [%s] light %d not found", module, lightId);
         return;
     }
+    led = lightIt->second;
 
-    PlaybackMode mode = (PlaybackMode)buffer[++index];
-    int note = static_cast<int>(buffer[++index]);
+    if (mode < PlaybackMode::ONCE || mode > PlaybackMode::EXTERNAL_CONTROL)
+    {
+        debug(1, "[SysEx] [%s] scene %d > light %d: invalid mode %d", module, sceneId, lightId, mode);
+        return;
+    }
 
     if (mode == PlaybackMode::EXTERNAL_CONTROL)
     {
-        Sequence *sequence = new Sequence(note);
-        sceneIt->second->sysExSetHueBrightness(messageId, lightId, sequence);
-
-        debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d", module, sceneId, lightId, note, mode);
-
-        return;
+        sequence = new Sequence(note);
+        debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %s", module, sceneId, lightId, note, "EXTERNAL_CONTROL");
     }
-
-    int graphId = static_cast<int>(buffer[++index]);
-    const auto &graphIt = graphBank._graphs.find(graphId);
-
-    if (graphIt == graphBank._graphs.end() || graphIt->second == nullptr)
+    else if (mode == PlaybackMode::REPEAT || mode == PlaybackMode::ONCE)
     {
-        debug(1, "[SysEx] [%s] graph %d not found", module, graphId);
-        return;
+        int graphId = static_cast<int>(buffer[++index]);
+        int min = static_cast<int>(buffer[++index]) * 2;
+        int max = static_cast<int>(buffer[++index]) * 2;
+        unsigned long duration = threeBytesToLong(buffer[++index], buffer[++index], buffer[++index]);
+        float period = twoBytesToFloat(buffer[++index], buffer[++index]);
+
+        const auto &graphIt = graphBank._graphs.find(graphId);
+        if (graphIt == graphBank._graphs.end() || graphIt->second == nullptr)
+        {
+            debug(1, "[SysEx] [%s] graph %d not found", module, graphId);
+            return;
+        }
+
+        sequence = new Sequence(mode, {graphIt->second, min, max, duration, period}, note);
+        debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d, graph %d, min %d, max %d, duration %lu, period %0.2f", module, sceneId, lightId, note, mode, graphId, min, max, duration, period);
     }
 
-    int min = static_cast<int>(buffer[++index]) * 2;
-    int max = static_cast<int>(buffer[++index]) * 2;
-    unsigned long duration = threeBytesToLong(buffer[++index], buffer[++index], buffer[++index]);
-    float period = twoBytesToFloat(buffer[++index], buffer[++index]);
-
-    Sequence *sequence = new Sequence(mode, {graphIt->second, min, max, duration, period}, note);
-    sceneIt->second->sysExSetHueBrightness(messageId, lightId, sequence);
-
-    debug(1, "[SysEx] [%s] scene %d > light %d: note %d, mode %d, graph %d, min %d, max %d, duration %lu, period %0.2f", module, sceneId, lightId, note, mode, graphId, min, max, duration, period);
-
-    sceneIt->second->dump();
+    scene->sysExSetHueBrightness(messageId, lightId, led, sequence);
+    scene->dump();
 }
 
 SceneBank SceneBank::createDummy(const LedBank &ledBank, const GraphBank &graphBank)
