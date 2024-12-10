@@ -19,7 +19,7 @@ struct LedEffect
     Sequence *brightnessB = nullptr;
 
 #ifdef DEBUG
-    void dump() const;
+    void dump(int ledId) const;
 #endif
 };
 
@@ -37,7 +37,7 @@ public:
     void onNotePlayed(uint8_t note, uint8_t velocity);
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
-    void sysExSetHueBrightness(int messageId, int lightId, Sequence *sequence);
+    void sysExSetHueBrightness(int messageId, int lightId, Led *led, Sequence *sequence);
 
 #ifdef DEBUG
     void dump();

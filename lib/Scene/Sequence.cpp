@@ -208,7 +208,7 @@ size_t Sequence::deserialize(const uint8_t *buffer, const GraphBank &graphBank)
     return offset;
 }
 
-void Sequence::dump(String sequenceName)
+void Sequence::dump(int ledId, String sequenceName)
 {
     Graph *graph = _graph;
     int min = _min;
@@ -237,5 +237,5 @@ void Sequence::dump(String sequenceName)
         break;
     }
 
-    debug(1, "[sequence %s] trigger note %u, control note %u, mode %s, graph min %d, max %d, duration %d, period %0.2f", sequenceName.c_str(), triggerNote, controlNote, modeString.c_str(), min, max, duration, period);
+    debug(1, "[led %d] [sequence %s] trigger note %u, control note %u, mode %s, graph min %d, max %d, duration %d, period %0.2f", ledId, sequenceName.c_str(), triggerNote, controlNote, modeString.c_str(), min, max, duration, period);
 }

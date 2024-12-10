@@ -2,19 +2,19 @@
 #include <Scene.h>
 #include <Utils.h>
 
-void LedEffect::dump() const
+void LedEffect::dump(int ledId) const
 {
     if (hueA != nullptr)
-        hueA->dump("hue A");
+        hueA->dump(ledId, "hue A");
 
     if (hueB != nullptr)
-        hueB->dump("hue B");
+        hueB->dump(ledId, "hue B");
 
     if (brightnessA != nullptr)
-        brightnessA->dump("brightness A");
+        brightnessA->dump(ledId, "brightness A");
 
     if (brightnessB != nullptr)
-        brightnessB->dump("brightness B");
+        brightnessB->dump(ledId, "brightness B");
 }
 
 void Scene::update()
@@ -152,12 +152,14 @@ size_t Scene::deserialize(const uint8_t *buffer, const LedBank &ledBank, const G
     return offset;
 }
 
-void Scene::sysExSetHueBrightness(int messageId, int lightId, Sequence *sequence)
+void Scene::sysExSetHueBrightness(int messageId, int lightId, Led *led, Sequence *sequence)
 {
     LedEffect ledEffect;
 
     if (_ledEffects.find(lightId) != _ledEffects.end())
         ledEffect = _ledEffects[lightId];
+    else
+        ledEffect.led = led;
 
     switch (messageId)
     {
@@ -186,6 +188,6 @@ void Scene::dump()
 
     for (const auto &it : _ledEffects)
     {
-        it.second.dump();
+        it.second.dump(it.first);
     }
 }
