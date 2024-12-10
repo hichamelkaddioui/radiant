@@ -18,9 +18,7 @@ struct LedEffect
     Sequence *brightnessA = nullptr;
     Sequence *brightnessB = nullptr;
 
-#ifdef DEBUG
     void dump(int ledId) const;
-#endif
 };
 
 class Scene
@@ -39,9 +37,7 @@ public:
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
     void sysExSetHueBrightness(int messageId, int lightId, Led *led, Sequence *sequence);
 
-#ifdef DEBUG
     void dump();
-#endif
 };
 
 #endif

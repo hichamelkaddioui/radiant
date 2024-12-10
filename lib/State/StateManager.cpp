@@ -17,20 +17,6 @@ void StateManager::loop()
 }
 
 // Scene
-void StateManager::createAndSaveStubs()
-{
-    // Create banks
-    LedBank localLedBank = LedBank::createDummy();
-    GraphBank localGraphBank = GraphBank::createDummy();
-    SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
-    StateManager localStateManager(localLedBank, localGraphBank, localSceneBank);
-    localStateManager.params.abNote = 62;
-
-    // Serialize
-    localStateManager.setupFlash();
-    localStateManager.serialize();
-}
-
 Scene *StateManager::getCurrentScene()
 {
     return sb.getCurrentScene();
@@ -182,4 +168,21 @@ size_t StateManager::deserialize()
     debug(1, "[state manager] deserialized %d bytes", offset);
 
     return offset;
+}
+
+void StateManager::createAndSaveStubs()
+{
+#ifdef DEBUG
+    // Create banks
+    LedBank localLedBank = LedBank::createDummy();
+    GraphBank localGraphBank = GraphBank::createDummy();
+    SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
+    StateManager localStateManager(localLedBank, localGraphBank, localSceneBank);
+    localStateManager.params.abNote = 62;
+    localStateManager.params.nextSceneNote = 63;
+
+    // Serialize
+    localStateManager.setupFlash();
+    localStateManager.serialize();
+#endif
 }

@@ -184,10 +184,12 @@ void Scene::sysExSetHueBrightness(int messageId, int lightId, Led *led, Sequence
 
 void Scene::dump()
 {
+#ifdef DEBUG
     debug(1, "[scene] Dumping scene, number of led effects: %d", _ledEffects.size());
 
     for (const auto &it : _ledEffects)
     {
         it.second.dump(it.first);
     }
+#endif
 }

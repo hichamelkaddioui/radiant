@@ -22,9 +22,7 @@ public:
     void sysExCreate(const uint8_t *buffer, size_t length);
     void sysExSetHueBrightness(const uint8_t *buffer, size_t length, const LedBank &ledBank, const GraphBank &graphBank);
 
-#ifdef DEBUG
     static SceneBank createDummy(const LedBank &ledBank, const GraphBank &graphBank);
-#endif
 };
 
 #endif

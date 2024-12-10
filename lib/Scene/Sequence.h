@@ -56,9 +56,7 @@ public:
     size_t serialize(uint8_t *buffer, const GraphBank &graphBank);
     size_t deserialize(const uint8_t *buffer, const GraphBank &graphBank);
 
-#ifdef DEBUG
     void dump(int ledId, String sequenceName);
-#endif
 
 private:
     int _value;
