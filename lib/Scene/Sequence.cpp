@@ -1,14 +1,14 @@
 #include <Utils.h>
 #include <Sequence.h>
 
-Sequence::Sequence(uint8_t controlNote) : _controlNote(controlNote)
-{
-    _mode = PlaybackMode::EXTERNAL_CONTROL;
-    _min = 0;
-    _max = 127;
-    _duration = 1000;
-    _period = 1.0f;
-}
+Sequence::Sequence(uint8_t controlNote)
+    : _controlNote(controlNote),
+      _mode(PlaybackMode::EXTERNAL_CONTROL),
+      _min(0),
+      _max(255),
+      _duration(1000),
+      _period(1.0f),
+      _triggerNote(0) {}
 
 Sequence::Sequence(PlaybackMode mode, GraphOptions graphOptions, uint8_t triggerNote)
     : _graph(graphOptions.graph),
@@ -17,7 +17,8 @@ Sequence::Sequence(PlaybackMode mode, GraphOptions graphOptions, uint8_t trigger
       _duration(graphOptions.duration),
       _period(graphOptions.period),
       _mode(mode),
-      _triggerNote(triggerNote) {}
+      _triggerNote(triggerNote),
+      _controlNote(0) {}
 
 void Sequence::onNotePlayed(uint8_t note, uint8_t velocity, String sequenceName)
 {
