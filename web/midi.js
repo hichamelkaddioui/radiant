@@ -152,6 +152,10 @@ const initSendNote = () => {
   document.getElementById("velocity").addEventListener("input", () => {
     document.getElementById("velocityValue").innerText =
       document.getElementById("velocity").value;
+
+    if (document.getElementById("velocityChange").checked) {
+      sendNoteOn();
+    }
   });
 };
 
@@ -443,14 +447,16 @@ const sendSysex = () => {
 
   const messages = getSysExMessages();
 
-  messages.forEach((message) => {
-    try {
-      outputDevice.send(message);
+  messages.forEach((message, index) => {
+    setTimeout(() => {
+      try {
+        outputDevice.send(message);
 
-      log(`Sent Sysex: ${message.map(formatByte).join(", ")}`);
-    } catch (error) {
-      log(error);
-    }
+        log(`Sent Sysex: ${message.map(formatByte).join(", ")}`);
+      } catch (error) {
+        log(error);
+      }
+    }, index * 1500);
   });
 };
 

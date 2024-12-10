@@ -133,15 +133,13 @@
 
           <label>
             Velocity
-            <input
-              type="range"
-              id="velocity"
-              min="1"
-              max="127"
-              value="127"
-              oninput="document.getElementById('velocityValue').innerText = this.value"
-            />
+            <input type="range" id="velocity" min="1" max="127" value="127" />
             <code id="velocityValue">127</code>
+          </label>
+
+          <label>
+            <input type="checkbox" id="velocityChange" checked />
+            Send on velocity change
           </label>
 
           <br />
