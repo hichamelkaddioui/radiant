@@ -13,10 +13,10 @@ public:
     int currentSceneId = 0;
     std::map<int, Scene *> _scenes;
 
+    Scene *getCurrentScene() const;
     void next();
     void restart();
     void update();
-    Scene *getCurrentScene() const;
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
     void sysExCreate(const uint8_t *buffer, size_t length);

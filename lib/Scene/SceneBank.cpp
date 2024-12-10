@@ -1,6 +1,32 @@
 #include <Utils.h>
 #include <SceneBank.h>
 
+Scene *SceneBank::getCurrentScene() const
+{
+    const auto &it = _scenes.find(currentSceneId);
+
+    if (it == _scenes.end())
+    {
+        debug(1, "[scene bank] no scene found");
+
+        return _scenes.begin()->second;
+    }
+
+    return it->second;
+}
+
+void SceneBank::restart()
+{
+    Scene *currentScene = getCurrentScene();
+
+    if (currentScene == nullptr)
+        return;
+
+    debug(1, "[scene bank] restarting scene bank");
+
+    currentScene->restart();
+}
+
 void SceneBank::next()
 {
     const auto &next = std::next(_scenes.find(currentSceneId));
@@ -17,18 +43,6 @@ void SceneBank::next()
     next->second->restart();
 }
 
-void SceneBank::restart()
-{
-    Scene *currentScene = getCurrentScene();
-
-    if (currentScene == nullptr)
-        return;
-
-    debug(1, "[scene bank] restarting scene bank");
-
-    currentScene->restart();
-}
-
 void SceneBank::update()
 {
     Scene *currentScene = getCurrentScene();
@@ -37,20 +51,6 @@ void SceneBank::update()
         return;
 
     currentScene->update();
-}
-
-Scene *SceneBank::getCurrentScene() const
-{
-    const auto &it = _scenes.find(currentSceneId);
-
-    if (it == _scenes.end())
-    {
-        debug(1, "[scene bank] no scene found");
-
-        return _scenes.begin()->second;
-    }
-
-    return it->second;
 }
 
 size_t SceneBank::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
@@ -221,7 +221,7 @@ SceneBank SceneBank::createDummy(const LedBank &ledBank, const GraphBank &graphB
     Sequence *brightnessB;
     Scene *scene;
 
-    Graph *constant = graphBank._graphs.at(DefaultGraph::CONSTANT), *up = graphBank._graphs.at(DefaultGraph::UP), *upExp = graphBank._graphs.at(DefaultGraph::UP_EXP), *down = graphBank._graphs.at(DefaultGraph::DOWN), *sine = graphBank._graphs.at(DefaultGraph::SINE), *gate = graphBank._graphs.at(DefaultGraph::GATE);
+    Graph *constant = graphBank._graphs.at(DefaultGraph::CONSTANT), *up = graphBank._graphs.at(DefaultGraph::UP), *upExp = graphBank._graphs.at(DefaultGraph::UP_EXP), *down = graphBank._graphs.at(DefaultGraph::DOWN), *sine = graphBank._graphs.at(DefaultGraph::SINE), *gate = graphBank._graphs.at(DefaultGraph::GATE), *breath = graphBank._graphs.at(10);
     Led *left = ledBank._leds.at(0), *right = ledBank._leds.at(1), *neoPixel = ledBank._leds.at(2);
 
     scene = new Scene();
@@ -240,9 +240,10 @@ SceneBank SceneBank::createDummy(const LedBank &ledBank, const GraphBank &graphB
     hueA = new Sequence(PlaybackMode::REPEAT, {up, UTILS_HUE_RED, UTILS_HUE_WARM_PINK, 255 * 1000 / 2});
     brightnessA = new Sequence(PlaybackMode::ONCE, {up, 255, 0, 500}, 60);
     hueB = new Sequence(PlaybackMode::ONCE, {down, UTILS_HUE_GOLDEN_YELLOW, UTILS_HUE_SOFT_GREEN, 3 * 1000}, 60);
-    brightnessB = new Sequence(PlaybackMode::REPEAT, {sine, 100, 255, 3 * 1000});
+    brightnessB = new Sequence(PlaybackMode::REPEAT, {sine, 0, 255, 7 * 1000});
 
     scene->_ledEffects[0] = LedEffect(left, hueA, hueB, brightnessA, brightnessB);
+    brightnessA = new Sequence(PlaybackMode::ONCE, {up, 255, 0, 500}, 61);
     scene->_ledEffects[1] = LedEffect(right, hueA, hueB, brightnessA, brightnessB);
     scene->_ledEffects[2] = LedEffect(neoPixel, hueA, hueB, brightnessA, brightnessB);
 
