@@ -63,6 +63,12 @@ void StateManager::handleNoteOn(byte note, byte velocity)
         debug(1, "[midi] received ab control with value %0.2f", sb.getCurrentScene()->_ab);
     }
 
+    if (note == params.nextSceneNote)
+    {
+        sb.at(velocity);
+        debug(1, "[midi] received next note");
+    }
+
     Scene *currentScene = sb.getCurrentScene();
 
     if (!currentScene)
@@ -118,12 +124,12 @@ void StateManager::handleOledButtonPress()
     sb.next();
 }
 
-// Serialization
 int StateManager::getCurrentSceneId()
 {
     return sb.currentSceneId;
 }
 
+// Serialization
 size_t StateManager::serialize()
 {
     size_t offset = 0;
@@ -133,6 +139,10 @@ size_t StateManager::serialize()
     memcpy(buffer + offset, &params.abNote, sizeOfByte);
     offset += sizeOfByte;
     debug(1, "[state manager] serializing, abNote: %d", params.abNote);
+
+    memcpy(buffer + offset, &params.nextSceneNote, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] serializing, nextSceneNote: %d", params.nextSceneNote);
 
     // Serialize bank
     offset += lb.serialize(buffer + offset);
@@ -159,6 +169,10 @@ size_t StateManager::deserialize()
     memcpy(&params.abNote, buffer + offset, sizeOfByte);
     offset += sizeOfByte;
     debug(1, "[state manager] deserializing, abNote: %d", params.abNote);
+
+    memcpy(&params.nextSceneNote, buffer + offset, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] deserializing, nextSceneNote: %d", params.nextSceneNote);
 
     // Deserialize bank
     offset += lb.deserialize(buffer + offset);

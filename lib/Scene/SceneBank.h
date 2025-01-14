@@ -14,8 +14,9 @@ public:
     std::map<int, Scene *> _scenes;
 
     Scene *getCurrentScene() const;
-    void next();
     void restart();
+    void at(byte velocity);
+    void next();
     void update();
     size_t serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const;
     size_t deserialize(const uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank);
