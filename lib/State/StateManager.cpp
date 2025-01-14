@@ -50,6 +50,10 @@ void StateManager::handleControlChange(byte type, byte value)
     case 0x08:
         sb.getCurrentScene()->_ab = value / 127.0f;
         break;
+    // Balance pedal
+    case 0x10:
+        sb.getCurrentScene()->_ab = (value - 64) / 64.0f;
+        break;
     default:
         break;
     }
@@ -61,6 +65,12 @@ void StateManager::handleNoteOn(byte note, byte velocity)
     {
         sb.getCurrentScene()->_ab = (velocity - 1) / 126.0f;
         debug(1, "[midi] received ab control with value %0.2f", sb.getCurrentScene()->_ab);
+    }
+
+    if (note == params.nextSceneNote)
+    {
+        sb.at(velocity);
+        debug(1, "[midi] received next note");
     }
 
     Scene *currentScene = sb.getCurrentScene();
@@ -118,12 +128,12 @@ void StateManager::handleOledButtonPress()
     sb.next();
 }
 
-// Serialization
 int StateManager::getCurrentSceneId()
 {
     return sb.currentSceneId;
 }
 
+// Serialization
 size_t StateManager::serialize()
 {
     size_t offset = 0;
@@ -133,6 +143,10 @@ size_t StateManager::serialize()
     memcpy(buffer + offset, &params.abNote, sizeOfByte);
     offset += sizeOfByte;
     debug(1, "[state manager] serializing, abNote: %d", params.abNote);
+
+    memcpy(buffer + offset, &params.nextSceneNote, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] serializing, nextSceneNote: %d", params.nextSceneNote);
 
     // Serialize bank
     offset += lb.serialize(buffer + offset);
@@ -160,6 +174,10 @@ size_t StateManager::deserialize()
     offset += sizeOfByte;
     debug(1, "[state manager] deserializing, abNote: %d", params.abNote);
 
+    memcpy(&params.nextSceneNote, buffer + offset, sizeOfByte);
+    offset += sizeOfByte;
+    debug(1, "[state manager] deserializing, nextSceneNote: %d", params.nextSceneNote);
+
     // Deserialize bank
     offset += lb.deserialize(buffer + offset);
     offset += gb.deserialize(buffer + offset);
@@ -178,8 +196,8 @@ void StateManager::createAndSaveStubs()
     GraphBank localGraphBank = GraphBank::createDummy();
     SceneBank localSceneBank = SceneBank::createDummy(localLedBank, localGraphBank);
     StateManager localStateManager(localLedBank, localGraphBank, localSceneBank);
-    localStateManager.params.abNote = 62;
-    localStateManager.params.nextSceneNote = 63;
+    // localStateManager.params.abNote = 62;
+    // localStateManager.params.nextSceneNote = 63;
 
     // Serialize
     localStateManager.setupFlash();

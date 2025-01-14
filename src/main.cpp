@@ -25,7 +25,7 @@ void setup()
     stateManager.setupFlash();
 
     // Optional: create default stubs
-    StateManager::createAndSaveStubs();
+    // StateManager::createAndSaveStubs();
 
     // Read from flash
     stateManager.deserialize();

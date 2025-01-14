@@ -12,5 +12,10 @@
     "Pico",
     "platformio",
     "SWITCHCAPVCC"
-  ]
+  ],
+  "files.associations": {
+    "array": "cpp",
+    "string_view": "cpp",
+    "span": "cpp"
+  }
 }

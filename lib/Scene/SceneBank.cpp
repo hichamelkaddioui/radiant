@@ -27,6 +27,20 @@ void SceneBank::restart()
     currentScene->restart();
 }
 
+void SceneBank::at(byte velocity)
+{
+    const auto &sceneIt = _scenes.find(velocity);
+
+    if (sceneIt == _scenes.end() || sceneIt->second == nullptr)
+    {
+        debug(1, "[scene bank] play scene id %d: scene not found", velocity);
+        return;
+    }
+
+    currentSceneId = velocity;
+    sceneIt->second->restart();
+}
+
 void SceneBank::next()
 {
     const auto &next = std::next(_scenes.find(currentSceneId));
@@ -55,17 +69,24 @@ void SceneBank::update()
 
 size_t SceneBank::serialize(uint8_t *buffer, const LedBank &ledBank, const GraphBank &graphBank) const
 {
-    size_t offset = 0, sceneCount = _scenes.size();
-    memcpy(buffer + offset, &sceneCount, sizeOfSizeT);
+    size_t offset = 0, sceneCount = 0;
+
     offset += sizeOfSizeT;
-    debug(1, "[serialize scene bank] serializing, %lu scenes in bank", sceneCount);
 
     for (const auto &it : _scenes)
     {
+        if (it.second->_ledEffects.empty())
+            continue;
+
         memcpy(buffer + offset, &it.first, sizeOfInt);
         offset += sizeOfInt;
         offset += it.second->serialize(buffer + offset, ledBank, graphBank);
+
+        sceneCount++;
     }
+
+    memcpy(buffer, &sceneCount, sizeOfSizeT);
+    debug(1, "[serialize scene bank] serialized, %lu scenes in bank", sceneCount);
 
     return offset;
 }
