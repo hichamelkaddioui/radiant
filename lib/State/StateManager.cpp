@@ -47,12 +47,8 @@ void StateManager::handleControlChange(byte type, byte value)
     switch (type)
     {
     // Balance
-    case 0x08:
+    case 0x0b:
         sb.getCurrentScene()->_ab = value / 127.0f;
-        break;
-    // Balance pedal
-    case 0x10:
-        sb.getCurrentScene()->_ab = (value - 64) / 64.0f;
         break;
     default:
         break;
