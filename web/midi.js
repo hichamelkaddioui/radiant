@@ -75,7 +75,7 @@ const sendAB = () => {
   document.getElementById("abValue").innerText = `${percent} %`;
 
   // Send control change message for A/B value
-  const controlChangeMessage = [0xb0, 0x8, value];
+  const controlChangeMessage = [0xb0, 0x0b, value];
   outputDevice.send(controlChangeMessage);
 
   log(`Sent A/B value: ${value} / 127`);
