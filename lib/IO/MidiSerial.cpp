@@ -29,6 +29,9 @@ void MidiSerial::loop(StateManager &manager)
             return manager.handleProgramChange(MidiUART.getData1());
         case MidiType::ControlChange:
             return manager.handleControlChange(MidiUART.getData1(), MidiUART.getData2());
+        case MidiType::ActiveSensing:
+            // Ignore active sensing events as they're flooding
+            break;
         default:
             debug(1, "[midi] received midi message type: 0x%02X, value: 0x%02X", type, MidiUART.getData1());
             break;
