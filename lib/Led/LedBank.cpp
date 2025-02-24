@@ -122,7 +122,7 @@ void LedBank::sysExCreate(const uint8_t *buffer, size_t length)
 LedBank LedBank::createDummy()
 {
     LedBank bank;
-    bank._leds[0] = new LedStrip(24, 25, 29);
+    bank._leds[0] = new LedStrip(25, 18, 29);
     bank._leds[1] = new LedStrip(27, 28, 26);
     bank._leds[2] = new NeoPixel(16);
 
